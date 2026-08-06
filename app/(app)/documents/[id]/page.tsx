@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
-import { DOC_TYPE_LABEL } from "@/lib/documents/constants";
 import { formatBytes, formatDateTime } from "@/lib/format";
 import { env } from "@/lib/env";
 import { labelForAction } from "@/lib/activity-labels";
@@ -36,6 +36,10 @@ export default async function DocumentDetailPage({
   const { id } = await params;
   await requireUser();
   const supabase = await createClient();
+  const t = await getTranslations("Documents");
+  const dt = await getTranslations("DocTypes");
+  const ts = await getTranslations("Shares");
+  const ta = await getTranslations("Activity");
 
   const { data: doc } = await supabase
     .from("documents")
@@ -84,7 +88,7 @@ export default async function DocumentDetailPage({
             href="/documents"
             className="text-sm text-slate-500 underline hover:text-slate-900"
           >
-            ← Documents
+            ← {t("title")}
           </Link>
           <h1 className="mt-1 break-all text-xl font-semibold text-slate-900">
             {doc.canonical_name}
@@ -92,7 +96,7 @@ export default async function DocumentDetailPage({
         </div>
         <div className="flex gap-2">
           <a href={`/api/documents/${doc.id}?dl=1`}>
-            <Button>Download</Button>
+            <Button>{t("download")}</Button>
           </a>
         </div>
       </div>
@@ -101,7 +105,7 @@ export default async function DocumentDetailPage({
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Preview</CardTitle>
+              <CardTitle>{t("preview")}</CardTitle>
             </CardHeader>
             <CardBody className="p-0">
               <iframe
@@ -116,28 +120,28 @@ export default async function DocumentDetailPage({
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Details</CardTitle>
+              <CardTitle>{t("details")}</CardTitle>
             </CardHeader>
             <CardBody className="space-y-2 text-sm">
-              <Detail label="Type" value={DOC_TYPE_LABEL[doc.doc_type]} />
-              <Detail label="Project" value={doc.projects?.name ?? "—"} />
+              <Detail label={t("type")} value={dt(doc.doc_type)} />
+              <Detail label={t("project")} value={doc.projects?.name ?? "—"} />
               <Detail
-                label="Client"
+                label={t("client")}
                 value={doc.projects?.clients?.name ?? "—"}
               />
               <Detail
-                label="Uploaded by"
+                label={t("colUploadedBy")}
                 value={doc.uploader?.full_name ?? "—"}
               />
-              <Detail label="Uploaded" value={formatDateTime(doc.created_at)} />
-              <Detail label="Size" value={formatBytes(doc.file_size)} />
-              <Detail label="Signed" value="Attested at upload" />
+              <Detail label={t("uploaded")} value={formatDateTime(doc.created_at)} />
+              <Detail label={t("size")} value={formatBytes(doc.file_size)} />
+              <Detail label={t("signed")} value={t("signedValue")} />
             </CardBody>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Share with a client</CardTitle>
+              <CardTitle>{ts("title")}</CardTitle>
             </CardHeader>
             <CardBody>
               <ShareManager documentId={doc.id} links={shareLinks} />
@@ -146,22 +150,22 @@ export default async function DocumentDetailPage({
 
           <Card>
             <CardHeader>
-              <CardTitle>Activity</CardTitle>
+              <CardTitle>{t("activity")}</CardTitle>
             </CardHeader>
             <CardBody className="p-0">
               {activity.length === 0 ? (
                 <p className="px-5 py-4 text-sm text-slate-500">
-                  No activity recorded yet.
+                  {t("noActivity")}
                 </p>
               ) : (
                 <ul className="divide-y divide-slate-100">
                   {activity.map((a) => (
                     <li key={a.id} className="px-5 py-2.5 text-sm">
                       <span className="text-slate-800">
-                        {labelForAction(a.action)}
+                        {labelForAction(ta, a.action)}
                       </span>
                       <div className="text-xs text-slate-400">
-                        {a.actor?.full_name ?? "A client"} ·{" "}
+                        {a.actor?.full_name ?? t("aClient")} ·{" "}
                         {formatDateTime(a.created_at)}
                       </div>
                     </li>

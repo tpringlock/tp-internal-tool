@@ -1,9 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { logActivity } from "@/lib/activity";
-import { updateProfileSchema, changePasswordSchema } from "@/lib/validation";
+import {
+  updateProfileSchema,
+  changePasswordSchema,
+  translateFieldErrors,
+} from "@/lib/validation";
 import type { FormState } from "@/app/actions/auth";
 
 export async function updateProfile(
@@ -14,14 +19,18 @@ export async function updateProfile(
     full_name: formData.get("full_name"),
   });
   if (!parsed.success) {
-    return { fieldErrors: parsed.error.flatten().fieldErrors };
+    const tv = await getTranslations("Validation");
+    return { fieldErrors: translateFieldErrors(tv, parsed.error) };
   }
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: "Your session has expired. Please sign in again." };
+  if (!user) {
+    const tc = await getTranslations("Common");
+    return { error: tc("sessionExpired") };
+  }
 
   const { error } = await supabase
     .from("profiles")
@@ -35,7 +44,8 @@ export async function updateProfile(
     entityId: user.id,
   });
   revalidatePath("/profile");
-  return { success: "Profile updated." };
+  const t = await getTranslations("Profile");
+  return { success: t("profileUpdated") };
 }
 
 export async function changePassword(
@@ -47,7 +57,8 @@ export async function changePassword(
     confirm: formData.get("confirm"),
   });
   if (!parsed.success) {
-    return { fieldErrors: parsed.error.flatten().fieldErrors };
+    const tv = await getTranslations("Validation");
+    return { fieldErrors: translateFieldErrors(tv, parsed.error) };
   }
 
   const supabase = await createClient();
@@ -57,5 +68,6 @@ export async function changePassword(
   if (error) return { error: error.message };
 
   await logActivity(supabase, { action: "profile.change_password" });
-  return { success: "Password changed." };
+  const t = await getTranslations("Profile");
+  return { success: t("passwordChanged") };
 }

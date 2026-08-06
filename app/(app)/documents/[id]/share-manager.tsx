@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useTranslations } from "next-intl";
 import { createShareLink, revokeShareLink } from "@/app/actions/shares";
 import type { FormState } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ function statusOf(link: ShareLinkView): Status {
 }
 
 function CopyButton({ url }: { url: string }) {
+  const t = useTranslations("Shares");
   const [copied, setCopied] = useState(false);
   return (
     <Button
@@ -36,7 +38,7 @@ function CopyButton({ url }: { url: string }) {
         setTimeout(() => setCopied(false), 1500);
       }}
     >
-      {copied ? "Copied" : "Copy link"}
+      {copied ? t("copied") : t("copy")}
     </Button>
   );
 }
@@ -48,6 +50,7 @@ export function ShareManager({
   documentId: string;
   links: ShareLinkView[];
 }) {
+  const t = useTranslations("Shares");
   const [state, action, pending] = useActionState<FormState, FormData>(
     createShareLink,
     {},
@@ -63,26 +66,24 @@ export function ShareManager({
         <div className="flex flex-wrap items-end gap-3">
           <div className="min-w-40">
             <label className="mb-1 block text-xs font-medium text-slate-500">
-              Link valid for
+              {t("linkValidFor")}
             </label>
             <Select name="days" defaultValue="3">
-              <option value="1">1 day</option>
-              <option value="3">3 days</option>
-              <option value="7">7 days</option>
-              <option value="14">14 days</option>
-              <option value="30">30 days</option>
+              <option value="1">{t("days", { count: 1 })}</option>
+              <option value="3">{t("days", { count: 3 })}</option>
+              <option value="7">{t("days", { count: 7 })}</option>
+              <option value="14">{t("days", { count: 14 })}</option>
+              <option value="30">{t("days", { count: 30 })}</option>
             </Select>
           </div>
           <Button type="submit" disabled={pending}>
-            {pending ? "Creating…" : "Create share link"}
+            {pending ? t("creating") : t("createLink")}
           </Button>
         </div>
       </form>
 
       {links.length === 0 ? (
-        <p className="text-sm text-slate-500">
-          No share links yet. Create one to give a client time-limited access.
-        </p>
+        <p className="text-sm text-slate-500">{t("noLinks")}</p>
       ) : (
         <ul className="divide-y divide-slate-100">
           {links.map((link) => {
@@ -97,14 +98,14 @@ export function ShareManager({
                         : "text-sm font-medium text-slate-400"
                     }
                   >
-                    {status === "active" && "Active"}
-                    {status === "expired" && "Expired"}
-                    {status === "revoked" && "Revoked"}
+                    {status === "active" && t("statusActive")}
+                    {status === "expired" && t("statusExpired")}
+                    {status === "revoked" && t("statusRevoked")}
                   </span>
                   <span className="text-xs text-slate-400">
                     {status === "revoked"
-                      ? `Revoked ${formatDateTime(link.revoked_at!)}`
-                      : `Expires ${formatDateTime(link.expires_at)}`}
+                      ? t("revokedAt", { date: formatDateTime(link.revoked_at!) })
+                      : t("expiresAt", { date: formatDateTime(link.expires_at) })}
                   </span>
                 </div>
 
@@ -122,7 +123,7 @@ export function ShareManager({
                         value={documentId}
                       />
                       <Button type="submit" variant="danger" size="sm">
-                        Revoke
+                        {t("revoke")}
                       </Button>
                     </form>
                   </div>

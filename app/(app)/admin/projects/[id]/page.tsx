@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { EditProjectForm } from "../project-forms";
@@ -45,6 +46,7 @@ export default async function ProjectDetailPage({
   const members = (memberData ?? []) as unknown as MemberRow[];
   const memberIds = new Set(members.map((m) => m.user_id));
   const candidates = (employees ?? []).filter((e) => !memberIds.has(e.id));
+  const t = await getTranslations("Admin");
 
   return (
     <div className="space-y-6">
@@ -53,7 +55,7 @@ export default async function ProjectDetailPage({
           href="/admin/projects"
           className="text-sm text-slate-500 underline hover:text-slate-900"
         >
-          ← All projects
+          ← {t("backProjects")}
         </Link>
         <h1 className="mt-1 text-xl font-semibold text-slate-900">
           {(project as Project).name}
@@ -62,7 +64,7 @@ export default async function ProjectDetailPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Project details</CardTitle>
+          <CardTitle>{t("projectDetails")}</CardTitle>
         </CardHeader>
         <CardBody>
           <EditProjectForm
@@ -74,16 +76,13 @@ export default async function ProjectDetailPage({
 
       <Card>
         <CardHeader>
-          <CardTitle>Members ({members.length})</CardTitle>
+          <CardTitle>{t("members", { count: members.length })}</CardTitle>
         </CardHeader>
         <CardBody className="space-y-5">
           <AssignMemberForm projectId={id} candidates={candidates} />
 
           {members.length === 0 ? (
-            <p className="text-sm text-slate-500">
-              No employees assigned yet. Assigned employees can upload documents
-              to this project.
-            </p>
+            <p className="text-sm text-slate-500">{t("noMembers")}</p>
           ) : (
             <ul className="divide-y divide-slate-100">
               {members.map((m) => (
@@ -92,7 +91,7 @@ export default async function ProjectDetailPage({
                   className="flex items-center justify-between py-2.5"
                 >
                   <span className="text-sm text-slate-800">
-                    {m.profiles?.full_name ?? "Unknown"}
+                    {m.profiles?.full_name ?? t("unknown")}
                   </span>
                   <RemoveMemberButton projectId={id} userId={m.user_id} />
                 </li>

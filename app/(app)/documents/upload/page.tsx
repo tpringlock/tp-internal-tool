@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +16,7 @@ interface ProjectRow {
 export default async function UploadPage() {
   await requireUser();
   const supabase = await createClient();
+  const t = await getTranslations("Documents");
 
   // RLS returns only the projects this user may upload to (all for admins,
   // assigned projects for employees).
@@ -40,27 +42,24 @@ export default async function UploadPage() {
           href="/documents"
           className="text-sm text-slate-500 underline hover:text-slate-900"
         >
-          ← Documents
+          ← {t("title")}
         </Link>
         <h1 className="mt-1 text-xl font-semibold text-slate-900">
-          Upload a document
+          {t("uploadTitle")}
         </h1>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Upload guidelines</CardTitle>
+          <CardTitle>{t("guidelines")}</CardTitle>
         </CardHeader>
         <CardBody className="text-sm text-slate-600">
           <ul className="list-disc space-y-1 pl-5">
-            <li>Only signed documents may be uploaded.</li>
-            <li>PDF files only, up to 25 MB.</li>
+            <li>{t("guidelineSigned")}</li>
+            <li>{t("guidelinePdf")}</li>
+            <li>{t("guidelineProjects")}</li>
             <li>
-              You can only upload to projects you are assigned to. Ask an admin
-              if a project is missing.
-            </li>
-            <li>
-              The file name is generated automatically as
+              {t("guidelineNaming")}
               <span className="font-mono"> Client_Type_Project</span>.
             </li>
           </ul>
@@ -70,10 +69,7 @@ export default async function UploadPage() {
       <Card>
         <CardBody>
           {projects.length === 0 ? (
-            <Alert tone="info">
-              You are not assigned to any active projects yet. Ask an admin to
-              add you to a project before uploading.
-            </Alert>
+            <Alert tone="info">{t("noActiveProjects")}</Alert>
           ) : (
             <UploadForm projects={projects} />
           )}

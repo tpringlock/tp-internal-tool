@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreateProjectForm } from "./project-forms";
@@ -24,20 +25,20 @@ export default async function AdminProjectsPage() {
 
   const projects = (projectData ?? []) as unknown as ProjectListRow[];
   const clients = clientData ?? [];
+  const t = await getTranslations("Admin");
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Projects</h1>
-        <p className="text-sm text-slate-500">
-          The project repository. Assign employees to a project to let them
-          upload its documents.
-        </p>
+        <h1 className="text-xl font-semibold text-slate-900">
+          {t("projectsTitle")}
+        </h1>
+        <p className="text-sm text-slate-500">{t("projectsSubtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Add a project</CardTitle>
+          <CardTitle>{t("addProject")}</CardTitle>
         </CardHeader>
         <CardBody>
           <CreateProjectForm clients={clients} />
@@ -46,21 +47,21 @@ export default async function AdminProjectsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>All projects ({projects.length})</CardTitle>
+          <CardTitle>{t("allProjects", { count: projects.length })}</CardTitle>
         </CardHeader>
         <CardBody className="overflow-x-auto p-0">
           {projects.length === 0 ? (
             <p className="px-5 py-6 text-sm text-slate-500">
-              No projects yet.
+              {t("noProjects")}
             </p>
           ) : (
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 text-left text-slate-500">
-                  <th className="px-5 py-3 font-medium">Name</th>
-                  <th className="px-5 py-3 font-medium">Code</th>
-                  <th className="px-5 py-3 font-medium">Client</th>
-                  <th className="px-5 py-3 font-medium">Status</th>
+                  <th className="px-5 py-3 font-medium">{t("name")}</th>
+                  <th className="px-5 py-3 font-medium">{t("code")}</th>
+                  <th className="px-5 py-3 font-medium">{t("client")}</th>
+                  <th className="px-5 py-3 font-medium">{t("status")}</th>
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
@@ -79,9 +80,9 @@ export default async function AdminProjectsPage() {
                     </td>
                     <td className="px-5 py-3">
                       {p.status === "active" ? (
-                        <span className="text-green-700">Active</span>
+                        <span className="text-green-700">{t("active")}</span>
                       ) : (
-                        <span className="text-slate-400">Archived</span>
+                        <span className="text-slate-400">{t("archived")}</span>
                       )}
                     </td>
                     <td className="px-5 py-3 text-right">
@@ -89,7 +90,7 @@ export default async function AdminProjectsPage() {
                         href={`/admin/projects/${p.id}`}
                         className="text-sm font-medium text-slate-700 underline hover:text-slate-900"
                       >
-                        Manage
+                        {t("manage")}
                       </Link>
                     </td>
                   </tr>

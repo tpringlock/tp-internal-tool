@@ -24,8 +24,14 @@ export const ACTION_LABEL: Record<string, string> = {
   "share.downloaded": "Downloaded via share link",
 };
 
-export function labelForAction(action: string): string {
-  return ACTION_LABEL[action] ?? action;
+/** Minimal shape of a next-intl translator (from useTranslations/getTranslations). */
+type Translator = ((key: string) => string) & { has: (key: string) => boolean };
+
+/** Translate an action code via the "Activity" message namespace. Action codes
+ *  use dots (next-intl's key separator), so they map to underscore keys. */
+export function labelForAction(t: Translator, action: string): string {
+  const key = action.replace(/\./g, "_");
+  return t.has(key) ? t(key) : action;
 }
 
 /** Actions offered in the admin activity filter, in a sensible order. */

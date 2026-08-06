@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { addProject, editProject } from "@/app/actions/projects";
 import type { FormState } from "@/app/actions/auth";
 import type { Project } from "@/lib/db/types";
@@ -15,6 +16,7 @@ export interface ClientOption {
 }
 
 export function CreateProjectForm({ clients }: { clients: ClientOption[] }) {
+  const t = useTranslations("Admin");
   const [state, action, pending] = useActionState<FormState, FormData>(
     addProject,
     {},
@@ -26,11 +28,7 @@ export function CreateProjectForm({ clients }: { clients: ClientOption[] }) {
   }, [state.success]);
 
   if (clients.length === 0) {
-    return (
-      <Alert tone="info">
-        Add a client first — projects belong to a client.
-      </Alert>
-    );
+    return <Alert tone="info">{t("addClientFirst")}</Alert>;
   }
 
   return (
@@ -39,25 +37,25 @@ export function CreateProjectForm({ clients }: { clients: ClientOption[] }) {
       {state.error && <Alert tone="error">{state.error}</Alert>}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Name" htmlFor="name" error={state.fieldErrors?.name?.[0]}>
+        <Field label={t("name")} htmlFor="name" error={state.fieldErrors?.name?.[0]}>
           <Input id="name" name="name" required />
         </Field>
         <Field
-          label="Code"
+          label={t("code")}
           htmlFor="code"
           error={state.fieldErrors?.code?.[0]}
-          hint="Short unique code, e.g. TOWER-A."
+          hint={t("projectCodeHint")}
         >
           <Input id="code" name="code" required />
         </Field>
         <Field
-          label="Client"
+          label={t("client")}
           htmlFor="client_id"
           error={state.fieldErrors?.client_id?.[0]}
         >
           <Select id="client_id" name="client_id" defaultValue="" required>
             <option value="" disabled>
-              Select a client…
+              {t("selectClient")}
             </option>
             {clients.map((c) => (
               <option key={c.id} value={c.id}>
@@ -69,7 +67,7 @@ export function CreateProjectForm({ clients }: { clients: ClientOption[] }) {
       </div>
 
       <Button type="submit" disabled={pending}>
-        {pending ? "Creating…" : "Add project"}
+        {pending ? t("creating") : t("addProjectButton")}
       </Button>
     </form>
   );
@@ -82,6 +80,7 @@ export function EditProjectForm({
   project: Project;
   clients: ClientOption[];
 }) {
+  const t = useTranslations("Admin");
   const [state, action, pending] = useActionState<FormState, FormData>(
     editProject,
     {},
@@ -94,13 +93,13 @@ export function EditProjectForm({
       {state.error && <Alert tone="error">{state.error}</Alert>}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Name" error={state.fieldErrors?.name?.[0]}>
+        <Field label={t("name")} error={state.fieldErrors?.name?.[0]}>
           <Input name="name" defaultValue={project.name} required />
         </Field>
-        <Field label="Code" error={state.fieldErrors?.code?.[0]}>
+        <Field label={t("code")} error={state.fieldErrors?.code?.[0]}>
           <Input name="code" defaultValue={project.code} required />
         </Field>
-        <Field label="Client" error={state.fieldErrors?.client_id?.[0]}>
+        <Field label={t("client")} error={state.fieldErrors?.client_id?.[0]}>
           <Select name="client_id" defaultValue={project.client_id} required>
             {clients.map((c) => (
               <option key={c.id} value={c.id}>
@@ -109,16 +108,16 @@ export function EditProjectForm({
             ))}
           </Select>
         </Field>
-        <Field label="Status" error={state.fieldErrors?.status?.[0]}>
+        <Field label={t("status")} error={state.fieldErrors?.status?.[0]}>
           <Select name="status" defaultValue={project.status}>
-            <option value="active">Active</option>
-            <option value="archived">Archived</option>
+            <option value="active">{t("active")}</option>
+            <option value="archived">{t("archived")}</option>
           </Select>
         </Field>
       </div>
 
       <Button type="submit" disabled={pending}>
-        {pending ? "Saving…" : "Save changes"}
+        {pending ? t("saving") : t("saveChanges")}
       </Button>
     </form>
   );

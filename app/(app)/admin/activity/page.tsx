@@ -1,14 +1,11 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/input";
 import { Card, CardBody } from "@/components/ui/card";
 import { formatDateTime } from "@/lib/format";
-import {
-  labelForAction,
-  ACTION_LABEL,
-  FILTERABLE_ACTIONS,
-} from "@/lib/activity-labels";
+import { labelForAction, FILTERABLE_ACTIONS } from "@/lib/activity-labels";
 
 const PAGE_SIZE = 50;
 
@@ -38,6 +35,8 @@ export default async function AdminActivityPage({
   const from = (pageNum - 1) * PAGE_SIZE;
 
   const supabase = await createClient();
+  const t = await getTranslations("Admin");
+  const ta = await getTranslations("Activity");
 
   let query = supabase
     .from("activity_log")
@@ -66,10 +65,10 @@ export default async function AdminActivityPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Activity log</h1>
-        <p className="text-sm text-slate-500">
-          Every action across the system, newest first.
-        </p>
+        <h1 className="text-xl font-semibold text-slate-900">
+          {t("activityTitle")}
+        </h1>
+        <p className="text-sm text-slate-500">{t("activitySubtitle")}</p>
       </div>
 
       <Card>
@@ -77,19 +76,19 @@ export default async function AdminActivityPage({
           <form className="flex flex-wrap items-end gap-3" method="get">
             <div className="min-w-56">
               <label className="mb-1 block text-xs font-medium text-slate-500">
-                Action
+                {t("action")}
               </label>
               <Select name="action" defaultValue={action}>
-                <option value="">All actions</option>
+                <option value="">{t("allActions")}</option>
                 {FILTERABLE_ACTIONS.map((a) => (
                   <option key={a} value={a}>
-                    {ACTION_LABEL[a]}
+                    {labelForAction(ta, a)}
                   </option>
                 ))}
               </Select>
             </div>
             <Button type="submit" variant="secondary">
-              Filter
+              {t("filter")}
             </Button>
           </form>
         </CardBody>
@@ -99,16 +98,16 @@ export default async function AdminActivityPage({
         <CardBody className="overflow-x-auto p-0">
           {rows.length === 0 ? (
             <p className="px-5 py-6 text-sm text-slate-500">
-              No activity recorded for this filter.
+              {t("noActivityFilter")}
             </p>
           ) : (
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 text-left text-slate-500">
-                  <th className="px-5 py-3 font-medium">When</th>
-                  <th className="px-5 py-3 font-medium">Who</th>
-                  <th className="px-5 py-3 font-medium">Action</th>
-                  <th className="px-5 py-3 font-medium">Item</th>
+                  <th className="px-5 py-3 font-medium">{t("colWhen")}</th>
+                  <th className="px-5 py-3 font-medium">{t("colWho")}</th>
+                  <th className="px-5 py-3 font-medium">{t("action")}</th>
+                  <th className="px-5 py-3 font-medium">{t("colItem")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -123,10 +122,10 @@ export default async function AdminActivityPage({
                         {formatDateTime(r.created_at)}
                       </td>
                       <td className="px-5 py-3 text-slate-800">
-                        {r.actor?.full_name ?? "A client"}
+                        {r.actor?.full_name ?? t("aClient")}
                       </td>
                       <td className="px-5 py-3 text-slate-700">
-                        {labelForAction(r.action)}
+                        {labelForAction(ta, r.action)}
                       </td>
                       <td className="px-5 py-3 text-slate-600">
                         {href ? (
@@ -152,20 +151,20 @@ export default async function AdminActivityPage({
       {totalPages > 1 && (
         <div className="flex items-center justify-between text-sm text-slate-500">
           <span>
-            Page {pageNum} of {totalPages} · {total} events
+            {t("pageOf", { page: pageNum, total: totalPages, count: total })}
           </span>
           <div className="flex gap-2">
             {pageNum > 1 && (
               <Link href={pageHref(pageNum - 1)}>
                 <Button variant="secondary" size="sm">
-                  Previous
+                  {t("previous")}
                 </Button>
               </Link>
             )}
             {pageNum < totalPages && (
               <Link href={pageHref(pageNum + 1)}>
                 <Button variant="secondary" size="sm">
-                  Next
+                  {t("next")}
                 </Button>
               </Link>
             )}

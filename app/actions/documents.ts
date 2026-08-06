@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireUser } from "@/lib/auth/dal";
@@ -24,6 +25,7 @@ export async function uploadDocument(
   formData: FormData,
 ): Promise<FormState> {
   const user = await requireUser();
+  const t = await getTranslations("Documents");
 
   const projectId = String(formData.get("project_id") ?? "");
   const docType = String(formData.get("doc_type") ?? "") as DocType;
@@ -31,18 +33,18 @@ export async function uploadDocument(
   const file = formData.get("file");
 
   const fieldErrors: Record<string, string[]> = {};
-  if (!projectId) fieldErrors.project_id = ["Choose a project"];
-  if (!DOC_TYPE_VALUES.has(docType)) fieldErrors.doc_type = ["Choose a document type"];
+  if (!projectId) fieldErrors.project_id = [t("errProject")];
+  if (!DOC_TYPE_VALUES.has(docType)) fieldErrors.doc_type = [t("errDocType")];
   if (!signed) {
-    fieldErrors.signed = ["You must confirm the document is signed"];
+    fieldErrors.signed = [t("errSigned")];
   }
 
   if (!(file instanceof File) || file.size === 0) {
-    fieldErrors.file = ["Choose a PDF to upload"];
+    fieldErrors.file = [t("errFileChoose")];
   } else if (file.type !== ACCEPTED_MIME) {
-    fieldErrors.file = ["Only PDF files are allowed"];
+    fieldErrors.file = [t("errFilePdf")];
   } else if (file.size > MAX_FILE_SIZE) {
-    fieldErrors.file = ["File is larger than 25 MB"];
+    fieldErrors.file = [t("errFileSize")];
   }
 
   if (Object.keys(fieldErrors).length > 0) {
@@ -61,7 +63,7 @@ export async function uploadDocument(
     .single<ProjectForUpload>();
 
   if (!project) {
-    return { error: "You don't have access to that project." };
+    return { error: t("errNoProjectAccess") };
   }
 
   const fileId = crypto.randomUUID();
@@ -85,7 +87,7 @@ export async function uploadDocument(
       upsert: false,
     });
   if (uploadError) {
-    return { error: `Upload failed: ${uploadError.message}` };
+    return { error: t("errUploadFailed", { message: uploadError.message }) };
   }
 
   const { data: inserted, error: insertError } = await supabase
@@ -106,9 +108,7 @@ export async function uploadDocument(
     // Roll back the orphaned file so storage stays consistent with the table.
     await admin.storage.from(STORAGE_BUCKET).remove([storagePath]);
     return {
-      error:
-        insertError?.message ??
-        "Could not save the document. Please try again.",
+      error: insertError?.message ?? t("errSaveFailed"),
     };
   }
 

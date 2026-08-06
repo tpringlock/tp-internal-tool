@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { logActivity } from "@/lib/activity";
 import { env } from "@/lib/env";
@@ -8,6 +9,7 @@ import {
   loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  translateFieldErrors,
 } from "@/lib/validation";
 
 export interface FormState {
@@ -31,13 +33,15 @@ export async function login(
     password: formData.get("password"),
   });
   if (!parsed.success) {
-    return { fieldErrors: parsed.error.flatten().fieldErrors };
+    const tv = await getTranslations("Validation");
+    return { fieldErrors: translateFieldErrors(tv, parsed.error) };
   }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) {
-    return { error: "Invalid email or password." };
+    const t = await getTranslations("Auth");
+    return { error: t("invalidCredentials") };
   }
 
   await logActivity(supabase, { action: "auth.login" });
@@ -57,7 +61,8 @@ export async function requestPasswordReset(
 ): Promise<FormState> {
   const parsed = forgotPasswordSchema.safeParse({ email: formData.get("email") });
   if (!parsed.success) {
-    return { fieldErrors: parsed.error.flatten().fieldErrors };
+    const tv = await getTranslations("Validation");
+    return { fieldErrors: translateFieldErrors(tv, parsed.error) };
   }
 
   const supabase = await createClient();
@@ -68,10 +73,8 @@ export async function requestPasswordReset(
   });
 
   // Always report success so we don't reveal which emails are registered.
-  return {
-    success:
-      "If that email belongs to an account, a password reset link is on its way.",
-  };
+  const t = await getTranslations("Auth");
+  return { success: t("resetLinkSent") };
 }
 
 export async function updatePassword(
@@ -83,7 +86,8 @@ export async function updatePassword(
     confirm: formData.get("confirm"),
   });
   if (!parsed.success) {
-    return { fieldErrors: parsed.error.flatten().fieldErrors };
+    const tv = await getTranslations("Validation");
+    return { fieldErrors: translateFieldErrors(tv, parsed.error) };
   }
 
   const supabase = await createClient();
@@ -91,9 +95,8 @@ export async function updatePassword(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return {
-      error: "Your reset link has expired. Please request a new one.",
-    };
+    const t = await getTranslations("Auth");
+    return { error: t("resetLinkExpired") };
   }
 
   const { error } = await supabase.auth.updateUser({

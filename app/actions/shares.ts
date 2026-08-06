@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/auth/dal";
 import { logActivity } from "@/lib/activity";
@@ -13,13 +14,14 @@ export async function createShareLink(
   formData: FormData,
 ): Promise<FormState> {
   const user = await requireUser();
+  const t = await getTranslations("Shares");
 
   const documentId = String(formData.get("document_id") ?? "");
   const days = Number(formData.get("days"));
 
-  if (!documentId) return { error: "Missing document." };
+  if (!documentId) return { error: t("errMissingDocument") };
   if (!ALLOWED_DAYS.has(days)) {
-    return { fieldErrors: { days: ["Choose a valid duration"] } };
+    return { fieldErrors: { days: [t("errDuration")] } };
   }
 
   const expiresAt = new Date(Date.now() + days * 86_400_000).toISOString();
@@ -38,7 +40,7 @@ export async function createShareLink(
     .single();
 
   if (error || !data) {
-    return { error: error?.message ?? "Could not create the share link." };
+    return { error: error?.message ?? t("errCreateFailed") };
   }
 
   await logActivity(supabase, {
@@ -49,7 +51,7 @@ export async function createShareLink(
   });
 
   revalidatePath(`/documents/${documentId}`);
-  return { success: `Share link created, valid for ${days} day(s).` };
+  return { success: t("created", { count: days }) };
 }
 
 export async function revokeShareLink(formData: FormData): Promise<void> {

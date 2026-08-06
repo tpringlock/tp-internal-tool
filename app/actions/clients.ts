@@ -1,10 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth/dal";
 import { logActivity } from "@/lib/activity";
-import { clientSchema } from "@/lib/validation";
+import { clientSchema, translateFieldErrors } from "@/lib/validation";
 import type { FormState } from "@/app/actions/auth";
 
 /** Postgres unique-violation error code. */
@@ -21,7 +22,8 @@ export async function addClient(
     code: formData.get("code"),
   });
   if (!parsed.success) {
-    return { fieldErrors: parsed.error.flatten().fieldErrors };
+    const tv = await getTranslations("Validation");
+    return { fieldErrors: translateFieldErrors(tv, parsed.error) };
   }
 
   const supabase = await createClient();
@@ -31,9 +33,10 @@ export async function addClient(
     .select("id")
     .single();
 
+  const t = await getTranslations("Admin");
   if (error) {
     if (error.code === UNIQUE_VIOLATION) {
-      return { fieldErrors: { code: ["That code is already in use"] } };
+      return { fieldErrors: { code: [t("codeInUse")] } };
     }
     return { error: error.message };
   }
@@ -45,7 +48,7 @@ export async function addClient(
     metadata: { code: parsed.data.code },
   });
   revalidatePath("/admin/clients");
-  return { success: `Client “${parsed.data.name}” created.` };
+  return { success: t("clientCreated", { name: parsed.data.name }) };
 }
 
 export async function editClient(
@@ -60,7 +63,8 @@ export async function editClient(
     code: formData.get("code"),
   });
   if (!parsed.success) {
-    return { fieldErrors: parsed.error.flatten().fieldErrors };
+    const tv = await getTranslations("Validation");
+    return { fieldErrors: translateFieldErrors(tv, parsed.error) };
   }
 
   const supabase = await createClient();
@@ -69,9 +73,10 @@ export async function editClient(
     .update(parsed.data)
     .eq("id", id);
 
+  const t = await getTranslations("Admin");
   if (error) {
     if (error.code === UNIQUE_VIOLATION) {
-      return { fieldErrors: { code: ["That code is already in use"] } };
+      return { fieldErrors: { code: [t("codeInUse")] } };
     }
     return { error: error.message };
   }
@@ -82,5 +87,5 @@ export async function editClient(
     entityId: id,
   });
   revalidatePath("/admin/clients");
-  return { success: "Client updated." };
+  return { success: t("clientUpdated") };
 }

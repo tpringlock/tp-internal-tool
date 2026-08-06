@@ -1,10 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth/dal";
 import { logActivity } from "@/lib/activity";
-import { projectSchema, memberSchema } from "@/lib/validation";
+import {
+  projectSchema,
+  memberSchema,
+  translateFieldErrors,
+} from "@/lib/validation";
 import type { FormState } from "@/app/actions/auth";
 
 const UNIQUE_VIOLATION = "23505";
@@ -22,7 +27,8 @@ export async function addProject(
     status: formData.get("status") ?? "active",
   });
   if (!parsed.success) {
-    return { fieldErrors: parsed.error.flatten().fieldErrors };
+    const tv = await getTranslations("Validation");
+    return { fieldErrors: translateFieldErrors(tv, parsed.error) };
   }
 
   const supabase = await createClient();
@@ -32,9 +38,10 @@ export async function addProject(
     .select("id")
     .single();
 
+  const t = await getTranslations("Admin");
   if (error) {
     if (error.code === UNIQUE_VIOLATION) {
-      return { fieldErrors: { code: ["That code is already in use"] } };
+      return { fieldErrors: { code: [t("codeInUse")] } };
     }
     return { error: error.message };
   }
@@ -46,7 +53,7 @@ export async function addProject(
     metadata: { code: parsed.data.code },
   });
   revalidatePath("/admin/projects");
-  return { success: `Project “${parsed.data.name}” created.` };
+  return { success: t("projectCreated", { name: parsed.data.name }) };
 }
 
 export async function editProject(
@@ -63,7 +70,8 @@ export async function editProject(
     status: formData.get("status"),
   });
   if (!parsed.success) {
-    return { fieldErrors: parsed.error.flatten().fieldErrors };
+    const tv = await getTranslations("Validation");
+    return { fieldErrors: translateFieldErrors(tv, parsed.error) };
   }
 
   const supabase = await createClient();
@@ -72,9 +80,10 @@ export async function editProject(
     .update(parsed.data)
     .eq("id", id);
 
+  const t = await getTranslations("Admin");
   if (error) {
     if (error.code === UNIQUE_VIOLATION) {
-      return { fieldErrors: { code: ["That code is already in use"] } };
+      return { fieldErrors: { code: [t("codeInUse")] } };
     }
     return { error: error.message };
   }
@@ -86,7 +95,7 @@ export async function editProject(
   });
   revalidatePath("/admin/projects");
   revalidatePath(`/admin/projects/${id}`);
-  return { success: "Project updated." };
+  return { success: t("projectUpdated") };
 }
 
 export async function assignMember(
@@ -100,7 +109,8 @@ export async function assignMember(
     user_id: formData.get("user_id"),
   });
   if (!parsed.success) {
-    return { fieldErrors: parsed.error.flatten().fieldErrors };
+    const tv = await getTranslations("Validation");
+    return { fieldErrors: translateFieldErrors(tv, parsed.error) };
   }
 
   const supabase = await createClient();
@@ -110,9 +120,10 @@ export async function assignMember(
     assigned_by: admin.id,
   });
 
+  const t = await getTranslations("Admin");
   if (error) {
     if (error.code === UNIQUE_VIOLATION) {
-      return { error: "That person is already on this project." };
+      return { error: t("alreadyMember") };
     }
     return { error: error.message };
   }
@@ -124,7 +135,7 @@ export async function assignMember(
     metadata: { user_id: parsed.data.user_id },
   });
   revalidatePath(`/admin/projects/${parsed.data.project_id}`);
-  return { success: "Member added." };
+  return { success: t("memberAdded") };
 }
 
 export async function unassignMember(formData: FormData): Promise<void> {

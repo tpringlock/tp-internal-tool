@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { createUser } from "@/app/actions/users";
 import type { FormState } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,8 @@ import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
 
 export function CreateUserForm() {
+  const t = useTranslations("Admin");
+  const tc = useTranslations("Common");
   const [state, action, pending] = useActionState<FormState, FormData>(
     createUser,
     {},
@@ -26,7 +29,7 @@ export function CreateUserForm() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field
-          label="Full name"
+          label={tc("fullName")}
           htmlFor="full_name"
           error={state.fieldErrors?.full_name?.[0]}
         >
@@ -34,25 +37,25 @@ export function CreateUserForm() {
         </Field>
 
         <Field
-          label="Email"
+          label={tc("email")}
           htmlFor="email"
           error={state.fieldErrors?.email?.[0]}
         >
           <Input id="email" name="email" type="email" required />
         </Field>
 
-        <Field label="Role" htmlFor="role" error={state.fieldErrors?.role?.[0]}>
+        <Field label={t("role")} htmlFor="role" error={state.fieldErrors?.role?.[0]}>
           <Select id="role" name="role" defaultValue="employee">
-            <option value="employee">Employee</option>
-            <option value="admin">Admin</option>
+            <option value="employee">{t("employee")}</option>
+            <option value="admin">{t("adminRole")}</option>
           </Select>
         </Field>
 
         <Field
-          label="Temporary password"
+          label={t("tempPassword")}
           htmlFor="password"
           error={state.fieldErrors?.password?.[0]}
-          hint="Share securely; the user can change it in their profile."
+          hint={t("tempPasswordHint")}
         >
           <Input
             id="password"
@@ -65,7 +68,7 @@ export function CreateUserForm() {
       </div>
 
       <Button type="submit" disabled={pending}>
-        {pending ? "Creating…" : "Create user"}
+        {pending ? t("creating") : t("createUser")}
       </Button>
     </form>
   );

@@ -1,11 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/auth/dal";
 import { logActivity } from "@/lib/activity";
-import { createUserSchema } from "@/lib/validation";
+import { createUserSchema, translateFieldErrors } from "@/lib/validation";
 import type { FormState } from "@/app/actions/auth";
 
 // A long ban effectively disables sign-in until the account is reactivated.
@@ -24,7 +25,8 @@ export async function createUser(
     password: formData.get("password"),
   });
   if (!parsed.success) {
-    return { fieldErrors: parsed.error.flatten().fieldErrors };
+    const tv = await getTranslations("Validation");
+    return { fieldErrors: translateFieldErrors(tv, parsed.error) };
   }
 
   const supabaseAdmin = createAdminClient();
@@ -50,7 +52,8 @@ export async function createUser(
   });
 
   revalidatePath("/admin/users");
-  return { success: `Created account for ${parsed.data.email}.` };
+  const t = await getTranslations("Admin");
+  return { success: t("createdAccount", { email: parsed.data.email }) };
 }
 
 export async function setUserActive(formData: FormData): Promise<void> {

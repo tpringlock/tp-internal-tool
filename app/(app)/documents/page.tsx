@@ -1,10 +1,11 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { Card, CardBody } from "@/components/ui/card";
-import { DOC_TYPES, DOC_TYPE_LABEL } from "@/lib/documents/constants";
+import { DOC_TYPES } from "@/lib/documents/constants";
 import { formatBytes, formatDateTime } from "@/lib/format";
 import type { DocType } from "@/lib/db/types";
 
@@ -26,6 +27,8 @@ export default async function DocumentsPage({
   await requireUser();
   const { project = "", type = "", q = "" } = await searchParams;
   const supabase = await createClient();
+  const t = await getTranslations("Documents");
+  const dt = await getTranslations("DocTypes");
 
   const { data: projectOptions } = await supabase
     .from("projects")
@@ -52,13 +55,11 @@ export default async function DocumentsPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">Documents</h1>
-          <p className="text-sm text-slate-500">
-            Contracts and financial records for your projects.
-          </p>
+          <h1 className="text-xl font-semibold text-slate-900">{t("title")}</h1>
+          <p className="text-sm text-slate-500">{t("subtitle")}</p>
         </div>
         <Link href="/documents/upload">
-          <Button>Upload document</Button>
+          <Button>{t("uploadDocument")}</Button>
         </Link>
       </div>
 
@@ -67,10 +68,10 @@ export default async function DocumentsPage({
           <form className="flex flex-wrap items-end gap-3" method="get">
             <div className="min-w-48 flex-1">
               <label className="mb-1 block text-xs font-medium text-slate-500">
-                Project
+                {t("project")}
               </label>
               <Select name="project" defaultValue={project}>
-                <option value="">All projects</option>
+                <option value="">{t("allProjects")}</option>
                 {(projectOptions ?? []).map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
@@ -80,25 +81,25 @@ export default async function DocumentsPage({
             </div>
             <div className="min-w-48 flex-1">
               <label className="mb-1 block text-xs font-medium text-slate-500">
-                Type
+                {t("type")}
               </label>
               <Select name="type" defaultValue={type}>
-                <option value="">All types</option>
-                {DOC_TYPES.map((t) => (
-                  <option key={t.value} value={t.value}>
-                    {t.label}
+                <option value="">{t("allTypes")}</option>
+                {DOC_TYPES.map((docType) => (
+                  <option key={docType.value} value={docType.value}>
+                    {dt(docType.value)}
                   </option>
                 ))}
               </Select>
             </div>
             <div className="min-w-48 flex-1">
               <label className="mb-1 block text-xs font-medium text-slate-500">
-                Search
+                {t("search")}
               </label>
-              <Input name="q" defaultValue={q} placeholder="File name…" />
+              <Input name="q" defaultValue={q} placeholder={t("fileNamePlaceholder")} />
             </div>
             <Button type="submit" variant="secondary">
-              Filter
+              {t("filter")}
             </Button>
           </form>
         </CardBody>
@@ -108,17 +109,17 @@ export default async function DocumentsPage({
         <CardBody className="overflow-x-auto p-0">
           {documents.length === 0 ? (
             <p className="px-5 py-6 text-sm text-slate-500">
-              No documents found.
+              {t("noDocuments")}
             </p>
           ) : (
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 text-left text-slate-500">
-                  <th className="px-5 py-3 font-medium">Name</th>
-                  <th className="px-5 py-3 font-medium">Type</th>
-                  <th className="px-5 py-3 font-medium">Project</th>
-                  <th className="px-5 py-3 font-medium">Uploaded by</th>
-                  <th className="px-5 py-3 font-medium">Date</th>
+                  <th className="px-5 py-3 font-medium">{t("colName")}</th>
+                  <th className="px-5 py-3 font-medium">{t("type")}</th>
+                  <th className="px-5 py-3 font-medium">{t("project")}</th>
+                  <th className="px-5 py-3 font-medium">{t("colUploadedBy")}</th>
+                  <th className="px-5 py-3 font-medium">{t("colDate")}</th>
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
@@ -140,7 +141,7 @@ export default async function DocumentsPage({
                       </div>
                     </td>
                     <td className="px-5 py-3 text-slate-600">
-                      {DOC_TYPE_LABEL[d.doc_type]}
+                      {dt(d.doc_type)}
                     </td>
                     <td className="px-5 py-3 text-slate-600">
                       {d.projects?.name ?? "—"}
@@ -161,7 +162,7 @@ export default async function DocumentsPage({
                         href={`/api/documents/${d.id}?dl=1`}
                         className="text-sm font-medium text-slate-700 underline hover:text-slate-900"
                       >
-                        Download
+                        {t("download")}
                       </a>
                     </td>
                   </tr>

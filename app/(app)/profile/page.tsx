@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth/dal";
 import {
   ProfileDetailsForm,
@@ -6,14 +7,13 @@ import {
 
 export default async function ProfilePage() {
   const user = await requireUser();
+  const t = await getTranslations("Profile");
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Profile</h1>
-        <p className="text-sm text-slate-500">
-          Manage your personal details and password.
-        </p>
+        <h1 className="text-xl font-semibold text-slate-900">{t("title")}</h1>
+        <p className="text-sm text-slate-500">{t("subtitle")}</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

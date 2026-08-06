@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import { getTranslations } from "next-intl/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logActivity } from "@/lib/activity";
 import { resolveShareToken } from "@/lib/documents/share";
@@ -10,6 +11,7 @@ export default async function SharePage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
+  const t = await getTranslations("SharePage");
   const share = await resolveShareToken(token);
 
   if (!share) {
@@ -17,12 +19,9 @@ export default async function SharePage({
       <div className="flex min-h-full items-center justify-center bg-slate-50 px-4 py-16">
         <div className="max-w-sm text-center">
           <h1 className="text-lg font-semibold text-slate-900">
-            Link unavailable
+            {t("unavailableTitle")}
           </h1>
-          <p className="mt-2 text-sm text-slate-500">
-            This share link is invalid, has been revoked, or has expired. Please
-            ask your contact for a new link.
-          </p>
+          <p className="mt-2 text-sm text-slate-500">{t("unavailableBody")}</p>
         </div>
       </div>
     );
@@ -45,13 +44,13 @@ export default async function SharePage({
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3">
           <div className="min-w-0">
-            <p className="text-xs text-slate-500">Shared document</p>
+            <p className="text-xs text-slate-500">{t("sharedDocument")}</p>
             <h1 className="truncate text-sm font-semibold text-slate-900">
               {share.canonicalName}
             </h1>
           </div>
           <a href={`/api/share/${token}?dl=1`}>
-            <Button size="sm">Download</Button>
+            <Button size="sm">{t("download")}</Button>
           </a>
         </div>
       </header>

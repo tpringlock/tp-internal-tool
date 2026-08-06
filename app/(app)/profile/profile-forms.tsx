@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 import { updateProfile, changePassword } from "@/app/actions/profile";
 import type { FormState } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,8 @@ export function ProfileDetailsForm({
   email: string;
   fullName: string;
 }) {
+  const t = useTranslations("Profile");
+  const tc = useTranslations("Common");
   const [state, action, pending] = useActionState<FormState, FormData>(
     updateProfile,
     {},
@@ -24,19 +27,19 @@ export function ProfileDetailsForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Your details</CardTitle>
+        <CardTitle>{t("yourDetails")}</CardTitle>
       </CardHeader>
       <CardBody>
         <form action={action} className="space-y-4">
           {state.success && <Alert tone="success">{state.success}</Alert>}
           {state.error && <Alert tone="error">{state.error}</Alert>}
 
-          <Field label="Email">
+          <Field label={tc("email")}>
             <Input value={email} disabled readOnly />
           </Field>
 
           <Field
-            label="Full name"
+            label={tc("fullName")}
             htmlFor="full_name"
             error={state.fieldErrors?.full_name?.[0]}
           >
@@ -49,7 +52,7 @@ export function ProfileDetailsForm({
           </Field>
 
           <Button type="submit" disabled={pending}>
-            {pending ? "Saving…" : "Save changes"}
+            {pending ? tc("saving") : t("saveChanges")}
           </Button>
         </form>
       </CardBody>
@@ -58,6 +61,8 @@ export function ProfileDetailsForm({
 }
 
 export function ChangePasswordForm() {
+  const t = useTranslations("Profile");
+  const tc = useTranslations("Common");
   const [state, action, pending] = useActionState<FormState, FormData>(
     changePassword,
     {},
@@ -66,7 +71,7 @@ export function ChangePasswordForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Change password</CardTitle>
+        <CardTitle>{t("changePassword")}</CardTitle>
       </CardHeader>
       <CardBody>
         <form action={action} className="space-y-4">
@@ -74,10 +79,10 @@ export function ChangePasswordForm() {
           {state.error && <Alert tone="error">{state.error}</Alert>}
 
           <Field
-            label="New password"
+            label={tc("newPassword")}
             htmlFor="password"
             error={state.fieldErrors?.password?.[0]}
-            hint="At least 8 characters, with a letter and a number."
+            hint={tc("passwordHint")}
           >
             <Input
               id="password"
@@ -89,7 +94,7 @@ export function ChangePasswordForm() {
           </Field>
 
           <Field
-            label="Confirm password"
+            label={tc("confirmPassword")}
             htmlFor="confirm"
             error={state.fieldErrors?.confirm?.[0]}
           >
@@ -103,7 +108,7 @@ export function ChangePasswordForm() {
           </Field>
 
           <Button type="submit" disabled={pending}>
-            {pending ? "Saving…" : "Change password"}
+            {pending ? tc("saving") : t("changePassword")}
           </Button>
         </form>
       </CardBody>

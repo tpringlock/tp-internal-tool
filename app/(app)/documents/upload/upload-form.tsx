@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { uploadDocument } from "@/app/actions/documents";
 import type { FormState } from "@/app/actions/auth";
 import type { DocType } from "@/lib/db/types";
@@ -19,6 +20,8 @@ export interface UploadProject {
 }
 
 export function UploadForm({ projects }: { projects: UploadProject[] }) {
+  const t = useTranslations("Documents");
+  const dt = useTranslations("DocTypes");
   const [state, action, pending] = useActionState<FormState, FormData>(
     uploadDocument,
     {},
@@ -53,7 +56,7 @@ export function UploadForm({ projects }: { projects: UploadProject[] }) {
       {state.error && <Alert tone="error">{state.error}</Alert>}
 
       <Field
-        label="Client"
+        label={t("client")}
         htmlFor="client"
         error={state.fieldErrors?.project_id?.[0]}
       >
@@ -66,7 +69,7 @@ export function UploadForm({ projects }: { projects: UploadProject[] }) {
           }}
         >
           <option value="" disabled>
-            Select a client…
+            {t("selectClient")}
           </option>
           {clients.map((c) => (
             <option key={c.id} value={c.id}>
@@ -76,7 +79,7 @@ export function UploadForm({ projects }: { projects: UploadProject[] }) {
         </Select>
       </Field>
 
-      <Field label="Project" htmlFor="project">
+      <Field label={t("project")} htmlFor="project">
         <Select
           id="project"
           value={projectId}
@@ -84,7 +87,7 @@ export function UploadForm({ projects }: { projects: UploadProject[] }) {
           disabled={!clientId}
         >
           <option value="" disabled>
-            {clientId ? "Select a project…" : "Choose a client first"}
+            {clientId ? t("selectProject") : t("chooseClientFirst")}
           </option>
           {clientProjects.map((p) => (
             <option key={p.id} value={p.id}>
@@ -96,7 +99,7 @@ export function UploadForm({ projects }: { projects: UploadProject[] }) {
       <input type="hidden" name="project_id" value={projectId} />
 
       <Field
-        label="Document type"
+        label={t("documentType")}
         htmlFor="doc_type"
         error={state.fieldErrors?.doc_type?.[0]}
       >
@@ -107,28 +110,28 @@ export function UploadForm({ projects }: { projects: UploadProject[] }) {
           onChange={(e) => setDocType(e.target.value as DocType)}
         >
           <option value="" disabled>
-            Select a type…
+            {t("selectType")}
           </option>
-          {DOC_TYPES.map((t) => (
-            <option key={t.value} value={t.value}>
-              {t.label}
+          {DOC_TYPES.map((option) => (
+            <option key={option.value} value={option.value}>
+              {dt(option.value)}
             </option>
           ))}
         </Select>
       </Field>
 
       <Field
-        label="PDF file"
+        label={t("pdfFile")}
         htmlFor="file"
         error={state.fieldErrors?.file?.[0]}
-        hint="PDF only, up to 25 MB."
+        hint={t("pdfHint")}
       >
         <Input id="file" name="file" type="file" accept="application/pdf" />
       </Field>
 
       {preview && (
         <div className="rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-600">
-          Will be saved as{" "}
+          {t("willBeSavedAs")}{" "}
           <span className="font-mono text-slate-800">{preview}</span>
         </div>
       )}
@@ -140,8 +143,9 @@ export function UploadForm({ projects }: { projects: UploadProject[] }) {
           className="mt-0.5 h-4 w-4 rounded border-slate-300"
         />
         <span>
-          I confirm this document is <strong>signed</strong>. Unsigned documents
-          must not be uploaded.
+          {t.rich("signedConfirm", {
+            b: (chunks) => <strong>{chunks}</strong>,
+          })}
         </span>
       </label>
       {state.fieldErrors?.signed?.[0] && (
@@ -149,7 +153,7 @@ export function UploadForm({ projects }: { projects: UploadProject[] }) {
       )}
 
       <Button type="submit" disabled={pending}>
-        {pending ? "Uploading…" : "Upload document"}
+        {pending ? t("uploading") : t("uploadDocument")}
       </Button>
     </form>
   );

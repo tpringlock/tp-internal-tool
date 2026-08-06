@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useRef, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { assignMember, unassignMember } from "@/app/actions/projects";
 import type { FormState } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ export function AssignMemberForm({
   projectId: string;
   candidates: Candidate[];
 }) {
+  const t = useTranslations("Admin");
   const [state, action, pending] = useActionState<FormState, FormData>(
     assignMember,
     {},
@@ -30,11 +32,7 @@ export function AssignMemberForm({
   }, [state.success]);
 
   if (candidates.length === 0) {
-    return (
-      <p className="text-sm text-slate-500">
-        Every active employee is already assigned to this project.
-      </p>
-    );
+    return <p className="text-sm text-slate-500">{t("allAssigned")}</p>;
   }
 
   return (
@@ -47,7 +45,7 @@ export function AssignMemberForm({
         <div className="min-w-56 flex-1">
           <Select name="user_id" defaultValue="" required>
             <option value="" disabled>
-              Select an employee…
+              {t("selectEmployee")}
             </option>
             {candidates.map((c) => (
               <option key={c.id} value={c.id}>
@@ -57,7 +55,7 @@ export function AssignMemberForm({
           </Select>
         </div>
         <Button type="submit" disabled={pending}>
-          {pending ? "Adding…" : "Add member"}
+          {pending ? t("adding") : t("addMember")}
         </Button>
       </div>
     </form>
@@ -71,12 +69,13 @@ export function RemoveMemberButton({
   projectId: string;
   userId: string;
 }) {
+  const t = useTranslations("Admin");
   return (
     <form action={unassignMember}>
       <input type="hidden" name="project_id" value={projectId} />
       <input type="hidden" name="user_id" value={userId} />
       <Button type="submit" variant="danger" size="sm">
-        Remove
+        {t("remove")}
       </Button>
     </form>
   );

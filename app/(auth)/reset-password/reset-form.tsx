@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 import { updatePassword, type FormState } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +9,7 @@ import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
 
 export function ResetPasswordForm() {
+  const t = useTranslations("Auth");
   const [state, action, pending] = useActionState<FormState, FormData>(
     updatePassword,
     {},
@@ -15,15 +17,15 @@ export function ResetPasswordForm() {
 
   return (
     <form action={action} className="space-y-4">
-      <p className="text-sm text-slate-600">Choose a new password.</p>
+      <p className="text-sm text-slate-600">{t("resetIntro")}</p>
 
       {state.error && <Alert tone="error">{state.error}</Alert>}
 
       <Field
-        label="New password"
+        label={t("newPassword")}
         htmlFor="password"
         error={state.fieldErrors?.password?.[0]}
-        hint="At least 8 characters, with a letter and a number."
+        hint={t("passwordHint")}
       >
         <Input
           id="password"
@@ -35,7 +37,7 @@ export function ResetPasswordForm() {
       </Field>
 
       <Field
-        label="Confirm password"
+        label={t("confirmPassword")}
         htmlFor="confirm"
         error={state.fieldErrors?.confirm?.[0]}
       >
@@ -49,7 +51,7 @@ export function ResetPasswordForm() {
       </Field>
 
       <Button type="submit" className="w-full" disabled={pending}>
-        {pending ? "Saving…" : "Set new password"}
+        {pending ? t("saving") : t("setNewPassword")}
       </Button>
     </form>
   );

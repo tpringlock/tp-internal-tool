@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { requireAdmin } from "@/lib/auth/dal";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { setUserActive, setUserRole } from "@/app/actions/users";
@@ -29,19 +30,20 @@ async function getUsers(): Promise<UserRow[]> {
 export default async function AdminUsersPage() {
   const currentAdmin = await requireAdmin();
   const users = await getUsers();
+  const t = await getTranslations("Admin");
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">Users</h1>
-        <p className="text-sm text-slate-500">
-          Create accounts and manage roles and access.
-        </p>
+        <h1 className="text-xl font-semibold text-slate-900">
+          {t("usersTitle")}
+        </h1>
+        <p className="text-sm text-slate-500">{t("usersSubtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Add a user</CardTitle>
+          <CardTitle>{t("addUser")}</CardTitle>
         </CardHeader>
         <CardBody>
           <CreateUserForm />
@@ -50,17 +52,17 @@ export default async function AdminUsersPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>All users ({users.length})</CardTitle>
+          <CardTitle>{t("allUsers", { count: users.length })}</CardTitle>
         </CardHeader>
         <CardBody className="overflow-x-auto p-0">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-100 text-left text-slate-500">
-                <th className="px-5 py-3 font-medium">Name</th>
-                <th className="px-5 py-3 font-medium">Email</th>
-                <th className="px-5 py-3 font-medium">Role</th>
-                <th className="px-5 py-3 font-medium">Status</th>
-                <th className="px-5 py-3 font-medium">Actions</th>
+                <th className="px-5 py-3 font-medium">{t("name")}</th>
+                <th className="px-5 py-3 font-medium">{t("colEmail")}</th>
+                <th className="px-5 py-3 font-medium">{t("role")}</th>
+                <th className="px-5 py-3 font-medium">{t("status")}</th>
+                <th className="px-5 py-3 font-medium">{t("actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -76,15 +78,15 @@ export default async function AdminUsersPage() {
                     </td>
                     <td className="px-5 py-3 text-slate-600">{u.email}</td>
                     <td className="px-5 py-3">
-                      <span className="capitalize text-slate-700">
-                        {u.role}
+                      <span className="text-slate-700">
+                        {u.role === "admin" ? t("adminRole") : t("employee")}
                       </span>
                     </td>
                     <td className="px-5 py-3">
                       {u.is_active ? (
-                        <span className="text-green-700">Active</span>
+                        <span className="text-green-700">{t("active")}</span>
                       ) : (
-                        <span className="text-slate-400">Disabled</span>
+                        <span className="text-slate-400">{t("disabled")}</span>
                       )}
                     </td>
                     <td className="px-5 py-3">
@@ -103,8 +105,8 @@ export default async function AdminUsersPage() {
                             disabled={isSelf}
                           >
                             {u.role === "admin"
-                              ? "Make employee"
-                              : "Make admin"}
+                              ? t("makeEmployee")
+                              : t("makeAdmin")}
                           </Button>
                         </form>
                         <form action={setUserActive}>
@@ -120,7 +122,7 @@ export default async function AdminUsersPage() {
                             type="submit"
                             disabled={isSelf && u.is_active}
                           >
-                            {u.is_active ? "Deactivate" : "Activate"}
+                            {u.is_active ? t("deactivate") : t("activate")}
                           </Button>
                         </form>
                       </div>

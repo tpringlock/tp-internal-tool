@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 import { requestPasswordReset, type FormState } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,7 @@ import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
 
 export function ForgotPasswordForm() {
+  const t = useTranslations("Auth");
   const [state, action, pending] = useActionState<FormState, FormData>(
     requestPasswordReset,
     {},
@@ -23,7 +25,7 @@ export function ForgotPasswordForm() {
             href="/login"
             className="text-sm text-slate-600 underline hover:text-slate-900"
           >
-            Back to sign in
+            {t("backToSignIn")}
           </Link>
         </div>
       </div>
@@ -32,11 +34,9 @@ export function ForgotPasswordForm() {
 
   return (
     <form action={action} className="space-y-4">
-      <p className="text-sm text-slate-600">
-        Enter your email and we&apos;ll send you a link to reset your password.
-      </p>
+      <p className="text-sm text-slate-600">{t("forgotIntro")}</p>
 
-      <Field label="Email" htmlFor="email" error={state.fieldErrors?.email?.[0]}>
+      <Field label={t("email")} htmlFor="email" error={state.fieldErrors?.email?.[0]}>
         <Input
           id="email"
           name="email"
@@ -47,7 +47,7 @@ export function ForgotPasswordForm() {
       </Field>
 
       <Button type="submit" className="w-full" disabled={pending}>
-        {pending ? "Sending…" : "Send reset link"}
+        {pending ? t("sending") : t("sendResetLink")}
       </Button>
 
       <div className="text-center">
@@ -55,7 +55,7 @@ export function ForgotPasswordForm() {
           href="/login"
           className="text-sm text-slate-600 underline hover:text-slate-900"
         >
-          Back to sign in
+          {t("backToSignIn")}
         </Link>
       </div>
     </form>
