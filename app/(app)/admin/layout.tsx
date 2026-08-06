@@ -1,4 +1,5 @@
 import { requireAdmin } from "@/lib/auth/dal";
+import { AdminNav } from "@/components/admin-nav";
 
 export default async function AdminLayout({
   children,
@@ -7,5 +8,10 @@ export default async function AdminLayout({
 }) {
   // Guards every /admin/* route. Non-admins are redirected home.
   await requireAdmin();
-  return <>{children}</>;
+  return (
+    <div className="space-y-6">
+      <AdminNav />
+      {children}
+    </div>
+  );
 }

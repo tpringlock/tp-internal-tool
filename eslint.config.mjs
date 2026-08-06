@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Supabase-generated types (may be UTF-16 from PowerShell redirects).
+    "**/*.generated.ts",
   ]),
 ]);
 

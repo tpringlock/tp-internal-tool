@@ -8,7 +8,8 @@ const PUBLIC_PREFIXES = [
   "/login",
   "/forgot-password",
   "/reset-password",
-  "/share", // public client share links
+  "/share", // public client share viewer
+  "/api/share", // public share file stream
   "/auth", // email-link callbacks
 ];
 
