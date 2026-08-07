@@ -1,22 +1,37 @@
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
+import { Pagination } from "@/components/ui/pagination";
 import { CreateClientForm, ClientRow } from "./client-forms";
 import type { Client } from "@/lib/db/types";
 
-export default async function AdminClientsPage() {
+const PAGE_SIZE = 50;
+
+export default async function AdminClientsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const { page = "1" } = await searchParams;
+  const pageNum = Math.max(1, Number(page) || 1);
+  const from = (pageNum - 1) * PAGE_SIZE;
+
   const supabase = await createClient();
-  const { data } = await supabase
+  const { data, count } = await supabase
     .from("clients")
-    .select("*")
-    .order("name");
+    .select("*", { count: "exact" })
+    .order("name")
+    .range(from, from + PAGE_SIZE - 1);
   const clients = (data ?? []) as Client[];
+  const total = count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const hrefForPage = (p: number) => `/admin/clients?page=${p}`;
   const t = await getTranslations("Admin");
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">
+        <h1 className="text-xl font-semibold text-primary">
           {t("clientsTitle")}
         </h1>
         <p className="text-sm text-slate-500">{t("clientsSubtitle")}</p>
@@ -33,7 +48,7 @@ export default async function AdminClientsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>{t("allClients", { count: clients.length })}</CardTitle>
+          <CardTitle>{t("allClients", { count: total })}</CardTitle>
         </CardHeader>
         <CardBody className="overflow-x-auto p-0">
           {clients.length === 0 ? (
@@ -58,6 +73,13 @@ export default async function AdminClientsPage() {
           )}
         </CardBody>
       </Card>
+
+      <Pagination
+        page={pageNum}
+        totalPages={totalPages}
+        total={total}
+        hrefForPage={hrefForPage}
+      />
     </div>
   );
 }

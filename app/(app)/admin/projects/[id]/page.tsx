@@ -57,7 +57,7 @@ export default async function ProjectDetailPage({
         >
           ← {t("backProjects")}
         </Link>
-        <h1 className="mt-1 text-xl font-semibold text-slate-900">
+        <h1 className="mt-1 text-xl font-semibold text-primary">
           {(project as Project).name}
         </h1>
       </div>

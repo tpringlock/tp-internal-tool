@@ -59,7 +59,7 @@ export function UserMenu({
       >
         <span className="hidden sm:inline">{fullName}</span>
         {role === "admin" && (
-          <span className="rounded bg-slate-900 px-1.5 py-0.5 text-xs text-white">
+          <span className="rounded bg-primary px-1.5 py-0.5 text-xs text-white">
             {t("admin")}
           </span>
         )}

@@ -90,7 +90,7 @@ export default async function DocumentDetailPage({
           >
             ← {t("title")}
           </Link>
-          <h1 className="mt-1 break-all text-xl font-semibold text-slate-900">
+          <h1 className="mt-1 break-all text-xl font-semibold text-primary">
             {doc.canonical_name}
           </h1>
         </div>

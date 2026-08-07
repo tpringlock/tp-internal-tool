@@ -5,9 +5,12 @@ import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { Card, CardBody } from "@/components/ui/card";
+import { Pagination } from "@/components/ui/pagination";
 import { DOC_TYPES } from "@/lib/documents/constants";
 import { formatBytes, formatDateTime } from "@/lib/format";
 import type { DocType } from "@/lib/db/types";
+
+const PAGE_SIZE = 50;
 
 interface DocRow {
   id: string;
@@ -22,10 +25,17 @@ interface DocRow {
 export default async function DocumentsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ project?: string; type?: string; q?: string }>;
+  searchParams: Promise<{
+    project?: string;
+    type?: string;
+    q?: string;
+    page?: string;
+  }>;
 }) {
   await requireUser();
-  const { project = "", type = "", q = "" } = await searchParams;
+  const { project = "", type = "", q = "", page = "1" } = await searchParams;
+  const pageNum = Math.max(1, Number(page) || 1);
+  const from = (pageNum - 1) * PAGE_SIZE;
   const supabase = await createClient();
   const t = await getTranslations("Documents");
   const dt = await getTranslations("DocTypes");
@@ -41,21 +51,34 @@ export default async function DocumentsPage({
       `id, canonical_name, doc_type, created_at, file_size,
        projects ( id, name, clients ( name ) ),
        uploader:profiles!documents_uploaded_by_fkey ( full_name )`,
+      { count: "exact" },
     )
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(from, from + PAGE_SIZE - 1);
 
   if (project) query = query.eq("project_id", project);
   if (type) query = query.eq("doc_type", type as DocType);
   if (q) query = query.ilike("canonical_name", `%${q}%`);
 
-  const { data } = await query;
+  const { data, count } = await query;
   const documents = (data ?? []) as unknown as DocRow[];
+  const total = count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  const hrefForPage = (p: number) => {
+    const sp = new URLSearchParams();
+    if (project) sp.set("project", project);
+    if (type) sp.set("type", type);
+    if (q) sp.set("q", q);
+    sp.set("page", String(p));
+    return `/documents?${sp.toString()}`;
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">{t("title")}</h1>
+          <h1 className="text-xl font-semibold text-primary">{t("title")}</h1>
           <p className="text-sm text-slate-500">{t("subtitle")}</p>
         </div>
         <Link href="/documents/upload">
@@ -172,6 +195,13 @@ export default async function DocumentsPage({
           )}
         </CardBody>
       </Card>
+
+      <Pagination
+        page={pageNum}
+        totalPages={totalPages}
+        total={total}
+        hrefForPage={hrefForPage}
+      />
     </div>
   );
 }

@@ -28,7 +28,7 @@ export function TopNav({
             height={28}
             className="h-7 w-7"
           />
-          <span className="font-semibold text-slate-900">{tc("title")}</span>
+          <span className="font-semibold text-primary">{tc("title")}</span>
         </Link>
 
         <div className="ml-auto flex items-center gap-3">

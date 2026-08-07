@@ -257,6 +257,11 @@
     "previous": "Previous",
     "next": "Next"
   },
+  "Pagination": {
+    "pageOf": "Page {page} of {total} · {count} items",
+    "previous": "Previous",
+    "next": "Next"
+  },
   "Validation": {
     "passwordMin": "Password must be at least 8 characters",
     "passwordLetter": "Password must contain a letter",

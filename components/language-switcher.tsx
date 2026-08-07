@@ -34,7 +34,7 @@ export function LanguageSwitcher() {
           className={cn(
             "rounded px-2 py-1 transition-colors disabled:opacity-60",
             locale === active
-              ? "bg-slate-900 text-white"
+              ? "bg-primary text-white"
               : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
           )}
         >

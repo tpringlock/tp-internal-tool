@@ -4,8 +4,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { setUserActive, setUserRole } from "@/app/actions/users";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
+import { Pagination } from "@/components/ui/pagination";
 import { CreateUserForm } from "./create-user-form";
 import type { Profile } from "@/lib/db/types";
+
+const PAGE_SIZE = 50;
 
 interface UserRow extends Profile {
   email: string;
@@ -27,15 +30,27 @@ async function getUsers(): Promise<UserRow[]> {
     .sort((a, b) => a.full_name.localeCompare(b.full_name));
 }
 
-export default async function AdminUsersPage() {
+export default async function AdminUsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
   const currentAdmin = await requireAdmin();
-  const users = await getUsers();
+  const allUsers = await getUsers();
   const t = await getTranslations("Admin");
+
+  const { page = "1" } = await searchParams;
+  const total = allUsers.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const pageNum = Math.min(Math.max(1, Number(page) || 1), totalPages);
+  const from = (pageNum - 1) * PAGE_SIZE;
+  const users = allUsers.slice(from, from + PAGE_SIZE);
+  const hrefForPage = (p: number) => `/admin/users?page=${p}`;
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-slate-900">
+        <h1 className="text-xl font-semibold text-primary">
           {t("usersTitle")}
         </h1>
         <p className="text-sm text-slate-500">{t("usersSubtitle")}</p>
@@ -52,7 +67,7 @@ export default async function AdminUsersPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>{t("allUsers", { count: users.length })}</CardTitle>
+          <CardTitle>{t("allUsers", { count: total })}</CardTitle>
         </CardHeader>
         <CardBody className="overflow-x-auto p-0">
           <table className="w-full text-sm">
@@ -134,6 +149,13 @@ export default async function AdminUsersPage() {
           </table>
         </CardBody>
       </Card>
+
+      <Pagination
+        page={pageNum}
+        totalPages={totalPages}
+        total={total}
+        hrefForPage={hrefForPage}
+      />
     </div>
   );
 }

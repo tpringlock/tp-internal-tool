@@ -18,7 +18,7 @@ export default async function SharePage({
     return (
       <div className="flex min-h-full items-center justify-center bg-slate-50 px-4 py-16">
         <div className="max-w-sm text-center">
-          <h1 className="text-lg font-semibold text-slate-900">
+          <h1 className="text-lg font-semibold text-primary">
             {t("unavailableTitle")}
           </h1>
           <p className="mt-2 text-sm text-slate-500">{t("unavailableBody")}</p>
@@ -45,7 +45,7 @@ export default async function SharePage({
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3">
           <div className="min-w-0">
             <p className="text-xs text-slate-500">{t("sharedDocument")}</p>
-            <h1 className="truncate text-sm font-semibold text-slate-900">
+            <h1 className="truncate text-sm font-semibold text-primary">
               {share.canonicalName}
             </h1>
           </div>

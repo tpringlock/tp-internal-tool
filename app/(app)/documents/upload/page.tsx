@@ -44,7 +44,7 @@ export default async function UploadPage() {
         >
           ← {t("title")}
         </Link>
-        <h1 className="mt-1 text-xl font-semibold text-slate-900">
+        <h1 className="mt-1 text-xl font-semibold text-primary">
           {t("uploadTitle")}
         </h1>
       </div>
