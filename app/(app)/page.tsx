@@ -38,23 +38,22 @@ export default async function HomePage() {
           </Card>
         </Link>
 
-        <Card className="h-full opacity-60">
-          <CardBody className="flex items-start gap-4">
-            <GraduationCap
-              className="h-10 w-10 shrink-0 text-primary"
-              aria-hidden
-            />
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-                {t("training")}
-                <span className="rounded bg-slate-200 px-1.5 py-0.5 text-xs font-normal text-slate-600">
-                  {t("comingSoon")}
-                </span>
+        <Link href="/academy" className="group">
+          <Card className="h-full transition-colors group-hover:border-slate-300">
+            <CardBody className="flex items-start gap-4">
+              <GraduationCap
+                className="h-10 w-10 shrink-0 text-primary"
+                aria-hidden
+              />
+              <div className="space-y-1">
+                <div className="text-sm font-semibold text-primary">
+                  {t("training")}
+                </div>
+                <p className="text-sm text-slate-500">{t("trainingDesc")}</p>
               </div>
-              <p className="text-sm text-slate-500">{t("trainingDesc")}</p>
-            </div>
-          </CardBody>
-        </Card>
+            </CardBody>
+          </Card>
+        </Link>
       </div>
     </div>
   );

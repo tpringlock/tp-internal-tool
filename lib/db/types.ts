@@ -16,6 +16,10 @@ export type DocType =
   | "correspondence"
   | "meeting_minutes";
 
+export type CourseStatus = "draft" | "published";
+
+export type VideoProvider = "youtube" | "vimeo";
+
 // NOTE: these are `type` aliases (not interfaces) on purpose. supabase-js's
 // GenericTable constrains Row/Insert/Update to Record<string, unknown>, which
 // interfaces do not satisfy (no implicit index signature) but type aliases do.
@@ -78,6 +82,67 @@ export type ShareLink = {
   created_at: string;
 };
 
+export type Course = {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  instructor: string | null;
+  thumbnail_path: string | null;
+  status: CourseStatus;
+  published_at: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Chapter = {
+  id: string;
+  course_id: string;
+  title: string;
+  position: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Lesson = {
+  id: string;
+  course_id: string;
+  chapter_id: string;
+  title: string;
+  description: string | null;
+  video_url: string | null;
+  video_provider: VideoProvider | null;
+  position: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type LessonFile = {
+  id: string;
+  lesson_id: string;
+  storage_path: string;
+  file_name: string;
+  file_size: number;
+  mime_type: string;
+  created_by: string | null;
+  created_at: string;
+};
+
+export type CourseEnrollment = {
+  user_id: string;
+  course_id: string;
+  enrolled_at: string;
+  completed_at: string | null;
+};
+
+export type LessonProgress = {
+  user_id: string;
+  lesson_id: string;
+  course_id: string;
+  completed_at: string;
+};
+
 export type ActivityLog = {
   id: number;
   actor_user_id: string | null;
@@ -138,12 +203,43 @@ export interface Database {
         Insert<ActivityLog, "id" | "created_at" | "metadata" | "entity_type" | "entity_id" | "ip" | "actor_user_id">,
         Partial<ActivityLog>
       >;
+      courses: Table<
+        Course,
+        Insert<Course, "id" | "created_at" | "updated_at" | "created_by" | "description" | "category" | "instructor" | "thumbnail_path" | "status" | "published_at">,
+        Partial<Course>
+      >;
+      chapters: Table<
+        Chapter,
+        Insert<Chapter, "id" | "created_at" | "updated_at" | "position">,
+        Partial<Chapter>
+      >;
+      lessons: Table<
+        Lesson,
+        Insert<Lesson, "id" | "created_at" | "updated_at" | "description" | "video_url" | "video_provider" | "position">,
+        Partial<Lesson>
+      >;
+      lesson_files: Table<
+        LessonFile,
+        Insert<LessonFile, "id" | "created_at" | "created_by" | "mime_type">,
+        Partial<LessonFile>
+      >;
+      course_enrollments: Table<
+        CourseEnrollment,
+        Insert<CourseEnrollment, "enrolled_at" | "completed_at">,
+        Partial<CourseEnrollment>
+      >;
+      lesson_progress: Table<
+        LessonProgress,
+        Insert<LessonProgress, "completed_at">,
+        Partial<LessonProgress>
+      >;
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
     Enums: {
       user_role: UserRole;
       doc_type: DocType;
+      course_status: CourseStatus;
     };
     CompositeTypes: Record<string, never>;
   };

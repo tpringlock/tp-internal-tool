@@ -26,14 +26,14 @@ export default async function UploadPage() {
     .eq("status", "active")
     .order("name");
 
-  const projects: UploadProject[] = ((data ?? []) as unknown as ProjectRow[]).map(
-    (p) => ({
-      id: p.id,
-      name: p.name,
-      clientId: p.client_id,
-      clientName: p.clients?.name ?? "—",
-    }),
-  );
+  const projects: UploadProject[] = (
+    (data ?? []) as unknown as ProjectRow[]
+  ).map((p) => ({
+    id: p.id,
+    name: p.name,
+    clientId: p.client_id,
+    clientName: p.clients?.name ?? "—",
+  }));
 
   return (
     <div className="space-y-6">
@@ -60,7 +60,11 @@ export default async function UploadPage() {
             <li>{t("guidelineProjects")}</li>
             <li>
               {t("guidelineNaming")}
-              <span className="font-mono"> Client_Type_Project</span>.
+              <span className="font-mono">
+                {" "}
+                Tên khách hàng_Loại tài liệu_Dự án
+              </span>
+              .
             </li>
           </ul>
         </CardBody>

@@ -22,6 +22,18 @@ export const ACTION_LABEL: Record<string, string> = {
   "share.revoked": "Revoked a share link",
   "share.opened": "Opened via share link",
   "share.downloaded": "Downloaded via share link",
+  "course.created": "Created a course",
+  "course.updated": "Updated a course",
+  "course.published": "Published a course",
+  "course.unpublished": "Unpublished a course",
+  "course.deleted": "Deleted a course",
+  "course.enrolled": "Enrolled in a course",
+  "course.completed": "Completed a course",
+  "lesson.created": "Added a lesson",
+  "lesson.updated": "Updated a lesson",
+  "lesson.deleted": "Deleted a lesson",
+  "lesson_file.uploaded": "Uploaded a lesson PDF",
+  "lesson_file.deleted": "Deleted a lesson PDF",
 };
 
 /** Minimal shape of a next-intl translator (from useTranslations/getTranslations). */

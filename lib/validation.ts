@@ -80,6 +80,49 @@ export const memberSchema = z.object({
   user_id: z.string().uuid("chooseUser"),
 });
 
+// --- TP Academy ---------------------------------------------------------
+
+const optionalText = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max, "textTooLong")
+    .optional()
+    .transform((v) => (v ? v : null));
+
+export const courseSchema = z.object({
+  title: z.string().trim().min(1, "titleRequired").max(160, "titleTooLong"),
+  description: optionalText(2000),
+  category: z
+    .string()
+    .trim()
+    .max(60, "textTooLong")
+    .optional()
+    .transform((v) => (v ? v : null)),
+  instructor: z
+    .string()
+    .trim()
+    .max(120, "textTooLong")
+    .optional()
+    .transform((v) => (v ? v : null)),
+});
+
+export const chapterSchema = z.object({
+  title: z.string().trim().min(1, "titleRequired").max(160, "titleTooLong"),
+});
+
+export const lessonSchema = z.object({
+  title: z.string().trim().min(1, "titleRequired").max(160, "titleTooLong"),
+  description: optionalText(2000),
+  // Empty video field is allowed (a lesson may be PDF-only); a non-empty value
+  // must be a supported, parseable YouTube/Vimeo URL — checked in the action.
+  video_url: z
+    .string()
+    .trim()
+    .optional()
+    .transform((v) => (v ? v : null)),
+});
+
 /** Minimal shape of a next-intl translator (from useTranslations/getTranslations). */
 type Translator = ((key: string) => string) & { has: (key: string) => boolean };
 
@@ -105,3 +148,5 @@ export type LoginInput = z.infer<typeof loginSchema>;
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type ClientInput = z.infer<typeof clientSchema>;
 export type ProjectInput = z.infer<typeof projectSchema>;
+export type CourseInput = z.infer<typeof courseSchema>;
+export type LessonInput = z.infer<typeof lessonSchema>;
