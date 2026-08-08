@@ -11,10 +11,17 @@ import {
   courseSchema,
   chapterSchema,
   lessonSchema,
+  quizQuestionSchema,
+  lessonNoteSchema,
   translateFieldErrors,
 } from "@/lib/validation";
 import { parseVideoUrl } from "@/lib/academy/video";
-import { isCourseComplete } from "@/lib/academy/progress";
+import { isCourseCompleteWithQuizzes } from "@/lib/academy/progress";
+import {
+  getCourseTree,
+  getCompletedLessonIds,
+  getPassedChapterIds,
+} from "@/lib/academy/queries";
 import {
   ACADEMY_BUCKET,
   ACCEPTED_MIME,
@@ -22,10 +29,59 @@ import {
   ACCEPTED_IMAGE_MIME,
   MAX_IMAGE_SIZE,
   buildLessonFilePath,
+  buildCourseFilePath,
   buildThumbnailPath,
 } from "@/lib/academy/constants";
-import type { VideoProvider } from "@/lib/db/types";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { VideoProvider, Database } from "@/lib/db/types";
 import type { FormState } from "@/app/actions/auth";
+
+/**
+ * Recompute a course's completion for a user, honouring both lessons and chapter
+ * quizzes, and flip course_enrollments.completed_at only on a transition. Logs
+ * `course.completed` when it newly completes. Shared by the mark-complete and
+ * quiz-submit actions. Returns true if the course just became complete.
+ */
+async function recomputeCourseCompletion(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  courseId: string,
+): Promise<boolean> {
+  const [tree, completed, passed] = await Promise.all([
+    getCourseTree(supabase, courseId),
+    getCompletedLessonIds(supabase, userId, courseId),
+    getPassedChapterIds(supabase, userId, courseId),
+  ]);
+  const completedNow = tree
+    ? isCourseCompleteWithQuizzes(tree.chapters, completed, passed)
+    : false;
+
+  const { data: enrollment } = await supabase
+    .from("course_enrollments")
+    .select("completed_at")
+    .eq("user_id", userId)
+    .eq("course_id", courseId)
+    .maybeSingle();
+  const wasComplete = Boolean(enrollment?.completed_at);
+
+  if (completedNow !== wasComplete) {
+    await supabase
+      .from("course_enrollments")
+      .update({ completed_at: completedNow ? new Date().toISOString() : null })
+      .eq("user_id", userId)
+      .eq("course_id", courseId);
+  }
+
+  const newlyCompleted = completedNow && !wasComplete;
+  if (newlyCompleted) {
+    await logActivity(supabase, {
+      action: "course.completed",
+      entityType: "course",
+      entityId: courseId,
+    });
+  }
+  return newlyCompleted;
+}
 
 // --- Courses ------------------------------------------------------------
 
@@ -695,33 +751,378 @@ export async function toggleLessonComplete(formData: FormData): Promise<void> {
       .eq("lesson_id", lessonId);
   }
 
-  // Recompute completion: done vs the course's current lesson count.
-  const [{ count: total }, { count: done }] = await Promise.all([
-    supabase
-      .from("lessons")
-      .select("id", { count: "exact", head: true })
-      .eq("course_id", courseId),
-    supabase
-      .from("lesson_progress")
-      .select("lesson_id", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .eq("course_id", courseId),
-  ]);
-  const completedNow = isCourseComplete(total ?? 0, done ?? 0);
-  await supabase
-    .from("course_enrollments")
-    .update({ completed_at: completedNow ? new Date().toISOString() : null })
-    .eq("user_id", user.id)
-    .eq("course_id", courseId);
+  // Recompute completion (lessons + chapter quizzes) and flip completed_at.
+  await recomputeCourseCompletion(supabase, user.id, courseId);
 
-  if (completedNow) {
-    await logActivity(supabase, {
-      action: "course.completed",
-      entityType: "course",
-      entityId: courseId,
-    });
-  }
   revalidatePath(`/academy/${courseId}/${lessonId}`);
   revalidatePath(`/academy/${courseId}`);
   revalidatePath("/academy/my-courses");
+}
+
+// --- Quiz authoring (admin) --------------------------------------------
+
+/** Read a question's prompt, option labels, and the chosen correct index. */
+function parseQuizQuestionForm(formData: FormData) {
+  return quizQuestionSchema.safeParse({
+    prompt: formData.get("prompt"),
+    options: formData.getAll("option").map((o) => String(o)),
+    correct_index: formData.get("correct_index"),
+  });
+}
+
+/** Rows for quiz_options given ordered labels and the correct index. */
+function optionRows(
+  questionId: string,
+  options: string[],
+  correctIndex: number,
+) {
+  return options.map((label, i) => ({
+    question_id: questionId,
+    label,
+    is_correct: i === correctIndex,
+    position: i,
+  }));
+}
+
+export async function addQuizQuestion(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  await requireAdmin();
+  const chapterId = String(formData.get("chapter_id"));
+  const courseId = String(formData.get("course_id"));
+  const parsed = parseQuizQuestionForm(formData);
+  const t = await getTranslations("AcademyAdmin");
+  if (!parsed.success) {
+    const tv = await getTranslations("Validation");
+    return { fieldErrors: translateFieldErrors(tv, parsed.error) };
+  }
+  const { prompt, options, correct_index } = parsed.data;
+  if (correct_index >= options.length) {
+    return { fieldErrors: { correct_index: [t("errQuizCorrect")] } };
+  }
+
+  const supabase = await createClient();
+  const { data: last } = await supabase
+    .from("quiz_questions")
+    .select("position")
+    .eq("chapter_id", chapterId)
+    .order("position", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const position = last ? last.position + 1 : 0;
+
+  const { data: inserted, error } = await supabase
+    .from("quiz_questions")
+    .insert({ chapter_id: chapterId, prompt, position })
+    .select("id")
+    .single();
+  if (error || !inserted) return { error: error?.message ?? t("errSaveFailed") };
+
+  const { error: optError } = await supabase
+    .from("quiz_options")
+    .insert(optionRows(inserted.id, options, correct_index));
+  if (optError) {
+    await supabase.from("quiz_questions").delete().eq("id", inserted.id);
+    return { error: optError.message };
+  }
+
+  await logActivity(supabase, {
+    action: "quiz_question.created",
+    entityType: "quiz_question",
+    entityId: inserted.id,
+    metadata: { chapter_id: chapterId },
+  });
+  revalidatePath(`/admin/academy/${courseId}`);
+  return { success: t("quizQuestionAdded") };
+}
+
+export async function updateQuizQuestion(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  const courseId = String(formData.get("course_id"));
+  const parsed = parseQuizQuestionForm(formData);
+  const t = await getTranslations("AcademyAdmin");
+  if (!parsed.success) {
+    const tv = await getTranslations("Validation");
+    return { fieldErrors: translateFieldErrors(tv, parsed.error) };
+  }
+  const { prompt, options, correct_index } = parsed.data;
+  if (correct_index >= options.length) {
+    return { fieldErrors: { correct_index: [t("errQuizCorrect")] } };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("quiz_questions")
+    .update({ prompt })
+    .eq("id", id);
+  if (error) return { error: error.message };
+
+  // Replace the option set wholesale — simplest correct approach for an edit.
+  await supabase.from("quiz_options").delete().eq("question_id", id);
+  const { error: optError } = await supabase
+    .from("quiz_options")
+    .insert(optionRows(id, options, correct_index));
+  if (optError) return { error: optError.message };
+
+  await logActivity(supabase, {
+    action: "quiz_question.updated",
+    entityType: "quiz_question",
+    entityId: id,
+  });
+  revalidatePath(`/admin/academy/${courseId}`);
+  return { success: t("quizQuestionUpdated") };
+}
+
+export async function deleteQuizQuestion(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  const courseId = String(formData.get("course_id"));
+
+  const supabase = await createClient();
+  await supabase.from("quiz_questions").delete().eq("id", id); // options cascade
+  await logActivity(supabase, {
+    action: "quiz_question.deleted",
+    entityType: "quiz_question",
+    entityId: id,
+  });
+  revalidatePath(`/admin/academy/${courseId}`);
+}
+
+/** Swap a question's position with its neighbour within the chapter. */
+export async function reorderQuizQuestion(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  const chapterId = String(formData.get("chapter_id"));
+  const courseId = String(formData.get("course_id"));
+  const direction = String(formData.get("direction"));
+
+  const supabase = await createClient();
+  const { data: current } = await supabase
+    .from("quiz_questions")
+    .select("id, position")
+    .eq("id", id)
+    .single();
+  if (!current) return;
+
+  const neighbourQuery = supabase
+    .from("quiz_questions")
+    .select("id, position")
+    .eq("chapter_id", chapterId)
+    .limit(1);
+  const { data: neighbour } =
+    direction === "up"
+      ? await neighbourQuery
+          .lt("position", current.position)
+          .order("position", { ascending: false })
+          .maybeSingle()
+      : await neighbourQuery
+          .gt("position", current.position)
+          .order("position", { ascending: true })
+          .maybeSingle();
+  if (!neighbour) return;
+
+  await supabase
+    .from("quiz_questions")
+    .update({ position: neighbour.position })
+    .eq("id", current.id);
+  await supabase
+    .from("quiz_questions")
+    .update({ position: current.position })
+    .eq("id", neighbour.id);
+  revalidatePath(`/admin/academy/${courseId}`);
+}
+
+// --- Quiz submission (employee) ----------------------------------------
+
+/**
+ * Grade a chapter quiz server-side. Records a pass only when every question is
+ * answered correctly; unlimited retries. Selected option per question arrives as
+ * `q_{questionId}` = optionId.
+ */
+export async function submitChapterQuiz(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const user = await requireUser();
+  const chapterId = String(formData.get("chapter_id"));
+  const courseId = String(formData.get("course_id"));
+  const t = await getTranslations("Academy");
+
+  const supabase = await createClient();
+  const { data: questions } = await supabase
+    .from("quiz_questions")
+    .select("id")
+    .eq("chapter_id", chapterId);
+  const questionIds = (questions ?? []).map((q) => q.id);
+  if (questionIds.length === 0) return { error: t("quizEmpty") };
+
+  const { data: options } = await supabase
+    .from("quiz_options")
+    .select("id, question_id, is_correct")
+    .in("question_id", questionIds);
+  const correctByQuestion = new Map<string, string>();
+  for (const opt of options ?? []) {
+    if (opt.is_correct) correctByQuestion.set(opt.question_id, opt.id);
+  }
+
+  let wrong = 0;
+  for (const qid of questionIds) {
+    const selected = String(formData.get(`q_${qid}`) ?? "");
+    if (selected !== correctByQuestion.get(qid)) wrong += 1;
+  }
+
+  if (wrong > 0) {
+    return { error: t("quizFailed", { wrong }) };
+  }
+
+  // Ensure enrollment (passing a quiz implies participating in the course).
+  const { data: enrollment } = await supabase
+    .from("course_enrollments")
+    .select("user_id")
+    .eq("user_id", user.id)
+    .eq("course_id", courseId)
+    .maybeSingle();
+  if (!enrollment) {
+    await supabase
+      .from("course_enrollments")
+      .insert({ user_id: user.id, course_id: courseId });
+  }
+
+  await supabase
+    .from("chapter_quiz_passes")
+    .upsert(
+      { user_id: user.id, chapter_id: chapterId, course_id: courseId },
+      { onConflict: "user_id,chapter_id" },
+    );
+  await logActivity(supabase, {
+    action: "chapter_quiz.passed",
+    entityType: "chapter",
+    entityId: chapterId,
+  });
+
+  await recomputeCourseCompletion(supabase, user.id, courseId);
+
+  revalidatePath(`/academy/${courseId}`);
+  revalidatePath(`/academy/${courseId}/quiz/${chapterId}`);
+  revalidatePath("/academy/my-courses");
+  return { success: t("quizPassed") };
+}
+
+// --- Lesson notes (employee) -------------------------------------------
+
+/** Upsert the current user's private note for a lesson. Empty clears it. */
+export async function saveLessonNote(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const user = await requireUser();
+  const lessonId = String(formData.get("lesson_id"));
+  const courseId = String(formData.get("course_id"));
+  const parsed = lessonNoteSchema.safeParse({ content: formData.get("content") });
+  if (!parsed.success) {
+    const tv = await getTranslations("Validation");
+    return { fieldErrors: translateFieldErrors(tv, parsed.error) };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("lesson_notes").upsert(
+    {
+      user_id: user.id,
+      lesson_id: lessonId,
+      course_id: courseId,
+      content: parsed.data.content,
+    },
+    { onConflict: "user_id,lesson_id" },
+  );
+  if (error) return { error: error.message };
+  return { success: "saved" };
+}
+
+// --- Course documents (admin) ------------------------------------------
+
+export async function uploadCourseFile(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const admin = await requireAdmin();
+  const courseId = String(formData.get("course_id"));
+  const file = formData.get("file");
+  const t = await getTranslations("AcademyAdmin");
+
+  if (!(file instanceof File) || file.size === 0) {
+    return { fieldErrors: { file: [t("errFileChoose")] } };
+  }
+  if (file.type !== ACCEPTED_MIME) {
+    return { fieldErrors: { file: [t("errFilePdf")] } };
+  }
+  if (file.size > MAX_FILE_SIZE) {
+    return { fieldErrors: { file: [t("errFileSize")] } };
+  }
+
+  const fileId = crypto.randomUUID();
+  const storagePath = buildCourseFilePath(courseId, fileId);
+  const adminClient = createAdminClient();
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const { error: uploadError } = await adminClient.storage
+    .from(ACADEMY_BUCKET)
+    .upload(storagePath, buffer, { contentType: ACCEPTED_MIME, upsert: false });
+  if (uploadError) {
+    return { error: t("errUploadFailed", { message: uploadError.message }) };
+  }
+
+  const supabase = await createClient();
+  const { data: inserted, error: insertError } = await supabase
+    .from("course_files")
+    .insert({
+      course_id: courseId,
+      storage_path: storagePath,
+      file_name: file.name,
+      file_size: file.size,
+      created_by: admin.id,
+    })
+    .select("id")
+    .single();
+  if (insertError || !inserted) {
+    await adminClient.storage.from(ACADEMY_BUCKET).remove([storagePath]);
+    return { error: insertError?.message ?? t("errSaveFailed") };
+  }
+
+  await logActivity(supabase, {
+    action: "course_file.uploaded",
+    entityType: "course_file",
+    entityId: inserted.id,
+    metadata: { course_id: courseId },
+  });
+  revalidatePath(`/admin/academy/${courseId}`);
+  return { success: t("fileUploaded") };
+}
+
+export async function deleteCourseFile(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  const courseId = String(formData.get("course_id"));
+
+  const supabase = await createClient();
+  const { data: fileRow } = await supabase
+    .from("course_files")
+    .select("storage_path")
+    .eq("id", id)
+    .single();
+  if (fileRow) {
+    await createAdminClient()
+      .storage.from(ACADEMY_BUCKET)
+      .remove([fileRow.storage_path]);
+    await supabase.from("course_files").delete().eq("id", id);
+    await logActivity(supabase, {
+      action: "course_file.deleted",
+      entityType: "course_file",
+      entityId: id,
+    });
+  }
+  revalidatePath(`/admin/academy/${courseId}`);
 }

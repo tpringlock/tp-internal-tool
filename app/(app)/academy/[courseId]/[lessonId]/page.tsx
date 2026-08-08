@@ -7,17 +7,26 @@ import {
   FileText,
   Check,
   Lock,
+  HelpCircle,
 } from "lucide-react";
 import { requireUser } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { parseVideoUrl } from "@/lib/academy/video";
-import { getCourseTree, getCompletedLessonIds } from "@/lib/academy/queries";
-import { progressPercent, chapterUnlockFlags } from "@/lib/academy/progress";
+import {
+  getCourseTree,
+  getCompletedLessonIds,
+  getPassedChapterIds,
+  getCourseFiles,
+  getLessonNote,
+} from "@/lib/academy/queries";
+import { chapterUnlockFlags } from "@/lib/academy/progress";
 import { toggleLessonComplete } from "@/app/actions/academy";
 import { formatBytes } from "@/lib/format";
 import type { Lesson, LessonFile } from "@/lib/db/types";
+import { CourseContentPanel } from "../course-content-panel";
+import { LessonNotes } from "./notes";
 
 /** A checkbox-styled submit button toggling lesson completion (no client JS). */
 function CompleteCheckbox({
@@ -74,13 +83,19 @@ export default async function LessonPage({
   const currentChapterIndex = chapterIndexByLesson.get(lessonId);
   if (currentChapterIndex === undefined) notFound();
 
-  const completedIds = await getCompletedLessonIds(supabase, user.id, courseId);
-  const unlockFlags = chapterUnlockFlags(chapters, completedIds);
+  const [completedIds, passedIds, courseFiles] = await Promise.all([
+    getCompletedLessonIds(supabase, user.id, courseId),
+    getPassedChapterIds(supabase, user.id, courseId),
+    getCourseFiles(supabase, courseId),
+  ]);
+  const unlockFlags = chapterUnlockFlags(chapters, completedIds, passedIds);
 
   // Server-side gating: a locked chapter's lessons are not reachable by URL.
   if (!unlockFlags[currentChapterIndex]) {
     redirect(`/academy/${courseId}`);
   }
+
+  const note = await getLessonNote(supabase, user.id, lessonId);
 
   // Full lesson row (video + description) and its PDFs.
   const { data: lesson } = await supabase
@@ -106,7 +121,6 @@ export default async function LessonPage({
   const isDone = completedIds.has(lessonId);
   const doneCount = orderedLessons.filter((l) => completedIds.has(l.id)).length;
   const total = orderedLessons.length;
-  const pct = progressPercent(total, doneCount);
 
   const currentIndex = orderedLessons.findIndex((l) => l.id === lessonId);
   const prev = currentIndex > 0 ? orderedLessons[currentIndex - 1] : null;
@@ -214,6 +228,12 @@ export default async function LessonPage({
             </Card>
           )}
 
+          <LessonNotes
+            courseId={courseId}
+            lessonId={lessonId}
+            initialContent={note}
+          />
+
           <div className="flex items-center justify-between">
             {prev ? (
               <Link
@@ -248,80 +268,111 @@ export default async function LessonPage({
           </div>
         </div>
 
-        {/* Right column: course content list */}
+        {/* Right column: course content / documents toggle */}
         <aside className="lg:sticky lg:top-6">
-          <Card>
-            <CardHeader className="flex items-center justify-between">
-              <CardTitle>{t("courseContent")}</CardTitle>
-              <span className="text-xs text-slate-500">
-                {t("lessonsDone", { done: doneCount, total })}
-              </span>
-            </CardHeader>
-            <CardBody className="max-h-[70vh] overflow-y-auto p-0">
-              {chapters.map((chapter, ci) => {
-                const unlocked = unlockFlags[ci];
-                return (
-                  <div
-                    key={chapter.id}
-                    className="border-b border-slate-100 last:border-0"
-                  >
-                    <div className="flex items-center justify-between gap-2 px-4 py-3">
-                      <span className="text-sm font-medium text-slate-800">
-                        {chapter.title}
-                      </span>
-                      {!unlocked && (
-                        <Lock className="h-3.5 w-3.5 shrink-0 text-slate-400" aria-hidden />
-                      )}
-                    </div>
-                    <ul className="space-y-0.5 px-2 pb-2">
-                      {chapter.lessons.map((l) => {
-                        const done = completedIds.has(l.id);
-                        const current = l.id === lessonId;
-                        if (!unlocked) {
-                          return (
-                            <li
-                              key={l.id}
-                              className="flex items-center gap-2 rounded-md px-2 py-2 text-sm text-slate-400"
-                            >
-                              <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                              <span className="line-clamp-1">{l.title}</span>
-                            </li>
-                          );
-                        }
+          <CourseContentPanel
+            documents={courseFiles}
+            contentMeta={t("lessonsDone", { done: doneCount, total })}
+            bodyClassName="max-h-[70vh] overflow-y-auto p-0"
+          >
+            {chapters.map((chapter, ci) => {
+              const unlocked = unlockFlags[ci];
+              const chapterLessonsDone = chapter.lessons.every((l) =>
+                completedIds.has(l.id),
+              );
+              const quizPassed = passedIds.has(chapter.id);
+              const quizAvailable = unlocked && chapterLessonsDone;
+              return (
+                <div
+                  key={chapter.id}
+                  className="border-b border-slate-100 last:border-0"
+                >
+                  <div className="flex items-center justify-between gap-2 px-4 py-3">
+                    <span className="text-sm font-medium text-slate-800">
+                      {chapter.title}
+                    </span>
+                    {!unlocked && (
+                      <Lock className="h-3.5 w-3.5 shrink-0 text-slate-400" aria-hidden />
+                    )}
+                  </div>
+                  <ul className="space-y-0.5 px-2 pb-2">
+                    {chapter.lessons.map((l) => {
+                      const done = completedIds.has(l.id);
+                      const current = l.id === lessonId;
+                      if (!unlocked) {
                         return (
                           <li
                             key={l.id}
-                            className={cn(
-                              "flex items-center gap-2 rounded-md px-2 py-1.5",
-                              current && "bg-primary/10",
-                            )}
+                            className="flex items-center gap-2 rounded-md px-2 py-2 text-sm text-slate-400"
                           >
-                            <CompleteCheckbox
-                              courseId={courseId}
-                              lessonId={l.id}
-                              done={done}
-                              ariaLabel={done ? completedLabel : markComplete}
-                            />
-                            <Link
-                              href={`/academy/${courseId}/${l.id}`}
-                              className={cn(
-                                "line-clamp-1 flex-1 text-sm",
-                                current
-                                  ? "font-medium text-primary"
-                                  : "text-slate-700 hover:text-slate-900",
-                              )}
-                            >
-                              {l.title}
-                            </Link>
+                            <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                            <span className="line-clamp-1">{l.title}</span>
                           </li>
                         );
-                      })}
-                    </ul>
-                  </div>
-                );
-              })}
-            </CardBody>
-          </Card>
+                      }
+                      return (
+                        <li
+                          key={l.id}
+                          className={cn(
+                            "flex items-center gap-2 rounded-md px-2 py-1.5",
+                            current && "bg-primary/10",
+                          )}
+                        >
+                          <CompleteCheckbox
+                            courseId={courseId}
+                            lessonId={l.id}
+                            done={done}
+                            ariaLabel={done ? completedLabel : markComplete}
+                          />
+                          <Link
+                            href={`/academy/${courseId}/${l.id}`}
+                            className={cn(
+                              "line-clamp-1 flex-1 text-sm",
+                              current
+                                ? "font-medium text-primary"
+                                : "text-slate-700 hover:text-slate-900",
+                            )}
+                          >
+                            {l.title}
+                          </Link>
+                        </li>
+                      );
+                    })}
+                    {chapter.hasQuiz &&
+                      (quizAvailable ? (
+                        <li>
+                          <Link
+                            href={`/academy/${courseId}/quiz/${chapter.id}`}
+                            className={cn(
+                              "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
+                              quizPassed
+                                ? "font-medium text-primary"
+                                : "text-slate-700 hover:text-slate-900",
+                            )}
+                          >
+                            {quizPassed ? (
+                              <Check className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+                            ) : (
+                              <HelpCircle className="h-3.5 w-3.5 shrink-0 text-slate-400" aria-hidden />
+                            )}
+                            <span className="line-clamp-1">
+                              {quizPassed
+                                ? t("quizPassedLabel")
+                                : t("quizTakeLabel")}
+                            </span>
+                          </Link>
+                        </li>
+                      ) : (
+                        <li className="flex items-center gap-2 rounded-md px-2 py-2 text-sm text-slate-400">
+                          <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                          <span className="line-clamp-1">{t("quizLabel")}</span>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+              );
+            })}
+          </CourseContentPanel>
         </aside>
       </div>
     </div>

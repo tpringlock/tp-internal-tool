@@ -7,20 +7,27 @@ import {
   FileText,
   Layers,
   ChevronRight,
+  HelpCircle,
+  Check,
+  Lock,
 } from "lucide-react";
 import { requireUser } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   getCourseTree,
   getEnrollment,
   getCompletedLessonIds,
+  getPassedChapterIds,
+  getCourseFiles,
 } from "@/lib/academy/queries";
-import { progressPercent } from "@/lib/academy/progress";
+import { progressPercent, chapterUnlockFlags } from "@/lib/academy/progress";
 import { enrollAndStart } from "@/app/actions/academy";
 import { formatDateTime } from "@/lib/format";
 import { CourseThumb } from "../course-card";
+import { CourseContentPanel } from "./course-content-panel";
 
 export default async function CoursePage({
   params,
@@ -36,10 +43,13 @@ export default async function CoursePage({
   if (!tree) notFound();
   const { course, chapters, counts, orderedLessons } = tree;
 
-  const [enrollment, completedIds] = await Promise.all([
+  const [enrollment, completedIds, passedIds, courseFiles] = await Promise.all([
     getEnrollment(supabase, user.id, courseId),
     getCompletedLessonIds(supabase, user.id, courseId),
+    getPassedChapterIds(supabase, user.id, courseId),
+    getCourseFiles(supabase, courseId),
   ]);
+  const unlockFlags = chapterUnlockFlags(chapters, completedIds, passedIds);
 
   const doneCount = orderedLessons.filter((l) => completedIds.has(l.id)).length;
   const pct = progressPercent(counts.lessons, doneCount);
@@ -88,23 +98,27 @@ export default async function CoursePage({
       <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
         {/* Main column */}
         <div className="space-y-6 lg:col-span-2">
-          <Card>
-            <CardHeader className="flex items-center justify-between">
-              <CardTitle>{t("courseContent")}</CardTitle>
-              <span className="text-xs text-slate-500">
-                {t("chaptersLessonsCount", {
-                  chapters: counts.chapters,
-                  lessons: counts.lessons,
-                })}
-              </span>
-            </CardHeader>
-            <CardBody className="p-0">
-              {chapters.length === 0 ? (
-                <p className="px-5 py-6 text-sm text-slate-500">
-                  {t("noLessons")}
-                </p>
-              ) : (
-                chapters.map((chapter, ci) => (
+          <CourseContentPanel
+            documents={courseFiles}
+            contentMeta={t("chaptersLessonsCount", {
+              chapters: counts.chapters,
+              lessons: counts.lessons,
+            })}
+            bodyClassName="p-0"
+          >
+            {chapters.length === 0 ? (
+              <p className="px-5 py-6 text-sm text-slate-500">
+                {t("noLessons")}
+              </p>
+            ) : (
+              chapters.map((chapter, ci) => {
+                const unlocked = unlockFlags[ci];
+                const chapterLessonsDone = chapter.lessons.every((l) =>
+                  completedIds.has(l.id),
+                );
+                const quizPassed = passedIds.has(chapter.id);
+                const quizAvailable = unlocked && chapterLessonsDone;
+                return (
                   <details
                     key={chapter.id}
                     open={ci === 0}
@@ -137,12 +151,44 @@ export default async function CoursePage({
                           </Link>
                         </li>
                       ))}
+                      {chapter.hasQuiz && (
+                        <li>
+                          {quizAvailable ? (
+                            <Link
+                              href={`/academy/${courseId}/quiz/${chapter.id}`}
+                              className="flex items-center gap-3 rounded-md px-4 py-2.5 text-sm hover:bg-white"
+                            >
+                              {quizPassed ? (
+                                <Check className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+                              ) : (
+                                <HelpCircle className="h-4 w-4 shrink-0 text-slate-400" aria-hidden />
+                              )}
+                              <span
+                                className={cn(
+                                  quizPassed
+                                    ? "font-medium text-primary"
+                                    : "text-slate-700",
+                                )}
+                              >
+                                {quizPassed
+                                  ? t("quizPassedLabel")
+                                  : t("quizTakeLabel")}
+                              </span>
+                            </Link>
+                          ) : (
+                            <div className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-400">
+                              <Lock className="h-4 w-4 shrink-0" aria-hidden />
+                              <span>{t("quizLabel")}</span>
+                            </div>
+                          )}
+                        </li>
+                      )}
                     </ul>
                   </details>
-                ))
-              )}
-            </CardBody>
-          </Card>
+                );
+              })
+            )}
+          </CourseContentPanel>
 
           {course.description && (
             <Card>

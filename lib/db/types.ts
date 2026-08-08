@@ -143,6 +143,50 @@ export type LessonProgress = {
   completed_at: string;
 };
 
+export type QuizQuestion = {
+  id: string;
+  chapter_id: string;
+  prompt: string;
+  position: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type QuizOption = {
+  id: string;
+  question_id: string;
+  label: string;
+  is_correct: boolean;
+  position: number;
+  created_at: string;
+};
+
+export type ChapterQuizPass = {
+  user_id: string;
+  chapter_id: string;
+  course_id: string;
+  passed_at: string;
+};
+
+export type LessonNote = {
+  user_id: string;
+  lesson_id: string;
+  course_id: string;
+  content: string;
+  updated_at: string;
+};
+
+export type CourseFile = {
+  id: string;
+  course_id: string;
+  storage_path: string;
+  file_name: string;
+  file_size: number;
+  mime_type: string;
+  created_by: string | null;
+  created_at: string;
+};
+
 export type ActivityLog = {
   id: number;
   actor_user_id: string | null;
@@ -232,6 +276,31 @@ export interface Database {
         LessonProgress,
         Insert<LessonProgress, "completed_at">,
         Partial<LessonProgress>
+      >;
+      quiz_questions: Table<
+        QuizQuestion,
+        Insert<QuizQuestion, "id" | "created_at" | "updated_at" | "position">,
+        Partial<QuizQuestion>
+      >;
+      quiz_options: Table<
+        QuizOption,
+        Insert<QuizOption, "id" | "created_at" | "position" | "is_correct">,
+        Partial<QuizOption>
+      >;
+      chapter_quiz_passes: Table<
+        ChapterQuizPass,
+        Insert<ChapterQuizPass, "passed_at">,
+        Partial<ChapterQuizPass>
+      >;
+      lesson_notes: Table<
+        LessonNote,
+        Insert<LessonNote, "content" | "updated_at">,
+        Partial<LessonNote>
+      >;
+      course_files: Table<
+        CourseFile,
+        Insert<CourseFile, "id" | "created_at" | "created_by" | "mime_type">,
+        Partial<CourseFile>
       >;
     };
     Views: Record<string, never>;

@@ -291,7 +291,12 @@
     "chooseUser": "Hãy chọn một người dùng",
     "titleRequired": "Vui lòng nhập tiêu đề",
     "titleTooLong": "Tiêu đề quá dài",
-    "textTooLong": "Nội dung quá dài"
+    "textTooLong": "Nội dung quá dài",
+    "promptRequired": "Vui lòng nhập câu hỏi",
+    "optionRequired": "Vui lòng nhập nội dung phương án",
+    "optionsMin": "Thêm ít nhất hai phương án",
+    "optionsMax": "Tối đa sáu phương án",
+    "correctRequired": "Chọn phương án đúng"
   },
   "Academy": {
     "title": "TP Academy",
@@ -332,7 +337,25 @@
     "continueLearning": "Tiếp tục",
     "markComplete": "Đánh dấu hoàn thành",
     "completedLabel": "Đã hoàn thành",
-    "lockedHint": "Hoàn thành chương này để tiếp tục"
+    "lockedHint": "Hoàn thành chương này để tiếp tục",
+    "documents": "Tài liệu",
+    "noDocuments": "Khóa học chưa có tài liệu nào.",
+    "notes": "Ghi chú của tôi",
+    "notesPlaceholder": "Viết ghi chú cho bài học này…",
+    "noteSaving": "Đang lưu…",
+    "noteSaved": "Đã lưu",
+    "quizLabel": "Bài kiểm tra",
+    "quizTakeLabel": "Làm bài kiểm tra",
+    "quizPassedLabel": "Đã đạt bài kiểm tra",
+    "quizTitle": "Bài kiểm tra — {chapter}",
+    "quizIntro": "Trả lời đúng tất cả câu hỏi để mở khóa chương tiếp theo.",
+    "quizSubmit": "Nộp bài",
+    "quizSubmitting": "Đang kiểm tra…",
+    "quizContinue": "Tiếp tục",
+    "quizPassedBanner": "Bạn đã vượt qua bài kiểm tra. Chương tiếp theo đã được mở khóa.",
+    "quizPassed": "Đã đạt bài kiểm tra.",
+    "quizFailed": "{wrong, plural, other {# câu trả lời chưa đúng}}. Hãy thử lại.",
+    "quizEmpty": "Bài kiểm tra này chưa có câu hỏi."
   },
   "AcademyAdmin": {
     "title": "TP Academy",
@@ -405,6 +428,21 @@
     "errFilePdf": "Chỉ cho phép tệp PDF",
     "errFileSize": "Tệp lớn hơn 25 MB",
     "errUploadFailed": "Tải lên thất bại: {message}",
-    "errSaveFailed": "Không thể lưu. Vui lòng thử lại."
+    "errSaveFailed": "Không thể lưu. Vui lòng thử lại.",
+    "quizHeading": "Bài kiểm tra ({count})",
+    "quizAddQuestion": "Thêm câu hỏi",
+    "quizQuestionAdded": "Đã thêm câu hỏi.",
+    "quizQuestionUpdated": "Đã cập nhật câu hỏi.",
+    "quizDeleteQuestion": "Xóa câu hỏi",
+    "quizPrompt": "Câu hỏi",
+    "quizOptions": "Phương án (chọn phương án đúng)",
+    "quizOptionPlaceholder": "Phương án {n}",
+    "quizAddOption": "Thêm phương án",
+    "quizRemoveOption": "Xóa phương án",
+    "quizMarkCorrect": "Đánh dấu là đáp án đúng",
+    "errQuizCorrect": "Chọn phương án đúng",
+    "courseDocuments": "Tài liệu khóa học",
+    "noCourseDocs": "Chưa có tài liệu nào.",
+    "addCourseDoc": "Thêm PDF"
   }
 }

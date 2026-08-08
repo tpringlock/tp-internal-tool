@@ -291,7 +291,12 @@
     "chooseUser": "Choose a user",
     "titleRequired": "Title is required",
     "titleTooLong": "Title is too long",
-    "textTooLong": "This text is too long"
+    "textTooLong": "This text is too long",
+    "promptRequired": "Question is required",
+    "optionRequired": "Option text is required",
+    "optionsMin": "Add at least two options",
+    "optionsMax": "Add at most six options",
+    "correctRequired": "Select the correct option"
   },
   "Academy": {
     "title": "TP Academy",
@@ -332,7 +337,25 @@
     "continueLearning": "Continue",
     "markComplete": "Mark as complete",
     "completedLabel": "Completed",
-    "lockedHint": "Complete this chapter to continue"
+    "lockedHint": "Complete this chapter to continue",
+    "documents": "Documents",
+    "noDocuments": "No documents for this course yet.",
+    "notes": "My notes",
+    "notesPlaceholder": "Write your notes for this lesson…",
+    "noteSaving": "Saving…",
+    "noteSaved": "Saved",
+    "quizLabel": "Quiz",
+    "quizTakeLabel": "Take the quiz",
+    "quizPassedLabel": "Quiz passed",
+    "quizTitle": "Quiz — {chapter}",
+    "quizIntro": "Answer every question correctly to unlock the next chapter.",
+    "quizSubmit": "Submit answers",
+    "quizSubmitting": "Checking…",
+    "quizContinue": "Continue",
+    "quizPassedBanner": "You passed this quiz. The next chapter is unlocked.",
+    "quizPassed": "Quiz passed.",
+    "quizFailed": "{wrong, plural, one {# answer is incorrect} other {# answers are incorrect}}. Try again.",
+    "quizEmpty": "This quiz has no questions yet."
   },
   "AcademyAdmin": {
     "title": "TP Academy",
@@ -405,6 +428,21 @@
     "errFilePdf": "Only PDF files are allowed",
     "errFileSize": "File is larger than 25 MB",
     "errUploadFailed": "Upload failed: {message}",
-    "errSaveFailed": "Could not save. Please try again."
+    "errSaveFailed": "Could not save. Please try again.",
+    "quizHeading": "Quiz ({count})",
+    "quizAddQuestion": "Add a question",
+    "quizQuestionAdded": "Question added.",
+    "quizQuestionUpdated": "Question updated.",
+    "quizDeleteQuestion": "Delete question",
+    "quizPrompt": "Question",
+    "quizOptions": "Options (pick the correct one)",
+    "quizOptionPlaceholder": "Option {n}",
+    "quizAddOption": "Add option",
+    "quizRemoveOption": "Remove option",
+    "quizMarkCorrect": "Mark as correct answer",
+    "errQuizCorrect": "Select which option is correct",
+    "courseDocuments": "Course documents",
+    "noCourseDocs": "No documents attached yet.",
+    "addCourseDoc": "Add a PDF"
   }
 }

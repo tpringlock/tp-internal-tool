@@ -5,13 +5,27 @@ import type {
   Chapter,
   Lesson,
   CourseEnrollment,
+  CourseFile,
+  QuizQuestion,
+  QuizOption,
   Database,
 } from "@/lib/db/types";
 
 type Db = SupabaseClient<Database>;
 
 export type LessonLite = Pick<Lesson, "id" | "chapter_id" | "title" | "position">;
-export type ChapterWithLessons = Chapter & { lessons: LessonLite[] };
+/** A chapter with its lessons and whether it carries a quiz (drives gating). */
+export type ChapterWithLessons = Chapter & {
+  lessons: LessonLite[];
+  hasQuiz: boolean;
+};
+
+/** A quiz option shown to learners — never includes `is_correct`. */
+export type QuizOptionLite = Pick<QuizOption, "id" | "label" | "position">;
+export type QuizQuestionWithOptions = Pick<
+  QuizQuestion,
+  "id" | "prompt" | "position"
+> & { options: QuizOptionLite[] };
 
 export interface CourseTree {
   course: Course;
@@ -107,6 +121,17 @@ export async function getCourseTree(
     pdfs = count ?? 0;
   }
 
+  // Which chapters carry a quiz (any question) — one cheap query, tallied in JS.
+  const chapterIds = chapters.map((ch) => ch.id);
+  const chaptersWithQuiz = new Set<string>();
+  if (chapterIds.length > 0) {
+    const { data: quizRows } = await supabase
+      .from("quiz_questions")
+      .select("chapter_id")
+      .in("chapter_id", chapterIds);
+    for (const row of quizRows ?? []) chaptersWithQuiz.add(row.chapter_id);
+  }
+
   const byChapter = new Map<string, LessonLite[]>();
   for (const lesson of lessons) {
     const list = byChapter.get(lesson.chapter_id) ?? [];
@@ -116,6 +141,7 @@ export async function getCourseTree(
   const withLessons: ChapterWithLessons[] = chapters.map((ch) => ({
     ...ch,
     lessons: byChapter.get(ch.id) ?? [],
+    hasQuiz: chaptersWithQuiz.has(ch.id),
   }));
 
   // Flatten in chapter order, then lesson order within each chapter.
@@ -156,6 +182,91 @@ export async function getCompletedLessonIds(
     .eq("user_id", userId)
     .eq("course_id", courseId);
   return new Set((data ?? []).map((r) => r.lesson_id));
+}
+
+/** Set of chapter ids whose quiz the user has passed within a course. */
+export async function getPassedChapterIds(
+  supabase: Db,
+  userId: string,
+  courseId: string,
+): Promise<Set<string>> {
+  const { data } = await supabase
+    .from("chapter_quiz_passes")
+    .select("chapter_id")
+    .eq("user_id", userId)
+    .eq("course_id", courseId);
+  return new Set((data ?? []).map((r) => r.chapter_id));
+}
+
+/**
+ * A chapter's quiz: ordered questions, each with its ordered options. Deliberately
+ * omits `is_correct` so it never reaches the learner's browser — grading happens
+ * server-side in submitChapterQuiz. Returns [] when the chapter has no quiz.
+ */
+export async function getChapterQuiz(
+  supabase: Db,
+  chapterId: string,
+): Promise<QuizQuestionWithOptions[]> {
+  const { data: questionRows } = await supabase
+    .from("quiz_questions")
+    .select("id, prompt, position")
+    .eq("chapter_id", chapterId)
+    .order("position", { ascending: true });
+  const questions = (questionRows ?? []) as Pick<
+    QuizQuestion,
+    "id" | "prompt" | "position"
+  >[];
+  if (questions.length === 0) return [];
+
+  const { data: optionRows } = await supabase
+    .from("quiz_options")
+    .select("id, question_id, label, position")
+    .in(
+      "question_id",
+      questions.map((q) => q.id),
+    )
+    .order("position", { ascending: true });
+
+  const byQuestion = new Map<string, QuizOptionLite[]>();
+  for (const opt of optionRows ?? []) {
+    const list = byQuestion.get(opt.question_id) ?? [];
+    list.push({ id: opt.id, label: opt.label, position: opt.position });
+    byQuestion.set(opt.question_id, list);
+  }
+  return questions.map((q) => ({
+    id: q.id,
+    prompt: q.prompt,
+    position: q.position,
+    options: byQuestion.get(q.id) ?? [],
+  }));
+}
+
+/** The learner's saved note text for a lesson (empty string if none). */
+export async function getLessonNote(
+  supabase: Db,
+  userId: string,
+  lessonId: string,
+): Promise<string> {
+  const { data } = await supabase
+    .from("lesson_notes")
+    .select("content")
+    .eq("user_id", userId)
+    .eq("lesson_id", lessonId)
+    .maybeSingle();
+  return data?.content ?? "";
+}
+
+/** Course-level PDF documents (id, name, size), oldest first. */
+export async function getCourseFiles(
+  supabase: Db,
+  courseId: string,
+): Promise<Pick<CourseFile, "id" | "file_name" | "file_size">[]> {
+  const { data } = await supabase
+    .from("course_files")
+    .select("id, file_name, file_size")
+    .eq("course_id", courseId)
+    .order("created_at", { ascending: true });
+  return (data ?? []) as Pick<CourseFile, "id" | "file_name" | "file_size">[];
 }
 
 /**

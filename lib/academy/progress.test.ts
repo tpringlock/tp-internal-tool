@@ -1,29 +1,58 @@
 import { describe, it, expect } from "vitest";
 import {
   isCourseComplete,
+  isCourseCompleteWithQuizzes,
   progressPercent,
   chapterUnlockFlags,
 } from "./progress";
 
-const chapters = (ids: string[][]) =>
-  ids.map((lessonIds) => ({ lessons: lessonIds.map((id) => ({ id })) }));
+// Chapter ids are c0, c1, … so quiz-pass sets can target them by index.
+const chapters = (ids: string[][], quizAt: number[] = []) =>
+  ids.map((lessonIds, i) => ({
+    id: `c${i}`,
+    lessons: lessonIds.map((id) => ({ id })),
+    hasQuiz: quizAt.includes(i),
+  }));
+
+const NO_QUIZ: Set<string> = new Set();
 
 describe("chapterUnlockFlags", () => {
   it("always unlocks the first chapter", () => {
-    const flags = chapterUnlockFlags(chapters([["a"], ["b"]]), new Set());
+    const flags = chapterUnlockFlags(
+      chapters([["a"], ["b"]]),
+      new Set(),
+      NO_QUIZ,
+    );
     expect(flags[0]).toBe(true);
   });
 
   it("locks a chapter until every earlier lesson is complete", () => {
     const ch = chapters([["a", "b"], ["c"], ["d"]]);
-    expect(chapterUnlockFlags(ch, new Set(["a"]))).toEqual([true, false, false]);
-    expect(chapterUnlockFlags(ch, new Set(["a", "b"]))).toEqual([
+    expect(chapterUnlockFlags(ch, new Set(["a"]), NO_QUIZ)).toEqual([
+      true,
+      false,
+      false,
+    ]);
+    expect(chapterUnlockFlags(ch, new Set(["a", "b"]), NO_QUIZ)).toEqual([
       true,
       true,
       false,
     ]);
-    expect(chapterUnlockFlags(ch, new Set(["a", "b", "c"]))).toEqual([
+    expect(chapterUnlockFlags(ch, new Set(["a", "b", "c"]), NO_QUIZ)).toEqual([
       true,
+      true,
+      true,
+    ]);
+  });
+
+  it("keeps the next chapter locked until an earlier quiz is passed", () => {
+    // Chapter 0 has a quiz; finishing its lessons alone is not enough.
+    const ch = chapters([["a"], ["b"]], [0]);
+    expect(chapterUnlockFlags(ch, new Set(["a"]), new Set())).toEqual([
+      true,
+      false,
+    ]);
+    expect(chapterUnlockFlags(ch, new Set(["a"]), new Set(["c0"]))).toEqual([
       true,
       true,
     ]);
@@ -31,11 +60,33 @@ describe("chapterUnlockFlags", () => {
 
   it("does not let an earlier empty chapter block later ones", () => {
     const ch = chapters([[], ["a"]]);
-    expect(chapterUnlockFlags(ch, new Set())).toEqual([true, true]);
+    expect(chapterUnlockFlags(ch, new Set(), NO_QUIZ)).toEqual([true, true]);
   });
 
   it("returns an empty array for a course with no chapters", () => {
-    expect(chapterUnlockFlags([], new Set())).toEqual([]);
+    expect(chapterUnlockFlags([], new Set(), NO_QUIZ)).toEqual([]);
+  });
+});
+
+describe("isCourseCompleteWithQuizzes", () => {
+  it("requires every lesson done and every quiz passed", () => {
+    const ch = chapters([["a"], ["b"]], [1]);
+    // All lessons done but chapter 1's quiz not passed yet.
+    expect(
+      isCourseCompleteWithQuizzes(ch, new Set(["a", "b"]), new Set()),
+    ).toBe(false);
+    expect(
+      isCourseCompleteWithQuizzes(ch, new Set(["a", "b"]), new Set(["c1"])),
+    ).toBe(true);
+  });
+
+  it("is not complete when a lesson is unfinished", () => {
+    const ch = chapters([["a"], ["b"]]);
+    expect(isCourseCompleteWithQuizzes(ch, new Set(["a"]), NO_QUIZ)).toBe(false);
+  });
+
+  it("treats a course with no lessons as not complete", () => {
+    expect(isCourseCompleteWithQuizzes([], new Set(), NO_QUIZ)).toBe(false);
   });
 });
 

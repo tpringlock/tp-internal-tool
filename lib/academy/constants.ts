@@ -18,6 +18,15 @@ export function buildLessonFilePath(
   return `${courseId}/${lessonId}/${fileId}.pdf`;
 }
 
+/**
+ * Build the storage path for a course-level PDF: {courseId}/course/{fileId}.pdf.
+ * The `course/` segment keeps course documents from colliding with lesson files
+ * (which live under {courseId}/{lessonId}/) inside the same course prefix.
+ */
+export function buildCourseFilePath(courseId: string, fileId: string): string {
+  return `${courseId}/course/${fileId}.pdf`;
+}
+
 /** Course thumbnail uploads: images only, up to 5 MB, in the same private bucket. */
 export const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 export const ACCEPTED_IMAGE_MIME: Record<string, string> = {

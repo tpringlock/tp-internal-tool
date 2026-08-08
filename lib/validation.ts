@@ -123,6 +123,28 @@ export const lessonSchema = z.object({
     .transform((v) => (v ? v : null)),
 });
 
+/**
+ * A single-correct quiz question: a prompt plus 2..6 option labels and the index
+ * of the correct one. Options come in as an ordered array; the action persists
+ * them and marks `correct_index` as is_correct.
+ */
+export const quizQuestionSchema = z.object({
+  prompt: z.string().trim().min(1, "promptRequired").max(500, "textTooLong"),
+  options: z
+    .array(z.string().trim().min(1, "optionRequired").max(300, "textTooLong"))
+    .min(2, "optionsMin")
+    .max(6, "optionsMax"),
+  correct_index: z.coerce
+    .number()
+    .int()
+    .min(0, "correctRequired"),
+});
+
+/** A learner's lesson note. Empty is allowed (clearing a note). */
+export const lessonNoteSchema = z.object({
+  content: z.string().max(10000, "textTooLong"),
+});
+
 /** Minimal shape of a next-intl translator (from useTranslations/getTranslations). */
 type Translator = ((key: string) => string) & { has: (key: string) => boolean };
 
@@ -150,3 +172,5 @@ export type ClientInput = z.infer<typeof clientSchema>;
 export type ProjectInput = z.infer<typeof projectSchema>;
 export type CourseInput = z.infer<typeof courseSchema>;
 export type LessonInput = z.infer<typeof lessonSchema>;
+export type QuizQuestionInput = z.infer<typeof quizQuestionSchema>;
+export type LessonNoteInput = z.infer<typeof lessonNoteSchema>;

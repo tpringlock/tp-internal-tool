@@ -1,17 +1,32 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { FileText, Trash2 } from "lucide-react";
 import { requireAdmin } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
-import { publishCourse, deleteCourse } from "@/app/actions/academy";
+import {
+  publishCourse,
+  deleteCourse,
+  deleteCourseFile,
+} from "@/app/actions/academy";
+import { formatBytes } from "@/lib/format";
 import { EditCourseForm, ThumbnailManager } from "../course-forms";
 import { AddLessonForm, LessonEditor } from "./lesson-forms";
 import { AddChapterForm, ChapterHeader } from "./chapter-forms";
-import type { Course, Chapter, Lesson, LessonFile } from "@/lib/db/types";
+import { QuizManager, type AdminQuizQuestion } from "./quiz-forms";
+import { UploadCourseFileForm } from "./course-docs-forms";
+import type {
+  Course,
+  Chapter,
+  Lesson,
+  LessonFile,
+  CourseFile,
+} from "@/lib/db/types";
 
 type FileRow = Pick<LessonFile, "id" | "lesson_id" | "file_name" | "file_size">;
+type CourseDocRow = Pick<CourseFile, "id" | "file_name" | "file_size">;
 
 export default async function AdminCoursePage({
   params,
@@ -66,6 +81,58 @@ export default async function AdminCoursePage({
     list.push(lesson);
     lessonsByChapter.set(lesson.chapter_id, list);
   }
+
+  // Quiz questions + options grouped by chapter (admins see correct answers).
+  const chapterIds = chapters.map((c) => c.id);
+  const quizByChapter = new Map<string, AdminQuizQuestion[]>();
+  if (chapterIds.length > 0) {
+    const { data: questionData } = await supabase
+      .from("quiz_questions")
+      .select("id, chapter_id, prompt, position")
+      .in("chapter_id", chapterIds)
+      .order("position", { ascending: true });
+    const questions = questionData ?? [];
+    const questionIds = questions.map((q) => q.id);
+
+    const optionsByQuestion = new Map<
+      string,
+      AdminQuizQuestion["options"]
+    >();
+    if (questionIds.length > 0) {
+      const { data: optionData } = await supabase
+        .from("quiz_options")
+        .select("id, question_id, label, is_correct, position")
+        .in("question_id", questionIds)
+        .order("position", { ascending: true });
+      for (const o of optionData ?? []) {
+        const list = optionsByQuestion.get(o.question_id) ?? [];
+        list.push({
+          id: o.id,
+          label: o.label,
+          is_correct: o.is_correct,
+          position: o.position,
+        });
+        optionsByQuestion.set(o.question_id, list);
+      }
+    }
+    for (const q of questions) {
+      const list = quizByChapter.get(q.chapter_id) ?? [];
+      list.push({
+        id: q.id,
+        prompt: q.prompt,
+        position: q.position,
+        options: optionsByQuestion.get(q.id) ?? [],
+      });
+      quizByChapter.set(q.chapter_id, list);
+    }
+  }
+
+  const { data: courseDocData } = await supabase
+    .from("course_files")
+    .select("id, file_name, file_size")
+    .eq("course_id", id)
+    .order("created_at", { ascending: true });
+  const courseDocs = (courseDocData ?? []) as CourseDocRow[];
 
   const published = course.status === "published";
 
@@ -178,6 +245,13 @@ export default async function AdminCoursePage({
                     </p>
                     <AddLessonForm courseId={course.id} chapterId={chapter.id} />
                   </div>
+                  <div className="border-t border-slate-100 px-5 py-4">
+                    <QuizManager
+                      courseId={course.id}
+                      chapterId={chapter.id}
+                      questions={quizByChapter.get(chapter.id) ?? []}
+                    />
+                  </div>
                 </Card>
               );
             })}
@@ -191,6 +265,46 @@ export default async function AdminCoursePage({
         </CardHeader>
         <CardBody>
           <AddChapterForm courseId={course.id} />
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("courseDocuments")}</CardTitle>
+        </CardHeader>
+        <CardBody className="space-y-4">
+          {courseDocs.length === 0 ? (
+            <p className="text-sm text-slate-500">{t("noCourseDocs")}</p>
+          ) : (
+            <ul className="space-y-2">
+              {courseDocs.map((file) => (
+                <li
+                  key={file.id}
+                  className="flex items-center justify-between gap-3 rounded-md border border-slate-200 bg-white px-3 py-2"
+                >
+                  <span className="flex items-center gap-2 text-sm text-slate-700">
+                    <FileText className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+                    {file.file_name}
+                    <span className="text-xs text-slate-400">
+                      {formatBytes(file.file_size)}
+                    </span>
+                  </span>
+                  <form action={deleteCourseFile}>
+                    <input type="hidden" name="id" value={file.id} />
+                    <input type="hidden" name="course_id" value={course.id} />
+                    <button
+                      type="submit"
+                      aria-label={t("removeFile")}
+                      className="text-slate-400 hover:text-red-600"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </form>
+                </li>
+              ))}
+            </ul>
+          )}
+          <UploadCourseFileForm courseId={course.id} />
         </CardBody>
       </Card>
     </div>

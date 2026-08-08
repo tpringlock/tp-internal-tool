@@ -33,7 +33,11 @@ export default async function ProjectDetailPage({
       supabase.from("clients").select("id, name").order("name"),
       supabase
         .from("project_members")
-        .select("user_id, profiles(full_name, role)")
+        // project_members has two FKs to profiles (user_id + assigned_by), so
+        // the embed must name which one to follow — an unqualified
+        // `profiles(...)` is ambiguous and makes PostgREST error out (silently
+        // yielding zero members here).
+        .select("user_id, profiles!project_members_user_id_fkey(full_name, role)")
         .eq("project_id", id),
       supabase
         .from("profiles")
