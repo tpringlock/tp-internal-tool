@@ -15,17 +15,26 @@ The app needs a Supabase project for Postgres, Auth and Storage.
 Apply the SQL in `supabase/migrations` in order. Either:
 
 - **Supabase Studio → SQL Editor**: paste and run `0001_init.sql`,
-  `0002_rls.sql`, `0003_storage.sql` in that order; or
+  `0002_rls.sql`, `0003_storage.sql`, `0004_security_hardening.sql` in that
+  order; or
 - **Supabase CLI**: `supabase link` then `supabase db push`.
 
 This creates the schema, RLS policies, the `handle_new_user` trigger, and the
-private `documents` storage bucket.
+private `documents` storage bucket. `0004_security_hardening.sql` then locks down
+the `SECURITY DEFINER` functions (per the security advisor): the RLS helpers
+(`is_admin`, `is_active_user`, `is_project_member`) move to a `private` schema
+that PostgREST does not expose, and the trigger-only functions have their
+`EXECUTE` revoked from client roles.
 
 ## 3. Configure Auth
 
 - **Authentication → Providers → Email**: enabled. Public sign-ups are not used
   (accounts are created by admins), so you may disable "Allow new users to sign
   up" once your first admin exists.
+- **Authentication → Sign In / Providers → Password**: enable **Leaked password
+  protection** (checks passwords against HaveIBeenPwned). This clears the
+  `auth_leaked_password_protection` security-advisor warning, which cannot be
+  fixed in SQL.
 - **Authentication → URL Configuration**: set **Site URL** to
   `http://localhost:3000` and add `http://localhost:3000/**` (and your deployed
   equivalent) to the redirect allow-list, so password-reset links work.
