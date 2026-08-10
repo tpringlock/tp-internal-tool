@@ -39,7 +39,7 @@ export function UploadCourseFileForm({ courseId }: { courseId: string }) {
           />
         </Field>
       </div>
-      <Button type="submit" variant="secondary" size="sm" disabled={pending}>
+      <Button type="submit" variant="secondary" size="sm" loading={pending}>
         {pending ? t("uploading") : t("upload")}
       </Button>
       {state.error && (

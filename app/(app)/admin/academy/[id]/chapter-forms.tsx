@@ -31,7 +31,7 @@ export function AddChapterForm({ courseId }: { courseId: string }) {
           <Input name="title" required />
         </Field>
       </div>
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" loading={pending}>
         {pending ? t("saving") : t("addChapter")}
       </Button>
     </form>
@@ -67,7 +67,7 @@ export function ChapterHeader({
           <Input name="title" defaultValue={chapter.title} required />
         </Field>
         <div className="flex gap-2">
-          <Button type="submit" size="sm" disabled={pending}>
+          <Button type="submit" size="sm" loading={pending}>
             {pending ? t("saving") : t("save")}
           </Button>
           <Button

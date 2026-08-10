@@ -5,6 +5,8 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { FileText } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
+import { PdfFrame } from "@/components/ui/pdf-frame";
+import { DownloadLink } from "@/components/ui/download-link";
 import { cn } from "@/lib/utils";
 import { formatBytes } from "@/lib/format";
 
@@ -77,14 +79,14 @@ export function CourseContentPanel({
                       {formatBytes(file.file_size)}
                     </span>
                   </div>
-                  <a
+                  <DownloadLink
                     href={`/api/academy/course-files/${file.id}?dl=1`}
                     className="text-sm font-medium text-slate-700 underline hover:text-slate-900"
                   >
                     {t("download")}
-                  </a>
+                  </DownloadLink>
                 </div>
-                <iframe
+                <PdfFrame
                   src={`/api/academy/course-files/${file.id}`}
                   title={file.file_name}
                   className="h-[600px] w-full rounded-md border border-slate-200"

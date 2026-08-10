@@ -82,7 +82,7 @@ export function CreateCourseForm() {
     <form action={action} className="space-y-4">
       {state.error && <Alert tone="error">{state.error}</Alert>}
       <CourseFields t={t} state={state} />
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" loading={pending}>
         {pending ? t("creating") : t("createCourse")}
       </Button>
     </form>
@@ -102,7 +102,7 @@ export function EditCourseForm({ course }: { course: Course }) {
       {state.success && <Alert tone="success">{state.success}</Alert>}
       {state.error && <Alert tone="error">{state.error}</Alert>}
       <CourseFields t={t} state={state} course={course} />
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" loading={pending}>
         {pending ? t("saving") : t("saveChanges")}
       </Button>
     </form>
@@ -167,7 +167,7 @@ export function ThumbnailManager({ course }: { course: Course }) {
             />
           </Field>
         </div>
-        <Button type="submit" variant="secondary" size="sm" disabled={pending}>
+        <Button type="submit" variant="secondary" size="sm" loading={pending}>
           {pending ? t("uploading") : t("upload")}
         </Button>
         {state.error && (

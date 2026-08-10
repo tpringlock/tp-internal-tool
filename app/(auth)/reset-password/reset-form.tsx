@@ -50,7 +50,7 @@ export function ResetPasswordForm() {
         />
       </Field>
 
-      <Button type="submit" className="w-full" disabled={pending}>
+      <Button type="submit" className="w-full" loading={pending}>
         {pending ? t("saving") : t("setNewPassword")}
       </Button>
     </form>

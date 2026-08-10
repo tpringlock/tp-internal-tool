@@ -46,7 +46,7 @@ export function LoginForm({ next }: { next: string }) {
         />
       </Field>
 
-      <Button type="submit" className="w-full" disabled={pending}>
+      <Button type="submit" className="w-full" loading={pending}>
         {pending ? t("signingIn") : t("signIn")}
       </Button>
 

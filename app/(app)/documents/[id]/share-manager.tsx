@@ -76,7 +76,7 @@ export function ShareManager({
               <option value="30">{t("days", { count: 30 })}</option>
             </Select>
           </div>
-          <Button type="submit" disabled={pending}>
+          <Button type="submit" loading={pending}>
             {pending ? t("creating") : t("createLink")}
           </Button>
         </div>

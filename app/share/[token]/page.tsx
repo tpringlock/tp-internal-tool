@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { logActivity } from "@/lib/activity";
 import { resolveShareToken } from "@/lib/documents/share";
 import { Button } from "@/components/ui/button";
+import { PdfFrame } from "@/components/ui/pdf-frame";
 
 export default async function SharePage({
   params,
@@ -56,7 +57,7 @@ export default async function SharePage({
       </header>
 
       <main className="mx-auto w-full max-w-5xl flex-1 p-4">
-        <iframe
+        <PdfFrame
           title={share.canonicalName}
           src={`/api/share/${token}`}
           className="h-[80vh] w-full rounded-lg border border-slate-200 bg-white"

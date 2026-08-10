@@ -66,7 +66,7 @@ export function CreateProjectForm({ clients }: { clients: ClientOption[] }) {
         </Field>
       </div>
 
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" loading={pending}>
         {pending ? t("creating") : t("addProjectButton")}
       </Button>
     </form>
@@ -116,7 +116,7 @@ export function EditProjectForm({
         </Field>
       </div>
 
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" loading={pending}>
         {pending ? t("saving") : t("saveChanges")}
       </Button>
     </form>

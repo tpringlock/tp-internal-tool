@@ -51,7 +51,7 @@ export function ProfileDetailsForm({
             />
           </Field>
 
-          <Button type="submit" disabled={pending}>
+          <Button type="submit" loading={pending}>
             {pending ? tc("saving") : t("saveChanges")}
           </Button>
         </form>
@@ -107,7 +107,7 @@ export function ChangePasswordForm() {
             />
           </Field>
 
-          <Button type="submit" disabled={pending}>
+          <Button type="submit" loading={pending}>
             {pending ? tc("saving") : t("changePassword")}
           </Button>
         </form>

@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
+import { PdfFrame } from "@/components/ui/pdf-frame";
 import { formatBytes, formatDateTime } from "@/lib/format";
 import { env } from "@/lib/env";
 import { labelForAction } from "@/lib/activity-labels";
@@ -108,7 +109,7 @@ export default async function DocumentDetailPage({
               <CardTitle>{t("preview")}</CardTitle>
             </CardHeader>
             <CardBody className="p-0">
-              <iframe
+              <PdfFrame
                 title={doc.canonical_name}
                 src={`/api/documents/${doc.id}`}
                 className="h-[640px] w-full rounded-b-lg"

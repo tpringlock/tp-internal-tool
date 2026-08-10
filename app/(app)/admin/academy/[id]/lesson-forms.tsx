@@ -58,7 +58,7 @@ export function AddLessonForm({
       <Field label={t("lessonDescription")} error={state.fieldErrors?.description?.[0]}>
         <Textarea name="description" rows={3} />
       </Field>
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" loading={pending}>
         {pending ? t("saving") : t("addLesson")}
       </Button>
     </form>
@@ -208,7 +208,7 @@ function EditLessonForm({
       <Field label={t("lessonDescription")} error={state.fieldErrors?.description?.[0]}>
         <Textarea name="description" rows={3} defaultValue={lesson.description ?? ""} />
       </Field>
-      <Button type="submit" size="sm" disabled={pending}>
+      <Button type="submit" size="sm" loading={pending}>
         {pending ? t("saving") : t("save")}
       </Button>
     </form>
@@ -248,7 +248,7 @@ function UploadFileForm({
           />
         </Field>
       </div>
-      <Button type="submit" variant="secondary" size="sm" disabled={pending}>
+      <Button type="submit" variant="secondary" size="sm" loading={pending}>
         {pending ? t("uploading") : t("upload")}
       </Button>
       {state.error && (

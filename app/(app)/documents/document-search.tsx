@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 
 interface Suggestion {
   id: string;
@@ -109,15 +110,21 @@ export function DocumentSearch() {
           onFocus={() => results.length > 0 && setOpen(true)}
           onKeyDown={onKeyDown}
           placeholder={t("searchFilesPlaceholder")}
-          className="pl-9"
+          className="pl-9 pr-9"
           aria-label={t("searchFilesPlaceholder")}
         />
+        {loading && (
+          <Spinner className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-primary" />
+        )}
       </div>
 
       {open && (
         <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg">
           {loading && results.length === 0 ? (
-            <p className="px-4 py-3 text-sm text-slate-400">{t("searching")}</p>
+            <p className="flex items-center gap-2 px-4 py-3 text-sm text-slate-400">
+              <Spinner className="h-4 w-4" />
+              {t("searching")}
+            </p>
           ) : results.length === 0 ? (
             <p className="px-4 py-3 text-sm text-slate-400">{t("noMatches")}</p>
           ) : (

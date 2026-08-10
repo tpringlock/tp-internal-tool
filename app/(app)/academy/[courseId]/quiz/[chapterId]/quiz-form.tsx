@@ -83,7 +83,7 @@ export function QuizForm({
           {t("quizContinue")}
         </Link>
       ) : (
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" loading={pending}>
           {pending ? t("quizSubmitting") : t("quizSubmit")}
         </Button>
       )}

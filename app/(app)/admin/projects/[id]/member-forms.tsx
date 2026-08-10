@@ -61,7 +61,7 @@ export function AssignMemberForm({
             ))}
           </Select>
         </div>
-        <Button type="submit" disabled={pending || noneToAdd}>
+        <Button type="submit" loading={pending} disabled={noneToAdd}>
           {pending ? t("adding") : t("addMember")}
         </Button>
       </div>

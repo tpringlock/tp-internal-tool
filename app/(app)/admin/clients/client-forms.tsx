@@ -41,7 +41,7 @@ export function CreateClientForm() {
         </Field>
       </div>
 
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" loading={pending}>
         {pending ? t("creating") : t("addClientButton")}
       </Button>
     </form>
@@ -86,7 +86,7 @@ export function ClientRow({ client }: { client: Client }) {
             </Field>
           </div>
           <div className="flex gap-2">
-            <Button type="submit" size="sm" disabled={pending}>
+            <Button type="submit" size="sm" loading={pending}>
               {pending ? t("saving") : t("save")}
             </Button>
             <Button

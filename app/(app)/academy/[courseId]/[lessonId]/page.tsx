@@ -12,6 +12,8 @@ import {
 import { requireUser } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
+import { PdfFrame } from "@/components/ui/pdf-frame";
+import { DownloadLink } from "@/components/ui/download-link";
 import { cn } from "@/lib/utils";
 import { parseVideoUrl } from "@/lib/academy/video";
 import {
@@ -210,14 +212,14 @@ export default async function LessonPage({
                           {formatBytes(file.file_size)}
                         </span>
                       </div>
-                      <a
+                      <DownloadLink
                         href={`/api/academy/files/${file.id}?dl=1`}
                         className="text-sm font-medium text-slate-700 underline hover:text-slate-900"
                       >
                         {t("download")}
-                      </a>
+                      </DownloadLink>
                     </div>
-                    <iframe
+                    <PdfFrame
                       src={`/api/academy/files/${file.id}`}
                       title={file.file_name}
                       className="h-[600px] w-full rounded-md border border-slate-200"

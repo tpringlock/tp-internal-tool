@@ -67,7 +67,7 @@ export function CreateUserForm() {
         </Field>
       </div>
 
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" loading={pending}>
         {pending ? t("creating") : t("createUser")}
       </Button>
     </form>

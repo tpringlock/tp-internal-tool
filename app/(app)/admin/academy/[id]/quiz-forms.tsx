@@ -152,7 +152,7 @@ function QuizQuestionForm({
         )}
       </div>
 
-      <Button type="submit" size="sm" disabled={pending}>
+      <Button type="submit" size="sm" loading={pending}>
         {pending ? t("saving") : isEdit ? t("save") : t("quizAddQuestion")}
       </Button>
     </form>

@@ -169,7 +169,7 @@ export function UploadForm({
         <p className="text-xs text-red-600">{state.fieldErrors.signed[0]}</p>
       )}
 
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" loading={pending}>
         {pending ? t("uploading") : t("uploadDocument")}
       </Button>
     </form>
