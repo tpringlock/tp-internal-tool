@@ -13,7 +13,12 @@ interface ProjectRow {
   clients: { name: string } | null;
 }
 
-export default async function UploadPage() {
+export default async function UploadPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ client?: string }>;
+}) {
+  const { client = "" } = await searchParams;
   await requireUser();
   const supabase = await createClient();
   const t = await getTranslations("Documents");
@@ -75,7 +80,7 @@ export default async function UploadPage() {
           {projects.length === 0 ? (
             <Alert tone="info">{t("noActiveProjects")}</Alert>
           ) : (
-            <UploadForm projects={projects} />
+            <UploadForm projects={projects} defaultClientId={client} />
           )}
         </CardBody>
       </Card>

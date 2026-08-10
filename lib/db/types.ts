@@ -82,6 +82,16 @@ export type ShareLink = {
   created_at: string;
 };
 
+export type FolderShareLink = {
+  id: string;
+  client_id: string;
+  token: string;
+  expires_at: string;
+  revoked_at: string | null;
+  created_by: string;
+  created_at: string;
+};
+
 export type Course = {
   id: string;
   title: string;
@@ -241,6 +251,11 @@ export interface Database {
         ShareLink,
         Insert<ShareLink, "id" | "created_at" | "token" | "revoked_at">,
         Partial<ShareLink>
+      >;
+      folder_share_links: Table<
+        FolderShareLink,
+        Insert<FolderShareLink, "id" | "created_at" | "token" | "revoked_at">,
+        Partial<FolderShareLink>
       >;
       activity_log: Table<
         ActivityLog,

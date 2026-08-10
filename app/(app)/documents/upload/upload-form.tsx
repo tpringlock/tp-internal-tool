@@ -19,7 +19,13 @@ export interface UploadProject {
   clientName: string;
 }
 
-export function UploadForm({ projects }: { projects: UploadProject[] }) {
+export function UploadForm({
+  projects,
+  defaultClientId = "",
+}: {
+  projects: UploadProject[];
+  defaultClientId?: string;
+}) {
   const t = useTranslations("Documents");
   const dt = useTranslations("DocTypes");
   const [state, action, pending] = useActionState<FormState, FormData>(
@@ -33,8 +39,19 @@ export function UploadForm({ projects }: { projects: UploadProject[] }) {
     return [...map.entries()].map(([id, name]) => ({ id, name }));
   }, [projects]);
 
-  const [clientId, setClientId] = useState("");
-  const [projectId, setProjectId] = useState("");
+  // Preselect the client when arriving from its folder, and its project too if
+  // there is only one — only if the user actually has access to it.
+  const initialClientId = projects.some((p) => p.clientId === defaultClientId)
+    ? defaultClientId
+    : "";
+  const initialProjects = projects.filter(
+    (p) => p.clientId === initialClientId,
+  );
+
+  const [clientId, setClientId] = useState(initialClientId);
+  const [projectId, setProjectId] = useState(
+    initialProjects.length === 1 ? initialProjects[0].id : "",
+  );
   const [docType, setDocType] = useState<DocType | "">("");
 
   const clientProjects = projects.filter((p) => p.clientId === clientId);

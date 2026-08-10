@@ -1,15 +1,16 @@
 import type { DocType } from "../db/types";
 
-/** Single-token labels used inside generated filenames (no spaces). */
+/** Vietnamese labels used inside generated filenames (mirrors the DocTypes
+ *  message namespace). Diacritics and spaces are intentional and preserved. */
 const DOC_TYPE_FILENAME_LABEL: Record<DocType, string> = {
-  contract: "Contract",
-  addendum: "Addendum",
-  payment_record: "PaymentRecord",
-  invoice: "Invoice",
-  debt_reconciliation: "DebtReconciliation",
-  handover_minutes: "HandoverMinutes",
-  correspondence: "Correspondence",
-  meeting_minutes: "MeetingMinutes",
+  contract: "Hợp đồng",
+  addendum: "Phụ lục hợp đồng",
+  payment_record: "Chứng từ thanh toán",
+  invoice: "Hóa đơn",
+  debt_reconciliation: "Biên bản đối chiếu công nợ",
+  handover_minutes: "Biên bản bàn giao",
+  correspondence: "Công văn",
+  meeting_minutes: "Biên bản họp",
 };
 
 // Characters not allowed in file names across common filesystems.

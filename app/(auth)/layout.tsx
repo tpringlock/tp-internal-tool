@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 
 export default function AuthLayout({
@@ -8,11 +9,36 @@ export default function AuthLayout({
   const t = useTranslations("Common");
 
   return (
-    <div className="flex min-h-full items-center justify-center bg-slate-50 px-4 py-12">
-      <div className="w-full max-w-sm">
-        <div className="mb-6 text-center">
-          <h1 className="text-lg font-semibold text-primary">{t("title")}</h1>
-          <p className="text-sm text-slate-500">{t("tagline")}</p>
+    <div className="relative flex min-h-full items-center justify-center overflow-hidden px-4 py-12">
+      {/* Brand-color backdrop: primary gradient, dimmed, with soft blurred
+          accents so the page reads intentionally rather than empty. */}
+      <div
+        className="absolute inset-0 -z-20"
+        style={{
+          background:
+            "linear-gradient(135deg, var(--color-primary), var(--color-primary-hover))",
+        }}
+      />
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-white/15 blur-3xl" />
+        <div className="absolute -bottom-32 -right-20 h-96 w-96 rounded-full bg-black/15 blur-3xl" />
+        <div className="absolute inset-0 bg-slate-950/20" />
+      </div>
+
+      <div className="relative z-10 w-full max-w-sm">
+        <div className="mb-6 flex flex-col items-center text-center">
+          <div className="mb-4 rounded-2xl bg-white p-3 shadow-lg">
+            <Image
+              src="/logo-tp.png"
+              alt={t("title")}
+              width={56}
+              height={56}
+              priority
+              className="h-14 w-14 object-contain"
+            />
+          </div>
+          <h1 className="text-lg font-semibold text-white">{t("title")}</h1>
+          <p className="text-sm text-white/80">{t("tagline")}</p>
         </div>
         {children}
       </div>
