@@ -9,7 +9,7 @@ export default function AuthLayout({
   const t = useTranslations("Common");
 
   return (
-    <div className="relative flex min-h-full items-center justify-center overflow-hidden px-4 py-12">
+    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden px-4 py-12">
       {/* Full-bleed photo backdrop, dimmed with soft blurred accents below so
           the white title/logo stay readable rather than washing out. */}
       <Image
