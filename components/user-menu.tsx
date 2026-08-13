@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import type { UserRole } from "@/lib/db/types";
+import { canManageContent } from "@/lib/auth/roles";
 
 interface MenuItem {
   href: string;
@@ -15,15 +17,19 @@ export function UserMenu({
   role,
 }: {
   fullName: string;
-  role: "admin" | "employee";
+  role: UserRole;
 }) {
   const t = useTranslations("Nav");
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const items: MenuItem[] = [{ href: "/profile", label: t("profile") }];
-  if (role === "admin") {
-    items.push({ href: "/admin/users", label: t("admin") });
+  if (canManageContent(role)) {
+    // Managers can't reach /admin/users; send them to a section they can use.
+    items.push({
+      href: role === "admin" ? "/admin/users" : "/admin/clients",
+      label: t("admin"),
+    });
   }
 
   // Close on outside click and Escape.
@@ -58,9 +64,9 @@ export function UserMenu({
         className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
       >
         <span className="hidden sm:inline">{fullName}</span>
-        {role === "admin" && (
+        {role !== "employee" && (
           <span className="rounded bg-primary px-1.5 py-0.5 text-xs text-white">
-            {t("admin")}
+            {role === "admin" ? t("admin") : t("manager")}
           </span>
         )}
         <svg

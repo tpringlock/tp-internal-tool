@@ -47,6 +47,7 @@ export function CreateUserForm() {
         <Field label={t("role")} htmlFor="role" error={state.fieldErrors?.role?.[0]}>
           <Select id="role" name="role" defaultValue="employee">
             <option value="employee">{t("employee")}</option>
+            <option value="manager">{t("managerRole")}</option>
             <option value="admin">{t("adminRole")}</option>
           </Select>
         </Field>

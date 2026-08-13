@@ -2,9 +2,12 @@ import Link from "next/link";
 import { Folder, List, Upload } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth/dal";
+import { canManageContent } from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
+import { AddFolderTile } from "@/components/add-folder-tile";
+import { CreateClientForm } from "@/app/(app)/admin/clients/client-forms";
 import { DocumentSearch } from "./document-search";
 
 interface DocClientRow {
@@ -18,7 +21,8 @@ interface ClientFolder {
 }
 
 export default async function DocumentsPage() {
-  await requireUser();
+  const user = await requireUser();
+  const canManage = canManageContent(user.profile.role);
   const supabase = await createClient();
   const t = await getTranslations("Documents");
 
@@ -67,7 +71,7 @@ export default async function DocumentsPage() {
 
       <DocumentSearch />
 
-      {folders.length === 0 ? (
+      {folders.length === 0 && !canManage ? (
         <Card>
           <CardBody>
             <p className="text-sm text-slate-500">{t("noDocuments")}</p>
@@ -98,6 +102,14 @@ export default async function DocumentsPage() {
               </Card>
             </Link>
           ))}
+          {canManage && (
+            <AddFolderTile
+              label={t("addCustomer")}
+              dialogTitle={t("addCustomerTitle")}
+            >
+              <CreateClientForm />
+            </AddFolderTile>
+          )}
         </div>
       )}
     </div>

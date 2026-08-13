@@ -88,7 +88,8 @@ export async function setUserActive(formData: FormData): Promise<void> {
 export async function setUserRole(formData: FormData): Promise<void> {
   const admin = await requireAdmin();
   const userId = String(formData.get("user_id"));
-  const role = formData.get("role") === "admin" ? "admin" : "employee";
+  const raw = String(formData.get("role"));
+  const role = raw === "admin" || raw === "manager" ? raw : "employee";
 
   if (userId === admin.id && role !== "admin") {
     // Don't let the last admin demote themselves by accident.

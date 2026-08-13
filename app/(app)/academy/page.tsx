@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth/dal";
+import { canManageContent } from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
@@ -8,6 +9,8 @@ import {
   listPublishedCourses,
   listPublishedCategories,
 } from "@/lib/academy/queries";
+import { AddFolderTile } from "@/components/add-folder-tile";
+import { CreateCourseForm } from "@/app/(app)/admin/academy/course-forms";
 import { AcademyTabs } from "./academy-tabs";
 import { CourseCard } from "./course-card";
 
@@ -16,7 +19,8 @@ export default async function AcademyPage({
 }: {
   searchParams: Promise<{ category?: string; q?: string }>;
 }) {
-  await requireUser();
+  const user = await requireUser();
+  const canManage = canManageContent(user.profile.role);
   const { category = "", q = "" } = await searchParams;
   const supabase = await createClient();
   const t = await getTranslations("Academy");
@@ -64,7 +68,7 @@ export default async function AcademyPage({
         </CardBody>
       </Card>
 
-      {courses.length === 0 ? (
+      {courses.length === 0 && !canManage ? (
         <Card>
           <CardBody>
             <p className="text-sm text-slate-500">{t("empty")}</p>
@@ -75,6 +79,14 @@ export default async function AcademyPage({
           {courses.map((course) => (
             <CourseCard key={course.id} course={course} />
           ))}
+          {canManage && (
+            <AddFolderTile
+              label={t("addCourse")}
+              dialogTitle={t("addCourseTitle")}
+            >
+              <CreateCourseForm />
+            </AddFolderTile>
+          )}
         </div>
       )}
     </div>

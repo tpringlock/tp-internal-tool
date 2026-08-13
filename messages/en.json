@@ -15,6 +15,7 @@
   "Nav": {
     "profile": "Profile",
     "admin": "Admin",
+    "manager": "Manager",
     "signOut": "Sign out",
     "openUserMenu": "Open user menu"
   },
@@ -88,6 +89,10 @@
     "filter": "Filter",
     "noDocuments": "No documents found.",
     "viewAsList": "View as list",
+    "addCustomer": "Add customer",
+    "addCustomerTitle": "Add a customer",
+    "addProject": "Add project",
+    "addProjectTitle": "Add a project",
     "backToFolders": "All folders",
     "filesCount": "{count, plural, one {# file} other {# files}}",
     "uploadToFolder": "Upload to this folder",
@@ -228,6 +233,8 @@
     "role": "Role",
     "employee": "Employee",
     "adminRole": "Admin",
+    "managerRole": "Manager",
+    "updateRole": "Update",
     "usersTitle": "Users",
     "usersSubtitle": "Create accounts and manage roles and access.",
     "addUser": "Add a user",
@@ -324,6 +331,8 @@
     "searchPlaceholder": "Course title…",
     "filter": "Filter",
     "empty": "No courses found.",
+    "addCourse": "Add course",
+    "addCourseTitle": "Add a course",
     "backToLibrary": "All courses",
     "noLessons": "No lessons in this course yet.",
     "attachments": "Attachments",
@@ -461,5 +470,23 @@
     "courseDocuments": "Course documents",
     "noCourseDocs": "No documents attached yet.",
     "addCourseDoc": "Add a PDF"
+  },
+  "Breadcrumb": {
+    "back": "Back",
+    "home": "Home",
+    "detail": "Detail",
+    "documents": "Documents",
+    "list": "List",
+    "upload": "Upload",
+    "customers": "Customers",
+    "academy": "Academy",
+    "myCourses": "My Courses",
+    "quiz": "Quiz",
+    "admin": "Admin",
+    "users": "Users",
+    "projects": "Projects",
+    "activity": "Activity",
+    "profile": "Profile",
+    "new": "New"
   }
 }

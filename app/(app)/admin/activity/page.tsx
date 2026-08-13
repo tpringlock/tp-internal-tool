@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/dal";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/input";
 import { Card, CardBody } from "@/components/ui/card";
@@ -30,6 +31,7 @@ export default async function AdminActivityPage({
 }: {
   searchParams: Promise<{ action?: string; page?: string }>;
 }) {
+  await requireAdmin(); // activity log is admin-only (managers reach /admin too)
   const { action = "", page = "1" } = await searchParams;
   const pageNum = Math.max(1, Number(page) || 1);
   const from = (pageNum - 1) * PAGE_SIZE;

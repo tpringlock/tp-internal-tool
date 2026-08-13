@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { requireAdmin, requireUser } from "@/lib/auth/dal";
+import { requireAdmin, requireContentManager, requireUser } from "@/lib/auth/dal";
 import { logActivity } from "@/lib/activity";
 import {
   courseSchema,
@@ -89,7 +89,7 @@ export async function createCourse(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const admin = await requireAdmin();
+  const admin = await requireContentManager();
   const parsed = courseSchema.safeParse({
     title: formData.get("title"),
     description: formData.get("description"),
@@ -124,7 +124,7 @@ export async function updateCourse(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  await requireAdmin();
+  await requireContentManager();
   const id = String(formData.get("id"));
   const parsed = courseSchema.safeParse({
     title: formData.get("title"),
@@ -152,7 +152,7 @@ export async function updateCourse(
 }
 
 export async function publishCourse(formData: FormData): Promise<void> {
-  await requireAdmin();
+  await requireContentManager();
   const id = String(formData.get("id"));
   const publish = formData.get("publish") === "true";
 
@@ -224,7 +224,7 @@ export async function addLesson(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  await requireAdmin();
+  await requireContentManager();
   const courseId = String(formData.get("course_id"));
   const chapterId = String(formData.get("chapter_id"));
   const parsed = lessonSchema.safeParse({
@@ -283,7 +283,7 @@ export async function updateLesson(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  await requireAdmin();
+  await requireContentManager();
   const id = String(formData.get("id"));
   const courseId = String(formData.get("course_id"));
   const parsed = lessonSchema.safeParse({
@@ -324,7 +324,7 @@ export async function updateLesson(
 }
 
 export async function deleteLesson(formData: FormData): Promise<void> {
-  await requireAdmin();
+  await requireContentManager();
   const id = String(formData.get("id"));
   const courseId = String(formData.get("course_id"));
 
@@ -349,7 +349,7 @@ export async function deleteLesson(formData: FormData): Promise<void> {
 
 /** Swap a lesson's position with its neighbour within its chapter (up | down). */
 export async function reorderLesson(formData: FormData): Promise<void> {
-  await requireAdmin();
+  await requireContentManager();
   const id = String(formData.get("id"));
   const courseId = String(formData.get("course_id"));
   const direction = String(formData.get("direction"));
@@ -396,7 +396,7 @@ export async function uploadLessonFile(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const admin = await requireAdmin();
+  const admin = await requireContentManager();
   const lessonId = String(formData.get("lesson_id"));
   const courseId = String(formData.get("course_id"));
   const file = formData.get("file");
@@ -451,7 +451,7 @@ export async function uploadLessonFile(
 }
 
 export async function deleteLessonFile(formData: FormData): Promise<void> {
-  await requireAdmin();
+  await requireContentManager();
   const id = String(formData.get("id"));
   const courseId = String(formData.get("course_id"));
 
@@ -481,7 +481,7 @@ export async function uploadCourseThumbnail(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  await requireAdmin();
+  await requireContentManager();
   const courseId = String(formData.get("course_id"));
   const file = formData.get("file");
   const t = await getTranslations("AcademyAdmin");
@@ -533,7 +533,7 @@ export async function uploadCourseThumbnail(
 }
 
 export async function removeCourseThumbnail(formData: FormData): Promise<void> {
-  await requireAdmin();
+  await requireContentManager();
   const courseId = String(formData.get("course_id"));
 
   const supabase = await createClient();
@@ -560,7 +560,7 @@ export async function addChapter(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  await requireAdmin();
+  await requireContentManager();
   const courseId = String(formData.get("course_id"));
   const parsed = chapterSchema.safeParse({ title: formData.get("title") });
   if (!parsed.success) {
@@ -591,7 +591,7 @@ export async function updateChapter(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  await requireAdmin();
+  await requireContentManager();
   const id = String(formData.get("id"));
   const courseId = String(formData.get("course_id"));
   const parsed = chapterSchema.safeParse({ title: formData.get("title") });
@@ -612,7 +612,7 @@ export async function updateChapter(
 }
 
 export async function deleteChapter(formData: FormData): Promise<void> {
-  await requireAdmin();
+  await requireContentManager();
   const id = String(formData.get("id"));
   const courseId = String(formData.get("course_id"));
 
@@ -640,7 +640,7 @@ export async function deleteChapter(formData: FormData): Promise<void> {
 
 /** Swap a chapter's position with its neighbour within the course (up | down). */
 export async function reorderChapter(formData: FormData): Promise<void> {
-  await requireAdmin();
+  await requireContentManager();
   const id = String(formData.get("id"));
   const courseId = String(formData.get("course_id"));
   const direction = String(formData.get("direction"));
@@ -788,7 +788,7 @@ export async function addQuizQuestion(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  await requireAdmin();
+  await requireContentManager();
   const chapterId = String(formData.get("chapter_id"));
   const courseId = String(formData.get("course_id"));
   const parsed = parseQuizQuestionForm(formData);
@@ -841,7 +841,7 @@ export async function updateQuizQuestion(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  await requireAdmin();
+  await requireContentManager();
   const id = String(formData.get("id"));
   const courseId = String(formData.get("course_id"));
   const parsed = parseQuizQuestionForm(formData);
@@ -879,7 +879,7 @@ export async function updateQuizQuestion(
 }
 
 export async function deleteQuizQuestion(formData: FormData): Promise<void> {
-  await requireAdmin();
+  await requireContentManager();
   const id = String(formData.get("id"));
   const courseId = String(formData.get("course_id"));
 
@@ -895,7 +895,7 @@ export async function deleteQuizQuestion(formData: FormData): Promise<void> {
 
 /** Swap a question's position with its neighbour within the chapter. */
 export async function reorderQuizQuestion(formData: FormData): Promise<void> {
-  await requireAdmin();
+  await requireContentManager();
   const id = String(formData.get("id"));
   const chapterId = String(formData.get("chapter_id"));
   const courseId = String(formData.get("course_id"));
@@ -1049,7 +1049,7 @@ export async function uploadCourseFile(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const admin = await requireAdmin();
+  const admin = await requireContentManager();
   const courseId = String(formData.get("course_id"));
   const file = formData.get("file");
   const t = await getTranslations("AcademyAdmin");
@@ -1103,7 +1103,7 @@ export async function uploadCourseFile(
 }
 
 export async function deleteCourseFile(formData: FormData): Promise<void> {
-  await requireAdmin();
+  await requireContentManager();
   const id = String(formData.get("id"));
   const courseId = String(formData.get("course_id"));
 

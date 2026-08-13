@@ -47,3 +47,16 @@ export async function requireAdmin(): Promise<SessionUser> {
   if (user.profile.role !== "admin") redirect("/");
   return user;
 }
+
+/**
+ * Require a content manager (admin or manager) or redirect home. Managers may
+ * create/edit clients, projects and academy content; deleting those top-level
+ * entities and all user/activity administration stays admin-only.
+ */
+export async function requireContentManager(): Promise<SessionUser> {
+  const user = await requireUser();
+  if (user.profile.role !== "admin" && user.profile.role !== "manager") {
+    redirect("/");
+  }
+  return user;
+}

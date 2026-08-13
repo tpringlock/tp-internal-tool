@@ -4,7 +4,7 @@
  * (`supabase gen types typescript`) once the project is linked.
  */
 
-export type UserRole = "admin" | "employee";
+export type UserRole = "admin" | "employee" | "manager";
 
 export type DocType =
   | "contract"

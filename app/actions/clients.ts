@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
-import { requireAdmin } from "@/lib/auth/dal";
+import { requireContentManager } from "@/lib/auth/dal";
 import { logActivity } from "@/lib/activity";
 import { clientSchema, translateFieldErrors } from "@/lib/validation";
 import type { FormState } from "@/app/actions/auth";
@@ -15,7 +15,7 @@ export async function addClient(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const admin = await requireAdmin();
+  const user = await requireContentManager();
 
   const parsed = clientSchema.safeParse({
     name: formData.get("name"),
@@ -29,7 +29,7 @@ export async function addClient(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("clients")
-    .insert({ ...parsed.data, created_by: admin.id })
+    .insert({ ...parsed.data, created_by: user.id })
     .select("id")
     .single();
 
@@ -55,7 +55,7 @@ export async function editClient(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  await requireAdmin();
+  await requireContentManager();
 
   const id = String(formData.get("id"));
   const parsed = clientSchema.safeParse({

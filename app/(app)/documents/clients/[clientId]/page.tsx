@@ -3,9 +3,12 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, Download, FileText, FolderOpen, Upload } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth/dal";
+import { canManageContent } from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
+import { AddFolderTile } from "@/components/add-folder-tile";
+import { CreateProjectForm } from "@/app/(app)/admin/projects/project-forms";
 import { formatBytes } from "@/lib/format";
 import { env } from "@/lib/env";
 import {
@@ -39,7 +42,8 @@ export default async function ClientFolderPage({
 }) {
   const { clientId } = await params;
   const { highlight = "" } = await searchParams;
-  await requireUser();
+  const user = await requireUser();
+  const canManage = canManageContent(user.profile.role);
   const supabase = await createClient();
   const t = await getTranslations("Documents");
   const dt = await getTranslations("DocTypes");
@@ -171,6 +175,17 @@ export default async function ClientFolderPage({
                 </CardBody>
               </Card>
             ))
+          )}
+
+          {canManage && (
+            <AddFolderTile
+              label={t("addProject")}
+              dialogTitle={t("addProjectTitle")}
+            >
+              <CreateProjectForm
+                clients={[{ id: clientId, name: client.name }]}
+              />
+            </AddFolderTile>
           )}
         </div>
 

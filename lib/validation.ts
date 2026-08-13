@@ -47,7 +47,7 @@ export const changePasswordSchema = z
 export const createUserSchema = z.object({
   email: z.string().email("emailInvalid"),
   full_name: z.string().trim().min(1, "nameRequired").max(120, "nameTooLong"),
-  role: z.enum(["admin", "employee"]),
+  role: z.enum(["admin", "employee", "manager"]),
   password: passwordSchema,
 });
 

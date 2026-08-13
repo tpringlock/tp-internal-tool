@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
-import { requireAdmin } from "@/lib/auth/dal";
+import { requireAdmin, requireContentManager } from "@/lib/auth/dal";
 import { logActivity } from "@/lib/activity";
 import {
   projectSchema,
@@ -18,7 +18,7 @@ export async function addProject(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const admin = await requireAdmin();
+  const user = await requireContentManager();
 
   const parsed = projectSchema.safeParse({
     name: formData.get("name"),
@@ -34,7 +34,7 @@ export async function addProject(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("projects")
-    .insert({ ...parsed.data, created_by: admin.id })
+    .insert({ ...parsed.data, created_by: user.id })
     .select("id")
     .single();
 
@@ -60,7 +60,7 @@ export async function editProject(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  await requireAdmin();
+  await requireContentManager();
 
   const id = String(formData.get("id"));
   const parsed = projectSchema.safeParse({

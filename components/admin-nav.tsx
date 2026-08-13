@@ -4,22 +4,24 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import type { UserRole } from "@/lib/db/types";
 
 const items = [
-  { href: "/admin/users", key: "users" },
-  { href: "/admin/clients", key: "clients" },
-  { href: "/admin/projects", key: "projects" },
-  { href: "/admin/academy", key: "academy" },
-  { href: "/admin/activity", key: "activity" },
+  { href: "/admin/users", key: "users", adminOnly: true },
+  { href: "/admin/clients", key: "clients", adminOnly: false },
+  { href: "/admin/projects", key: "projects", adminOnly: false },
+  { href: "/admin/academy", key: "academy", adminOnly: false },
+  { href: "/admin/activity", key: "activity", adminOnly: true },
 ] as const;
 
-export function AdminNav() {
+export function AdminNav({ role }: { role: UserRole }) {
   const pathname = usePathname();
   const t = useTranslations("AdminNav");
+  const visible = items.filter((item) => role === "admin" || !item.adminOnly);
 
   return (
     <nav className="flex gap-1 border-b border-slate-200 pb-2">
-      {items.map((item) => {
+      {visible.map((item) => {
         const active = pathname.startsWith(item.href);
         return (
           <Link

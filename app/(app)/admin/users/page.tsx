@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/auth/dal";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { setUserActive, setUserRole } from "@/app/actions/users";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/input";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import { CreateUserForm } from "./create-user-form";
@@ -94,7 +95,11 @@ export default async function AdminUsersPage({
                     <td className="px-5 py-3 text-slate-600">{u.email}</td>
                     <td className="px-5 py-3">
                       <span className="text-slate-700">
-                        {u.role === "admin" ? t("adminRole") : t("employee")}
+                        {u.role === "admin"
+                          ? t("adminRole")
+                          : u.role === "manager"
+                            ? t("managerRole")
+                            : t("employee")}
                       </span>
                     </td>
                     <td className="px-5 py-3">
@@ -106,22 +111,29 @@ export default async function AdminUsersPage({
                     </td>
                     <td className="px-5 py-3">
                       <div className="flex flex-wrap gap-2">
-                        <form action={setUserRole}>
+                        <form
+                          action={setUserRole}
+                          className="flex items-center gap-1.5"
+                        >
                           <input type="hidden" name="user_id" value={u.id} />
-                          <input
-                            type="hidden"
+                          <Select
                             name="role"
-                            value={u.role === "admin" ? "employee" : "admin"}
-                          />
+                            defaultValue={u.role}
+                            disabled={isSelf}
+                            aria-label={t("role")}
+                            className="h-8 w-auto py-0"
+                          >
+                            <option value="employee">{t("employee")}</option>
+                            <option value="manager">{t("managerRole")}</option>
+                            <option value="admin">{t("adminRole")}</option>
+                          </Select>
                           <Button
                             variant="secondary"
                             size="sm"
                             type="submit"
                             disabled={isSelf}
                           >
-                            {u.role === "admin"
-                              ? t("makeEmployee")
-                              : t("makeAdmin")}
+                            {t("updateRole")}
                           </Button>
                         </form>
                         <form action={setUserActive}>

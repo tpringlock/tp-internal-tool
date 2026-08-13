@@ -3,13 +3,14 @@ import { useTranslations } from "next-intl";
 import { logout } from "@/app/actions/auth";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { UserMenu } from "@/components/user-menu";
+import type { UserRole } from "@/lib/db/types";
 
 export function TopNav({
   fullName,
   role,
 }: {
   fullName: string;
-  role: "admin" | "employee";
+  role: UserRole;
 }) {
   const t = useTranslations("Nav");
   const tc = useTranslations("Common");
