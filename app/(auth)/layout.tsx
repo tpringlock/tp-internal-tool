@@ -10,14 +10,15 @@ export default function AuthLayout({
 
   return (
     <div className="relative flex min-h-full items-center justify-center overflow-hidden px-4 py-12">
-      {/* Brand-color backdrop: primary gradient, dimmed, with soft blurred
-          accents so the page reads intentionally rather than empty. */}
-      <div
-        className="absolute inset-0 -z-20"
-        style={{
-          background:
-            "linear-gradient(135deg, var(--color-primary), var(--color-primary-hover))",
-        }}
+      {/* Full-bleed photo backdrop, dimmed with soft blurred accents below so
+          the white title/logo stay readable rather than washing out. */}
+      <Image
+        src="/login-bg.jpg"
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="-z-20 object-cover"
       />
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute -left-24 -top-24 h-96 w-96 rounded-full bg-white/15 blur-3xl" />
