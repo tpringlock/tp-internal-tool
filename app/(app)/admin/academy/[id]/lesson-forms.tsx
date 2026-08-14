@@ -1,8 +1,9 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ArrowUp, ArrowDown, FileText, Trash2 } from "lucide-react";
+import { ArrowUp, ArrowDown, FileText, Trash2, Video } from "lucide-react";
 import {
   addLesson,
   updateLesson,
@@ -10,6 +11,7 @@ import {
   reorderLesson,
   uploadLessonFile,
   deleteLessonFile,
+  removeLessonVideo,
 } from "@/app/actions/academy";
 import type { FormState } from "@/app/actions/auth";
 import type { Lesson, LessonFile } from "@/lib/db/types";
@@ -18,6 +20,11 @@ import { Input, Textarea } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
 import { formatBytes } from "@/lib/format";
+import {
+  VideoUploadForm,
+  uploadLessonVideoFile,
+  validateVideoFile,
+} from "./video-upload-form";
 
 type LessonWithFiles = Lesson & { files: Pick<LessonFile, "id" | "file_name" | "file_size">[] };
 
@@ -29,18 +36,64 @@ export function AddLessonForm({
   chapterId: string;
 }) {
   const t = useTranslations("AcademyAdmin");
-  const [state, action, pending] = useActionState<FormState, FormData>(
-    addLesson,
-    {},
-  );
-  const formRef = useRef<HTMLFormElement>(null);
+  const router = useRouter();
+  const [state, setState] = useState<FormState>({});
+  const [pending, setPending] = useState(false);
 
-  useEffect(() => {
-    if (state.success) formRef.current?.reset();
-  }, [state.success]);
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setState({});
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
+    // Optional uploaded video. A file wins over a pasted link.
+    const picked = formData.get("video_file");
+    const file = picked instanceof File && picked.size > 0 ? picked : null;
+    if (file) {
+      const invalid = validateVideoFile(file, t);
+      if (invalid) {
+        setState({ fieldErrors: { video_file: [invalid] } });
+        return;
+      }
+      formData.set("video_url", "");
+    }
+    // The server action creates the row; it doesn't read the file itself.
+    formData.delete("video_file");
+
+    setPending(true);
+    try {
+      // 1. Create the lesson (returns its new id).
+      const res = await addLesson({}, formData);
+      if (res.error || res.fieldErrors) {
+        setState(res);
+        return;
+      }
+      // 2. If a video was chosen, upload + attach it to the fresh lesson.
+      if (file && res.lessonId) {
+        const uploadError = await uploadLessonVideoFile(
+          courseId,
+          res.lessonId,
+          file,
+        );
+        if (uploadError) {
+          // The lesson exists; only the video failed — it can be added via Edit.
+          setState({ error: uploadError });
+          router.refresh();
+          return;
+        }
+      }
+      form.reset();
+      setState({ success: res.success });
+      router.refresh();
+    } catch (err) {
+      setState({ error: err instanceof Error ? err.message : String(err) });
+    } finally {
+      setPending(false);
+    }
+  }
 
   return (
-    <form ref={formRef} action={action} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-4">
       <input type="hidden" name="course_id" value={courseId} />
       <input type="hidden" name="chapter_id" value={chapterId} />
       {state.success && <Alert tone="success">{state.success}</Alert>}
@@ -54,6 +107,18 @@ export function AddLessonForm({
         hint={t("videoUrlHint")}
       >
         <Input name="video_url" placeholder="https://youtube.com/watch?v=…" />
+      </Field>
+      <Field
+        label={t("uploadVideo")}
+        error={state.fieldErrors?.video_file?.[0]}
+        hint={t("uploadVideoHint")}
+      >
+        <input
+          type="file"
+          name="video_file"
+          accept="video/mp4,video/webm"
+          className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-md file:border file:border-slate-300 file:bg-white file:px-3 file:py-1.5 file:text-sm file:font-medium hover:file:bg-slate-50"
+        />
       </Field>
       <Field label={t("lessonDescription")} error={state.fieldErrors?.description?.[0]}>
         <Textarea name="description" rows={3} />
@@ -114,7 +179,9 @@ export function LessonEditor({
           {lesson.title}
           {lesson.video_provider && (
             <span className="ml-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs font-normal text-slate-500">
-              {lesson.video_provider}
+              {lesson.video_provider === "self_hosted"
+                ? t("providerSelfHosted")
+                : lesson.video_provider}
             </span>
           )}
         </span>
@@ -125,7 +192,43 @@ export function LessonEditor({
 
       {open && (
         <div className="space-y-5 border-t border-slate-50 bg-slate-50/50 px-5 py-4">
-          <EditLessonForm courseId={courseId} lesson={lesson} />
+          <EditLessonForm
+            courseId={courseId}
+            lesson={lesson}
+            hideVideoUrl={lesson.video_provider === "self_hosted"}
+          />
+
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium text-slate-700">
+              {t("lessonVideo")}
+            </h4>
+            {lesson.video_provider === "self_hosted" ? (
+              <div className="flex items-center justify-between gap-3 rounded-md border border-slate-200 bg-white px-3 py-2">
+                <span className="flex items-center gap-2 text-sm text-slate-700">
+                  <Video className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+                  {lesson.video_file_name}
+                  {lesson.video_file_size != null && (
+                    <span className="text-xs text-slate-400">
+                      {formatBytes(lesson.video_file_size)}
+                    </span>
+                  )}
+                </span>
+                <form action={removeLessonVideo}>
+                  <input type="hidden" name="lesson_id" value={lesson.id} />
+                  <input type="hidden" name="course_id" value={courseId} />
+                  <button
+                    type="submit"
+                    aria-label={t("removeVideo")}
+                    className="text-slate-400 hover:text-red-600"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </form>
+              </div>
+            ) : (
+              <VideoUploadForm courseId={courseId} lessonId={lesson.id} />
+            )}
+          </div>
 
           <div className="space-y-3">
             <h4 className="text-sm font-medium text-slate-700">{t("attachments")}</h4>
@@ -179,9 +282,11 @@ export function LessonEditor({
 function EditLessonForm({
   courseId,
   lesson,
+  hideVideoUrl,
 }: {
   courseId: string;
   lesson: LessonWithFiles;
+  hideVideoUrl?: boolean;
 }) {
   const t = useTranslations("AcademyAdmin");
   const [state, action, pending] = useActionState<FormState, FormData>(
@@ -198,13 +303,15 @@ function EditLessonForm({
       <Field label={t("lessonTitle")} error={state.fieldErrors?.title?.[0]}>
         <Input name="title" defaultValue={lesson.title} required />
       </Field>
-      <Field
-        label={t("videoUrl")}
-        error={state.fieldErrors?.video_url?.[0]}
-        hint={t("videoUrlHint")}
-      >
-        <Input name="video_url" defaultValue={lesson.video_url ?? ""} />
-      </Field>
+      {!hideVideoUrl && (
+        <Field
+          label={t("videoUrl")}
+          error={state.fieldErrors?.video_url?.[0]}
+          hint={t("videoUrlHint")}
+        >
+          <Input name="video_url" defaultValue={lesson.video_url ?? ""} />
+        </Field>
+      )}
       <Field label={t("lessonDescription")} error={state.fieldErrors?.description?.[0]}>
         <Textarea name="description" rows={3} defaultValue={lesson.description ?? ""} />
       </Field>

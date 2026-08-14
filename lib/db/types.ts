@@ -18,7 +18,7 @@ export type DocType =
 
 export type CourseStatus = "draft" | "published";
 
-export type VideoProvider = "youtube" | "vimeo";
+export type VideoProvider = "youtube" | "vimeo" | "self_hosted";
 
 // NOTE: these are `type` aliases (not interfaces) on purpose. supabase-js's
 // GenericTable constrains Row/Insert/Update to Record<string, unknown>, which
@@ -123,6 +123,9 @@ export type Lesson = {
   description: string | null;
   video_url: string | null;
   video_provider: VideoProvider | null;
+  video_storage_path: string | null;
+  video_file_name: string | null;
+  video_file_size: number | null;
   position: number;
   created_at: string;
   updated_at: string;
@@ -274,7 +277,7 @@ export interface Database {
       >;
       lessons: Table<
         Lesson,
-        Insert<Lesson, "id" | "created_at" | "updated_at" | "description" | "video_url" | "video_provider" | "position">,
+        Insert<Lesson, "id" | "created_at" | "updated_at" | "description" | "video_url" | "video_provider" | "video_storage_path" | "video_file_name" | "video_file_size" | "position">,
         Partial<Lesson>
       >;
       lesson_files: Table<

@@ -28,9 +28,12 @@ import {
   MAX_FILE_SIZE,
   ACCEPTED_IMAGE_MIME,
   MAX_IMAGE_SIZE,
+  ACCEPTED_VIDEO_MIME,
+  MAX_VIDEO_SIZE,
   buildLessonFilePath,
   buildCourseFilePath,
   buildThumbnailPath,
+  buildLessonVideoPath,
 } from "@/lib/academy/constants";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { VideoProvider, Database } from "@/lib/db/types";
@@ -179,10 +182,10 @@ export async function deleteCourse(formData: FormData): Promise<void> {
   const id = String(formData.get("id"));
 
   const supabase = await createClient();
-  // Remove any stored PDFs first: DB rows cascade, but storage objects don't.
+  // Remove any stored PDFs + videos first: DB rows cascade, storage doesn't.
   const { data: lessons } = await supabase
     .from("lessons")
-    .select("id")
+    .select("id, video_storage_path")
     .eq("course_id", id);
   const lessonIds = (lessons ?? []).map((l) => l.id);
   if (lessonIds.length > 0) {
@@ -191,6 +194,9 @@ export async function deleteCourse(formData: FormData): Promise<void> {
       .select("storage_path")
       .in("lesson_id", lessonIds);
     const paths = (files ?? []).map((f) => f.storage_path);
+    for (const l of lessons ?? []) {
+      if (l.video_storage_path) paths.push(l.video_storage_path);
+    }
     if (paths.length > 0) {
       await createAdminClient().storage.from(ACADEMY_BUCKET).remove(paths);
     }
@@ -223,7 +229,7 @@ async function resolveVideo(
 export async function addLesson(
   _prev: FormState,
   formData: FormData,
-): Promise<FormState> {
+): Promise<FormState & { lessonId?: string }> {
   await requireContentManager();
   const courseId = String(formData.get("course_id"));
   const chapterId = String(formData.get("chapter_id"));
@@ -276,7 +282,7 @@ export async function addLesson(
     metadata: { course_id: courseId },
   });
   revalidatePath(`/admin/academy/${courseId}`);
-  return { success: t("lessonAdded") };
+  return { success: t("lessonAdded"), lessonId: data.id };
 }
 
 export async function updateLesson(
@@ -296,19 +302,34 @@ export async function updateLesson(
     return { fieldErrors: translateFieldErrors(tv, parsed.error) };
   }
 
-  const video = await resolveVideo(parsed.data.video_url);
-  if ("fieldError" in video) {
-    return { fieldErrors: { video_url: [video.fieldError] } };
+  const supabase = await createClient();
+  // A self-hosted (uploaded) video is managed separately; the edit form hides
+  // the link field for such lessons, so leave the video columns untouched here.
+  const { data: current } = await supabase
+    .from("lessons")
+    .select("video_provider")
+    .eq("id", id)
+    .single();
+  const isSelfHosted = current?.video_provider === "self_hosted";
+
+  let videoFields: {
+    video_url: string | null;
+    video_provider: VideoProvider | null;
+  } | null = null;
+  if (!isSelfHosted) {
+    const video = await resolveVideo(parsed.data.video_url);
+    if ("fieldError" in video) {
+      return { fieldErrors: { video_url: [video.fieldError] } };
+    }
+    videoFields = video;
   }
 
-  const supabase = await createClient();
   const { error } = await supabase
     .from("lessons")
     .update({
       title: parsed.data.title,
       description: parsed.data.description,
-      video_url: video.video_url,
-      video_provider: video.video_provider,
+      ...(videoFields ?? {}),
     })
     .eq("id", id);
   const t = await getTranslations("AcademyAdmin");
@@ -333,7 +354,13 @@ export async function deleteLesson(formData: FormData): Promise<void> {
     .from("lesson_files")
     .select("storage_path")
     .eq("lesson_id", id);
+  const { data: lessonRow } = await supabase
+    .from("lessons")
+    .select("video_storage_path")
+    .eq("id", id)
+    .single();
   const paths = (files ?? []).map((f) => f.storage_path);
+  if (lessonRow?.video_storage_path) paths.push(lessonRow.video_storage_path);
   if (paths.length > 0) {
     await createAdminClient().storage.from(ACADEMY_BUCKET).remove(paths);
   }
@@ -472,6 +499,135 @@ export async function deleteLessonFile(formData: FormData): Promise<void> {
       entityId: id,
     });
   }
+  revalidatePath(`/admin/academy/${courseId}`);
+}
+
+// --- Lesson video (self-hosted) ----------------------------------------
+
+/**
+ * Issue a one-time signed URL the browser can PUT a video file to, straight
+ * into the private `academy` bucket. Keeps large uploads out of the server
+ * action (no body-size/memory limits); the server still owns the storage path.
+ * The lesson row is written afterwards by {@link finalizeLessonVideo}.
+ */
+export async function createLessonVideoUploadUrl(input: {
+  courseId: string;
+  lessonId: string;
+  fileName: string;
+  fileSize: number;
+  contentType: string;
+}): Promise<{ path: string; token: string } | { error: string }> {
+  await requireContentManager();
+  const t = await getTranslations("AcademyAdmin");
+
+  const ext = ACCEPTED_VIDEO_MIME[input.contentType];
+  if (!ext) return { error: t("errVideoType") };
+  if (input.fileSize <= 0 || input.fileSize > MAX_VIDEO_SIZE) {
+    return { error: t("errVideoSize") };
+  }
+
+  const fileId = crypto.randomUUID();
+  const path = buildLessonVideoPath(input.courseId, input.lessonId, fileId, ext);
+  const { data, error } = await createAdminClient()
+    .storage.from(ACADEMY_BUCKET)
+    .createSignedUploadUrl(path);
+  if (error || !data) {
+    return { error: t("errUploadFailed", { message: error?.message ?? "" }) };
+  }
+  return { path: data.path, token: data.token };
+}
+
+/**
+ * Record an uploaded video on the lesson: switch it to the self_hosted provider,
+ * store the path + metadata, and clear any pasted link (a lesson has either a
+ * link or a file, never both). Removes a previously uploaded video if replaced.
+ */
+export async function finalizeLessonVideo(input: {
+  lessonId: string;
+  courseId: string;
+  storagePath: string;
+  fileName: string;
+  fileSize: number;
+}): Promise<FormState> {
+  await requireContentManager();
+  const t = await getTranslations("AcademyAdmin");
+  const supabase = await createClient();
+
+  const { data: existing } = await supabase
+    .from("lessons")
+    .select("video_storage_path")
+    .eq("id", input.lessonId)
+    .single();
+
+  const { error } = await supabase
+    .from("lessons")
+    .update({
+      video_provider: "self_hosted",
+      video_storage_path: input.storagePath,
+      video_file_name: input.fileName,
+      video_file_size: input.fileSize,
+      video_url: null,
+    })
+    .eq("id", input.lessonId);
+  if (error) {
+    // The uploaded object is now orphaned — best-effort cleanup.
+    await createAdminClient()
+      .storage.from(ACADEMY_BUCKET)
+      .remove([input.storagePath]);
+    return { error: error.message };
+  }
+
+  if (
+    existing?.video_storage_path &&
+    existing.video_storage_path !== input.storagePath
+  ) {
+    await createAdminClient()
+      .storage.from(ACADEMY_BUCKET)
+      .remove([existing.video_storage_path]);
+  }
+
+  await logActivity(supabase, {
+    action: "lesson_video.uploaded",
+    entityType: "lesson",
+    entityId: input.lessonId,
+    metadata: { course_id: input.courseId },
+  });
+  revalidatePath(`/admin/academy/${input.courseId}`);
+  return { success: t("videoUploaded") };
+}
+
+/** Remove a lesson's uploaded video (object + metadata). */
+export async function removeLessonVideo(formData: FormData): Promise<void> {
+  await requireContentManager();
+  const lessonId = String(formData.get("lesson_id"));
+  const courseId = String(formData.get("course_id"));
+
+  const supabase = await createClient();
+  const { data: lesson } = await supabase
+    .from("lessons")
+    .select("video_storage_path")
+    .eq("id", lessonId)
+    .single();
+  if (lesson?.video_storage_path) {
+    await createAdminClient()
+      .storage.from(ACADEMY_BUCKET)
+      .remove([lesson.video_storage_path]);
+  }
+
+  await supabase
+    .from("lessons")
+    .update({
+      video_provider: null,
+      video_storage_path: null,
+      video_file_name: null,
+      video_file_size: null,
+    })
+    .eq("id", lessonId);
+  await logActivity(supabase, {
+    action: "lesson_video.removed",
+    entityType: "lesson",
+    entityId: lessonId,
+  });
   revalidatePath(`/admin/academy/${courseId}`);
 }
 
@@ -617,10 +773,10 @@ export async function deleteChapter(formData: FormData): Promise<void> {
   const courseId = String(formData.get("course_id"));
 
   const supabase = await createClient();
-  // Remove PDFs for lessons in this chapter (DB rows cascade; storage doesn't).
+  // Remove PDFs + videos for lessons in this chapter (rows cascade; storage doesn't).
   const { data: lessons } = await supabase
     .from("lessons")
-    .select("id")
+    .select("id, video_storage_path")
     .eq("chapter_id", id);
   const lessonIds = (lessons ?? []).map((l) => l.id);
   if (lessonIds.length > 0) {
@@ -629,6 +785,9 @@ export async function deleteChapter(formData: FormData): Promise<void> {
       .select("storage_path")
       .in("lesson_id", lessonIds);
     const paths = (files ?? []).map((f) => f.storage_path);
+    for (const l of lessons ?? []) {
+      if (l.video_storage_path) paths.push(l.video_storage_path);
+    }
     if (paths.length > 0) {
       await createAdminClient().storage.from(ACADEMY_BUCKET).remove(paths);
     }

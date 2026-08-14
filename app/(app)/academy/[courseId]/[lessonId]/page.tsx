@@ -118,7 +118,12 @@ export default async function LessonPage({
     "id" | "file_name" | "file_size"
   >[];
 
-  const video = lesson.video_url ? parseVideoUrl(lesson.video_url) : null;
+  const isSelfHostedVideo =
+    lesson.video_provider === "self_hosted" && Boolean(lesson.video_storage_path);
+  const video =
+    !isSelfHostedVideo && lesson.video_url
+      ? parseVideoUrl(lesson.video_url)
+      : null;
 
   const isDone = completedIds.has(lessonId);
   const doneCount = orderedLessons.filter((l) => completedIds.has(l.id)).length;
@@ -151,18 +156,27 @@ export default async function LessonPage({
       <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
         {/* Main column: video + details */}
         <div className="space-y-6 lg:col-span-2">
-          {video && (
+          {(isSelfHostedVideo || video) && (
             <Card>
               <CardBody className="p-0">
                 <div className="aspect-video w-full overflow-hidden rounded-lg">
-                  <iframe
-                    src={video.embedUrl}
-                    title={lesson.title}
-                    className="h-full w-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                    allowFullScreen
-                    sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
-                  />
+                  {isSelfHostedVideo ? (
+                    <video
+                      controls
+                      preload="metadata"
+                      className="h-full w-full bg-black"
+                      src={`/api/academy/videos/${lessonId}`}
+                    />
+                  ) : (
+                    <iframe
+                      src={video!.embedUrl}
+                      title={lesson.title}
+                      className="h-full w-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                      allowFullScreen
+                      sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
+                    />
+                  )}
                 </div>
               </CardBody>
             </Card>

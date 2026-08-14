@@ -43,3 +43,25 @@ export function buildThumbnailPath(
 ): string {
   return `thumbnails/${courseId}/${fileId}.${ext}`;
 }
+
+/**
+ * Self-hosted lesson videos: uploaded straight to the private `academy` bucket
+ * and streamed via a short-lived signed URL. Limit mirrors the bucket's
+ * file_size_limit (see 0014_lesson_video_upload.sql). mp4 (H.264) and webm are
+ * the formats the native <video> element plays reliably.
+ */
+export const MAX_VIDEO_SIZE = 1024 * 1024 * 1024; // 1 GiB
+export const ACCEPTED_VIDEO_MIME: Record<string, string> = {
+  "video/mp4": "mp4",
+  "video/webm": "webm",
+};
+
+/** Storage path for a lesson video: videos/{courseId}/{lessonId}/{fileId}.{ext}. */
+export function buildLessonVideoPath(
+  courseId: string,
+  lessonId: string,
+  fileId: string,
+  ext: string,
+): string {
+  return `videos/${courseId}/${lessonId}/${fileId}.${ext}`;
+}

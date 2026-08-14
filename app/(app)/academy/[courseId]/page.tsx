@@ -6,7 +6,6 @@ import {
   BookOpen,
   FileText,
   Layers,
-  ChevronRight,
   HelpCircle,
   Check,
   Lock,
@@ -70,24 +69,8 @@ export default async function CoursePage({
   return (
     <div className="space-y-6">
       {/* Signature-blue hero — full content width (cancels the layout's px-4/py-8). */}
-      <div className="-mx-4 -mt-8 bg-linear-to-br from-primary to-primary-hover px-4 py-12 text-white sm:px-8 sm:py-14">
+      <div className="-mx-4 -mt-12 bg-linear-to-br from-primary to-primary-hover px-4 py-12 text-white sm:px-8 sm:py-14">
         <div className="mx-auto max-w-6xl">
-          <nav className="mb-5 flex flex-wrap items-center gap-1.5 text-xs font-medium text-white/70">
-            <Link href="/academy" className="hover:text-white">
-              {t("title")}
-            </Link>
-            {course.category && (
-              <>
-                <ChevronRight className="h-3 w-3 text-white/40" aria-hidden />
-                <Link
-                  href={`/academy?category=${encodeURIComponent(course.category)}`}
-                  className="hover:text-white"
-                >
-                  {course.category}
-                </Link>
-              </>
-            )}
-          </nav>
           <h1 className="max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl">
             {course.title}
           </h1>
@@ -159,9 +142,15 @@ export default async function CoursePage({
                               className="flex items-center gap-3 rounded-md px-4 py-2.5 text-sm hover:bg-white"
                             >
                               {quizPassed ? (
-                                <Check className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+                                <Check
+                                  className="h-4 w-4 shrink-0 text-primary"
+                                  aria-hidden
+                                />
                               ) : (
-                                <HelpCircle className="h-4 w-4 shrink-0 text-slate-400" aria-hidden />
+                                <HelpCircle
+                                  className="h-4 w-4 shrink-0 text-slate-400"
+                                  aria-hidden
+                                />
                               )}
                               <span
                                 className={cn(
