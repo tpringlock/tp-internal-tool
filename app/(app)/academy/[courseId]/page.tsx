@@ -69,7 +69,7 @@ export default async function CoursePage({
   return (
     <div className="space-y-6">
       {/* Signature-blue hero — full content width (cancels the layout's px-4/py-8). */}
-      <div className="-mx-4 -mt-12 bg-linear-to-br from-primary to-primary-hover px-4 py-12 text-white sm:px-8 sm:py-14">
+      <div className="-mx-4 bg-linear-to-br from-primary to-primary-hover px-4 py-12 text-white sm:px-8 sm:py-14">
         <div className="mx-auto max-w-6xl">
           <h1 className="max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl">
             {course.title}
