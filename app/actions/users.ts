@@ -85,7 +85,36 @@ export async function setUserActive(formData: FormData): Promise<void> {
   revalidatePath("/admin/users");
 }
 
-export async function setUserRole(formData: FormData): Promise<void> {
+export async function deleteUser(formData: FormData): Promise<void> {
+  const admin = await requireAdmin();
+  const userId = String(formData.get("user_id"));
+  const email = String(formData.get("email") ?? "");
+
+  if (userId === admin.id) {
+    // Guard against an admin deleting their own account.
+    return;
+  }
+
+  const supabaseAdmin = createAdminClient();
+  // Removing the auth user cascades to the profile row via the
+  // `on delete cascade` FK on profiles.id.
+  await supabaseAdmin.auth.admin.deleteUser(userId);
+
+  const supabase = await createClient();
+  await logActivity(supabase, {
+    action: "admin.user_deleted",
+    entityType: "profile",
+    entityId: userId,
+    metadata: { email },
+  });
+
+  revalidatePath("/admin/users");
+}
+
+export async function setUserRole(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
   const admin = await requireAdmin();
   const userId = String(formData.get("user_id"));
   const raw = String(formData.get("role"));
@@ -93,7 +122,7 @@ export async function setUserRole(formData: FormData): Promise<void> {
 
   if (userId === admin.id && role !== "admin") {
     // Don't let the last admin demote themselves by accident.
-    return;
+    return {};
   }
 
   const supabaseAdmin = createAdminClient();
@@ -108,4 +137,6 @@ export async function setUserRole(formData: FormData): Promise<void> {
   });
 
   revalidatePath("/admin/users");
+  const t = await getTranslations("Admin");
+  return { success: t("roleChanged") };
 }

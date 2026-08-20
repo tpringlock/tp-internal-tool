@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { logout } from "@/app/actions/auth";
-import { LanguageSwitcher } from "@/components/language-switcher";
 import { UserMenu } from "@/components/user-menu";
 import type { UserRole } from "@/lib/db/types";
 
@@ -33,7 +32,6 @@ export function TopNav({
         </Link>
 
         <div className="ml-auto flex items-center gap-3">
-          <LanguageSwitcher />
           <UserMenu fullName={fullName} role={role} />
           <form action={logout}>
             <button

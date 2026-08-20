@@ -1,16 +1,11 @@
-import { cookies } from "next/headers";
 import { getRequestConfig } from "next-intl/server";
-import { DEFAULT_LOCALE, LOCALE_COOKIE, isLocale, type Locale } from "./config";
+import { DEFAULT_LOCALE } from "./config";
 
-// Cookie-based locale (no i18n routing). Locale is resolved per request from
-// the NEXT_LOCALE cookie, defaulting to Vietnamese. Cookies are async in Next 16.
+// The app is Vietnamese-only: the locale is fixed to Vietnamese regardless of
+// any request cookie, so the UI can never render in English.
 export default getRequestConfig(async () => {
-  const store = await cookies();
-  const cookieLocale = store.get(LOCALE_COOKIE)?.value;
-  const locale: Locale = isLocale(cookieLocale) ? cookieLocale : DEFAULT_LOCALE;
-
   return {
-    locale,
-    messages: (await import(`../messages/${locale}.json`)).default,
+    locale: DEFAULT_LOCALE,
+    messages: (await import(`../messages/${DEFAULT_LOCALE}.json`)).default,
   };
 });

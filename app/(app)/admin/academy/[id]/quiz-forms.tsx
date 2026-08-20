@@ -12,7 +12,7 @@ import {
 } from "@/app/actions/academy";
 import type { FormState } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
 
@@ -99,7 +99,12 @@ function QuizQuestionForm({
       {state.error && <Alert tone="error">{state.error}</Alert>}
 
       <Field label={t("quizPrompt")} error={state.fieldErrors?.prompt?.[0]}>
-        <Input name="prompt" defaultValue={question?.prompt ?? ""} required />
+        <Textarea
+          name="prompt"
+          rows={2}
+          defaultValue={question?.prompt ?? ""}
+          required
+        />
       </Field>
 
       <div className="space-y-2">
@@ -123,8 +128,9 @@ function QuizQuestionForm({
               aria-label={t("quizMarkCorrect")}
               className="h-4 w-4 shrink-0 accent-primary"
             />
-            <Input
+            <Textarea
               name="option"
+              rows={2}
               value={value}
               onChange={(e) => setOption(i, e.target.value)}
               placeholder={t("quizOptionPlaceholder", { n: i + 1 })}
@@ -213,7 +219,7 @@ function QuizQuestionRow({
         </div>
 
         <div className="flex-1">
-          <p className="text-sm font-medium text-slate-800">
+          <p className="whitespace-pre-wrap text-sm font-medium text-slate-800">
             {index + 1}. {question.prompt}
           </p>
           <ul className="mt-1.5 space-y-1">
@@ -222,8 +228,8 @@ function QuizQuestionRow({
                 key={o.id}
                 className={
                   o.is_correct
-                    ? "text-sm font-medium text-primary"
-                    : "text-sm text-slate-600"
+                    ? "whitespace-pre-wrap text-sm font-medium text-primary"
+                    : "whitespace-pre-wrap text-sm text-slate-600"
                 }
               >
                 {o.is_correct ? "✓ " : "• "}

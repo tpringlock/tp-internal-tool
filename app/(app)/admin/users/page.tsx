@@ -1,12 +1,14 @@
 import { getTranslations } from "next-intl/server";
+import { KeyRound } from "lucide-react";
 import { requireAdmin } from "@/lib/auth/dal";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { setUserActive, setUserRole } from "@/app/actions/users";
-import { Button } from "@/components/ui/button";
-import { Select } from "@/components/ui/input";
+import { setUserActive } from "@/app/actions/users";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import { CreateUserForm } from "./create-user-form";
+import { RoleSelect } from "./role-select";
+import { EditUserButton } from "./edit-user-button";
+import { DeleteUserButton } from "./delete-user-button";
 import type { Profile } from "@/lib/db/types";
 
 const PAGE_SIZE = 50;
@@ -94,48 +96,34 @@ export default async function AdminUsersPage({
                     </td>
                     <td className="px-5 py-3 text-slate-600">{u.email}</td>
                     <td className="px-5 py-3">
-                      <span className="text-slate-700">
-                        {u.role === "admin"
-                          ? t("adminRole")
-                          : u.role === "manager"
-                            ? t("managerRole")
-                            : t("employee")}
-                      </span>
+                      <RoleSelect
+                        userId={u.id}
+                        email={u.email}
+                        role={u.role}
+                        disabled={isSelf}
+                      />
                     </td>
                     <td className="px-5 py-3">
-                      {u.is_active ? (
-                        <span className="text-green-700">{t("active")}</span>
-                      ) : (
-                        <span className="text-slate-400">{t("disabled")}</span>
-                      )}
+                      <span
+                        title={u.is_active ? t("active") : t("locked")}
+                        aria-label={u.is_active ? t("active") : t("locked")}
+                        className={`inline-block h-2.5 w-2.5 rounded-full ${
+                          u.is_active ? "bg-green-500" : "bg-red-500"
+                        }`}
+                      />
                     </td>
                     <td className="px-5 py-3">
-                      <div className="flex flex-wrap gap-2">
-                        <form
-                          action={setUserRole}
-                          className="flex items-center gap-1.5"
-                        >
-                          <input type="hidden" name="user_id" value={u.id} />
-                          <Select
-                            name="role"
-                            defaultValue={u.role}
-                            disabled={isSelf}
-                            aria-label={t("role")}
-                            className="h-8 w-auto py-0"
-                          >
-                            <option value="employee">{t("employee")}</option>
-                            <option value="manager">{t("managerRole")}</option>
-                            <option value="admin">{t("adminRole")}</option>
-                          </Select>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            type="submit"
-                            disabled={isSelf}
-                          >
-                            {t("updateRole")}
-                          </Button>
-                        </form>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <EditUserButton
+                          user={{
+                            id: u.id,
+                            email: u.email,
+                            full_name: u.full_name,
+                            role: u.role,
+                            is_active: u.is_active,
+                          }}
+                          disabled={isSelf}
+                        />
                         <form action={setUserActive}>
                           <input type="hidden" name="user_id" value={u.id} />
                           <input
@@ -143,15 +131,25 @@ export default async function AdminUsersPage({
                             name="active"
                             value={u.is_active ? "false" : "true"}
                           />
-                          <Button
-                            variant={u.is_active ? "danger" : "secondary"}
-                            size="sm"
+                          <button
                             type="submit"
                             disabled={isSelf && u.is_active}
+                            aria-label={
+                              u.is_active ? t("lockAccount") : t("unlockAccount")
+                            }
+                            title={
+                              u.is_active ? t("lockAccount") : t("unlockAccount")
+                            }
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-900 disabled:pointer-events-none disabled:opacity-50"
                           >
-                            {u.is_active ? t("deactivate") : t("activate")}
-                          </Button>
+                            <KeyRound className="h-4 w-4" />
+                          </button>
                         </form>
+                        <DeleteUserButton
+                          userId={u.id}
+                          email={u.email}
+                          disabled={isSelf}
+                        />
                       </div>
                     </td>
                   </tr>

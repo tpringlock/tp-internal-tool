@@ -51,7 +51,7 @@ export function QuizForm({
 
       {questions.map((q, i) => (
         <fieldset key={q.id} className="space-y-3">
-          <legend className="text-sm font-medium text-slate-800">
+          <legend className="whitespace-pre-wrap text-sm font-medium text-slate-800">
             {i + 1}. {q.prompt}
           </legend>
           <div className="space-y-2">
@@ -68,7 +68,7 @@ export function QuizForm({
                   disabled={passed}
                   className="h-4 w-4 accent-primary"
                 />
-                <span>{opt.label}</span>
+                <span className="whitespace-pre-wrap">{opt.label}</span>
               </label>
             ))}
           </div>
