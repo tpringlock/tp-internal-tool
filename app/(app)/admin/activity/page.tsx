@@ -76,7 +76,7 @@ export default async function AdminActivityPage({
       <Card>
         <CardBody>
           <form className="flex flex-wrap items-end gap-3" method="get">
-            <div className="min-w-56">
+            <div className="w-full sm:min-w-56">
               <label className="mb-1 block text-xs font-medium text-slate-500">
                 {t("action")}
               </label>
@@ -89,7 +89,7 @@ export default async function AdminActivityPage({
                 ))}
               </Select>
             </div>
-            <Button type="submit" variant="secondary">
+            <Button type="submit" variant="secondary" className="w-full sm:w-auto">
               {t("filter")}
             </Button>
           </form>
@@ -103,7 +103,7 @@ export default async function AdminActivityPage({
               {t("noActivityFilter")}
             </p>
           ) : (
-            <table className="w-full text-sm">
+            <table className="responsive-table w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 text-left text-slate-500">
                   <th className="px-5 py-3 font-medium">{t("colWhen")}</th>
@@ -120,16 +120,28 @@ export default async function AdminActivityPage({
                       key={r.id}
                       className="border-b border-slate-50 last:border-0"
                     >
-                      <td className="whitespace-nowrap px-5 py-3 text-slate-500">
+                      <td
+                        data-label={t("colWhen")}
+                        className="whitespace-nowrap px-5 py-3 text-slate-500"
+                      >
                         {formatDateTime(r.created_at)}
                       </td>
-                      <td className="px-5 py-3 text-slate-800">
+                      <td
+                        data-label={t("colWho")}
+                        className="px-5 py-3 text-slate-800"
+                      >
                         {r.actor?.full_name ?? t("aClient")}
                       </td>
-                      <td className="px-5 py-3 text-slate-700">
+                      <td
+                        data-label={t("action")}
+                        className="px-5 py-3 text-slate-700"
+                      >
                         {labelForAction(ta, r.action)}
                       </td>
-                      <td className="px-5 py-3 text-slate-600">
+                      <td
+                        data-label={t("colItem")}
+                        className="px-5 py-3 text-slate-600"
+                      >
                         {href ? (
                           <Link
                             href={href}

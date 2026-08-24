@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Pencil } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { requireAdmin } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
@@ -38,7 +39,7 @@ export default async function AdminAcademyPage() {
           {courses.length === 0 ? (
             <p className="px-5 py-6 text-sm text-slate-500">{t("noCourses")}</p>
           ) : (
-            <table className="w-full text-sm">
+            <table className="responsive-table w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 text-left text-slate-500">
                   <th className="px-5 py-3 font-medium">{t("courseTitle")}</th>
@@ -53,13 +54,19 @@ export default async function AdminAcademyPage() {
                     key={course.id}
                     className="border-b border-slate-50 last:border-0"
                   >
-                    <td className="px-5 py-3 font-medium text-slate-900">
+                    <td
+                      data-label={t("courseTitle")}
+                      className="px-5 py-3 font-medium text-slate-900"
+                    >
                       {course.title}
                     </td>
-                    <td className="px-5 py-3 text-slate-600">
+                    <td
+                      data-label={t("category")}
+                      className="px-5 py-3 text-slate-600"
+                    >
                       {course.category ?? "—"}
                     </td>
-                    <td className="px-5 py-3">
+                    <td data-label={t("status")} className="px-5 py-3">
                       <span
                         className={
                           course.status === "published"
@@ -73,10 +80,13 @@ export default async function AdminAcademyPage() {
                       </span>
                     </td>
                     <td className="px-5 py-3 text-right">
-                      <Link href={`/admin/academy/${course.id}`}>
-                        <Button variant="secondary" size="sm">
-                          {t("manage")}
-                        </Button>
+                      <Link
+                        href={`/admin/academy/${course.id}`}
+                        aria-label={t("manage")}
+                        title={t("manage")}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                      >
+                        <Pencil className="h-4 w-4" />
                       </Link>
                     </td>
                   </tr>

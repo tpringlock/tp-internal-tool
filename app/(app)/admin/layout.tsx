@@ -11,7 +11,7 @@ export default async function AdminLayout({
   // guard and are hidden from managers in AdminNav.
   const user = await requireContentManager();
   return (
-    <div className="flex gap-6">
+    <div className="flex flex-col gap-4 md:flex-row md:gap-6">
       <AdminNav role={user.profile.role} />
       <div className="min-w-0 flex-1 space-y-6">{children}</div>
     </div>

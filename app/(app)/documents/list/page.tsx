@@ -99,7 +99,7 @@ export default async function DocumentsListPage({
       <Card>
         <CardBody>
           <form className="flex flex-wrap items-end gap-3" method="get">
-            <div className="min-w-48 flex-1">
+            <div className="w-full sm:min-w-48 sm:flex-1">
               <label className="mb-1 block text-xs font-medium text-slate-500">
                 {t("project")}
               </label>
@@ -112,7 +112,7 @@ export default async function DocumentsListPage({
                 ))}
               </Select>
             </div>
-            <div className="min-w-48 flex-1">
+            <div className="w-full sm:min-w-48 sm:flex-1">
               <label className="mb-1 block text-xs font-medium text-slate-500">
                 {t("type")}
               </label>
@@ -125,13 +125,13 @@ export default async function DocumentsListPage({
                 ))}
               </Select>
             </div>
-            <div className="min-w-48 flex-1">
+            <div className="w-full sm:min-w-48 sm:flex-1">
               <label className="mb-1 block text-xs font-medium text-slate-500">
                 {t("search")}
               </label>
               <Input name="q" defaultValue={q} placeholder={t("fileNamePlaceholder")} />
             </div>
-            <Button type="submit" variant="secondary">
+            <Button type="submit" variant="secondary" className="w-full sm:w-auto">
               {t("filter")}
             </Button>
           </form>
@@ -145,7 +145,7 @@ export default async function DocumentsListPage({
               {t("noDocuments")}
             </p>
           ) : (
-            <table className="w-full text-sm">
+            <table className="responsive-table w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 text-left text-slate-500">
                   <th className="px-5 py-3 font-medium">{t("colName")}</th>
@@ -162,7 +162,7 @@ export default async function DocumentsListPage({
                     key={d.id}
                     className="border-b border-slate-50 last:border-0"
                   >
-                    <td className="px-5 py-3">
+                    <td data-label={t("colName")} className="px-5 py-3">
                       <Link
                         href={`/documents/${d.id}`}
                         className="font-medium text-slate-900 underline-offset-2 hover:underline"
@@ -173,10 +173,13 @@ export default async function DocumentsListPage({
                         {formatBytes(d.file_size)}
                       </div>
                     </td>
-                    <td className="px-5 py-3 text-slate-600">
+                    <td data-label={t("type")} className="px-5 py-3 text-slate-600">
                       {dt(d.doc_type)}
                     </td>
-                    <td className="px-5 py-3 text-slate-600">
+                    <td
+                      data-label={t("project")}
+                      className="px-5 py-3 text-slate-600"
+                    >
                       {d.projects?.name ?? "—"}
                       {d.projects?.clients?.name && (
                         <div className="text-xs text-slate-400">
@@ -184,10 +187,16 @@ export default async function DocumentsListPage({
                         </div>
                       )}
                     </td>
-                    <td className="px-5 py-3 text-slate-600">
+                    <td
+                      data-label={t("colUploadedBy")}
+                      className="px-5 py-3 text-slate-600"
+                    >
                       {d.uploader?.full_name ?? "—"}
                     </td>
-                    <td className="px-5 py-3 text-slate-600">
+                    <td
+                      data-label={t("colDate")}
+                      className="px-5 py-3 text-slate-600"
+                    >
                       {formatDateTime(d.created_at)}
                     </td>
                     <td className="px-5 py-3 text-right">

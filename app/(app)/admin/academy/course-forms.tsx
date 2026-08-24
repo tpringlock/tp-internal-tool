@@ -28,7 +28,11 @@ function CourseFields({
 }) {
   return (
     <>
-      <Field label={t("courseTitle")} htmlFor="title" error={state.fieldErrors?.title?.[0]}>
+      <Field
+        label={t("courseTitle")}
+        htmlFor="title"
+        error={state.fieldErrors?.title?.[0]}
+      >
         <Input id="title" name="title" defaultValue={course?.title} required />
       </Field>
       <Field
@@ -150,7 +154,11 @@ export function ThumbnailManager({ course }: { course: Course }) {
         )}
       </div>
 
-      <form ref={formRef} action={action} className="flex flex-wrap items-end gap-3">
+      <form
+        ref={formRef}
+        action={action}
+        className="flex flex-wrap items-end gap-3"
+      >
         <input type="hidden" name="course_id" value={course.id} />
         <div className="flex-1">
           <Field

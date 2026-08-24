@@ -25,9 +25,9 @@ export function AddFolderTile({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex h-full min-h-20 w-full items-center justify-center gap-3 rounded-lg border-2 border-dashed border-slate-300 bg-white/40 px-5 py-4 text-slate-500 transition hover:border-primary hover:bg-primary/5 hover:text-primary"
+        className="flex h-full min-h-12 w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-white/40 px-4 py-2.5 text-slate-500 transition hover:border-primary hover:bg-primary/5 hover:text-primary"
       >
-        <Plus className="h-6 w-6" />
+        <Plus className="h-5 w-5" />
         <span className="font-medium">{label}</span>
       </button>
 

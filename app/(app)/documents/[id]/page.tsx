@@ -102,8 +102,8 @@ export default async function DocumentDetailPage({
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="min-w-0 lg:col-span-2">
           <Card>
             <CardHeader>
               <CardTitle>{t("preview")}</CardTitle>
@@ -112,7 +112,7 @@ export default async function DocumentDetailPage({
               <PdfFrame
                 title={doc.canonical_name}
                 src={`/api/documents/${doc.id}`}
-                className="h-[640px] w-full rounded-b-lg"
+                className="h-[60vh] w-full rounded-b-lg md:h-[640px]"
               />
             </CardBody>
           </Card>

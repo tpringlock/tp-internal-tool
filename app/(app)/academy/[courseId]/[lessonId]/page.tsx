@@ -153,9 +153,9 @@ export default async function LessonPage({
         </Link>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:items-start">
         {/* Main column: video + details */}
-        <div className="space-y-6 lg:col-span-2">
+        <div className="min-w-0 space-y-6 lg:col-span-2">
           {(isSelfHostedVideo || video) && (
             <Card>
               <CardBody className="p-0">

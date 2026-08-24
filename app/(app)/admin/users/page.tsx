@@ -73,7 +73,7 @@ export default async function AdminUsersPage({
           <CardTitle>{t("allUsers", { count: total })}</CardTitle>
         </CardHeader>
         <CardBody className="overflow-x-auto p-0">
-          <table className="w-full text-sm">
+          <table className="responsive-table w-full text-sm">
             <thead>
               <tr className="border-b border-slate-100 text-left text-slate-500">
                 <th className="px-5 py-3 font-medium">{t("name")}</th>
@@ -91,11 +91,19 @@ export default async function AdminUsersPage({
                     key={u.id}
                     className="border-b border-slate-50 last:border-0"
                   >
-                    <td className="px-5 py-3 font-medium text-slate-900">
+                    <td
+                      data-label={t("name")}
+                      className="px-5 py-3 font-medium text-slate-900"
+                    >
                       {u.full_name || "—"}
                     </td>
-                    <td className="px-5 py-3 text-slate-600">{u.email}</td>
-                    <td className="px-5 py-3">
+                    <td
+                      data-label={t("colEmail")}
+                      className="px-5 py-3 text-slate-600"
+                    >
+                      {u.email}
+                    </td>
+                    <td data-label={t("role")} className="px-5 py-3">
                       <RoleSelect
                         userId={u.id}
                         email={u.email}
@@ -103,7 +111,7 @@ export default async function AdminUsersPage({
                         disabled={isSelf}
                       />
                     </td>
-                    <td className="px-5 py-3">
+                    <td data-label={t("status")} className="px-5 py-3">
                       <span
                         title={u.is_active ? t("active") : t("locked")}
                         aria-label={u.is_active ? t("active") : t("locked")}
@@ -113,7 +121,7 @@ export default async function AdminUsersPage({
                       />
                     </td>
                     <td className="px-5 py-3">
-                      <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex flex-col items-end gap-2 md:flex-row md:flex-wrap md:items-center">
                         <EditUserButton
                           user={{
                             id: u.id,

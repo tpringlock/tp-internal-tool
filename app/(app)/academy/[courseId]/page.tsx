@@ -78,9 +78,9 @@ export default async function CoursePage({
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:items-start">
         {/* Main column */}
-        <div className="space-y-6 lg:col-span-2">
+        <div className="min-w-0 space-y-6 lg:col-span-2">
           <CourseContentPanel
             documents={courseFiles}
             contentMeta={t("chaptersLessonsCount", {

@@ -42,7 +42,7 @@ export default async function AcademyPage({
       <Card>
         <CardBody>
           <form className="flex flex-wrap items-end gap-3" method="get">
-            <div className="min-w-48 flex-1">
+            <div className="w-full sm:min-w-48 sm:flex-1">
               <label className="mb-1 block text-xs font-medium text-slate-500">
                 {t("category")}
               </label>
@@ -55,13 +55,21 @@ export default async function AcademyPage({
                 ))}
               </Select>
             </div>
-            <div className="min-w-48 flex-1">
+            <div className="w-full sm:min-w-48 sm:flex-1">
               <label className="mb-1 block text-xs font-medium text-slate-500">
                 {t("search")}
               </label>
-              <Input name="q" defaultValue={q} placeholder={t("searchPlaceholder")} />
+              <Input
+                name="q"
+                defaultValue={q}
+                placeholder={t("searchPlaceholder")}
+              />
             </div>
-            <Button type="submit" variant="secondary">
+            <Button
+              type="submit"
+              variant="secondary"
+              className="w-full sm:w-auto"
+            >
               {t("filter")}
             </Button>
           </form>
@@ -75,10 +83,7 @@ export default async function AcademyPage({
           </CardBody>
         </Card>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {courses.map((course) => (
-            <CourseCard key={course.id} course={course} />
-          ))}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {canManage && (
             <AddFolderTile
               label={t("addCourse")}
@@ -87,6 +92,9 @@ export default async function AcademyPage({
               <CreateCourseForm />
             </AddFolderTile>
           )}
+          {courses.map((course) => (
+            <CourseCard key={course.id} course={course} />
+          ))}
         </div>
       )}
     </div>

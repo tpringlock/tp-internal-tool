@@ -414,7 +414,7 @@
   "AcademyAdmin": {
     "title": "TP Academy",
     "subtitle": "Tạo và xuất bản các khóa đào tạo và bài học.",
-    "addCourse": "Thêm khóa học",
+    "addCourse": "Thêm +",
     "allCourses": "Tất cả khóa học ({count})",
     "noCourses": "Chưa có khóa học nào. Hãy tạo khóa đầu tiên.",
     "courseTitle": "Tiêu đề",

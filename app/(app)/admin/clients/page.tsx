@@ -56,7 +56,7 @@ export default async function AdminClientsPage({
               {t("noClients")}
             </p>
           ) : (
-            <table className="w-full text-sm">
+            <table className="responsive-table w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 text-left text-slate-500">
                   <th className="px-5 py-3 font-medium">{t("name")}</th>

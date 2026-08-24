@@ -414,7 +414,7 @@
   "AcademyAdmin": {
     "title": "TP Academy",
     "subtitle": "Create and publish training courses and lessons.",
-    "addCourse": "Add a course",
+    "addCourse": "Add +",
     "allCourses": "All courses ({count})",
     "noCourses": "No courses yet. Create your first one.",
     "courseTitle": "Title",

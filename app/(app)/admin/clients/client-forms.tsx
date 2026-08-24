@@ -59,8 +59,12 @@ export function ClientRow({ client }: { client: Client }) {
   if (!editing) {
     return (
       <tr className="border-b border-slate-50 last:border-0">
-        <td className="px-5 py-3 font-medium text-slate-900">{client.name}</td>
-        <td className="px-5 py-3 text-slate-600">{client.code}</td>
+        <td data-label={t("name")} className="px-5 py-3 font-medium text-slate-900">
+          {client.name}
+        </td>
+        <td data-label={t("code")} className="px-5 py-3 text-slate-600">
+          {client.code}
+        </td>
         <td className="px-5 py-3 text-right">
           <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>
             {t("edit")}

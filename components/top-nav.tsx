@@ -16,8 +16,8 @@ export function TopNav({
 
   return (
     <header className="border-b border-slate-200 bg-white">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4">
-        <Link href="/" className="flex items-center gap-2">
+      <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:gap-6">
+        <Link href="/" className="flex min-w-0 items-center gap-2">
           {/* Brand logo. next/image is skipped here since it routes SVG/PNG
               logos through the optimizer; a plain img keeps it simple. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -26,9 +26,11 @@ export function TopNav({
             alt=""
             width={28}
             height={28}
-            className="h-7 w-7"
+            className="h-7 w-7 shrink-0"
           />
-          <span className="font-semibold text-primary">{tc("title")}</span>
+          <span className="truncate font-semibold text-primary">
+            {tc("title")}
+          </span>
         </Link>
 
         <div className="ml-auto flex items-center gap-3">

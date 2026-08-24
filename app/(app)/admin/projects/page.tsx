@@ -71,7 +71,7 @@ export default async function AdminProjectsPage({
               {t("noProjects")}
             </p>
           ) : (
-            <table className="w-full text-sm">
+            <table className="responsive-table w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 text-left text-slate-500">
                   <th className="px-5 py-3 font-medium">{t("name")}</th>
@@ -87,14 +87,22 @@ export default async function AdminProjectsPage({
                     key={p.id}
                     className="border-b border-slate-50 last:border-0"
                   >
-                    <td className="px-5 py-3 font-medium text-slate-900">
+                    <td
+                      data-label={t("name")}
+                      className="px-5 py-3 font-medium text-slate-900"
+                    >
                       {p.name}
                     </td>
-                    <td className="px-5 py-3 text-slate-600">{p.code}</td>
-                    <td className="px-5 py-3 text-slate-600">
+                    <td data-label={t("code")} className="px-5 py-3 text-slate-600">
+                      {p.code}
+                    </td>
+                    <td
+                      data-label={t("client")}
+                      className="px-5 py-3 text-slate-600"
+                    >
                       {p.clients?.name ?? "—"}
                     </td>
-                    <td className="px-5 py-3">
+                    <td data-label={t("status")} className="px-5 py-3">
                       {p.status === "active" ? (
                         <span className="text-green-700">{t("active")}</span>
                       ) : (

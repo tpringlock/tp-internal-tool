@@ -78,7 +78,15 @@ export default async function DocumentsPage() {
           </CardBody>
         </Card>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {canManage && (
+            <AddFolderTile
+              label={t("addCustomer")}
+              dialogTitle={t("addCustomerTitle")}
+            >
+              <CreateClientForm />
+            </AddFolderTile>
+          )}
           {folders.map((f) => (
             <Link
               key={f.id}
@@ -102,14 +110,6 @@ export default async function DocumentsPage() {
               </Card>
             </Link>
           ))}
-          {canManage && (
-            <AddFolderTile
-              label={t("addCustomer")}
-              dialogTitle={t("addCustomerTitle")}
-            >
-              <CreateClientForm />
-            </AddFolderTile>
-          )}
         </div>
       )}
     </div>

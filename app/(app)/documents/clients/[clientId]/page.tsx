@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Download, FileText, FolderOpen, Upload } from "lucide-react";
+import {
+  ArrowLeft,
+  Download,
+  FileText,
+  FolderOpen,
+  Upload,
+} from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth/dal";
 import { canManageContent } from "@/lib/auth/roles";
@@ -103,7 +109,7 @@ export default async function ClientFolderPage({
       {highlight && <ScrollToHighlight targetId={`file-${highlight}`} />}
 
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <Link
             href="/documents"
             className="inline-flex items-center gap-1 text-sm text-slate-500 underline-offset-2 hover:text-slate-900 hover:underline"
@@ -111,9 +117,9 @@ export default async function ClientFolderPage({
             <ArrowLeft className="h-4 w-4" />
             {t("backToFolders")}
           </Link>
-          <h1 className="mt-1 flex items-center gap-2 text-xl font-semibold text-primary">
-            <FolderOpen className="h-6 w-6" />
-            {client.name}
+          <h1 className="mt-1 flex min-w-0 items-center gap-2 text-xl font-semibold text-primary">
+            <FolderOpen className="h-6 w-6 shrink-0" />
+            <span className="min-w-0 break-words">{client.name}</span>
           </h1>
         </div>
         <Link href={`/documents/upload?client=${clientId}`}>
@@ -124,8 +130,18 @@ export default async function ClientFolderPage({
         </Link>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="min-w-0 space-y-6 lg:col-span-2">
+          {canManage && (
+            <AddFolderTile
+              label={t("addProject")}
+              dialogTitle={t("addProjectTitle")}
+            >
+              <CreateProjectForm
+                clients={[{ id: clientId, name: client.name }]}
+              />
+            </AddFolderTile>
+          )}
           {groups.length === 0 ? (
             <Card>
               <CardBody>
@@ -164,10 +180,12 @@ export default async function ClientFolderPage({
                         </div>
                         <a
                           href={`/api/documents/${d.id}?dl=1`}
-                          className="inline-flex items-center gap-1 text-sm font-medium text-slate-700 underline-offset-2 hover:text-slate-900 hover:underline"
+                          className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-slate-700 underline-offset-2 hover:text-slate-900 hover:underline"
                         >
-                          <Download className="h-4 w-4" />
-                          {t("download")}
+                          <Download className="h-4 w-4 shrink-0" />
+                          <span className="hidden sm:inline">
+                            {t("download")}
+                          </span>
                         </a>
                       </li>
                     ))}
@@ -176,20 +194,9 @@ export default async function ClientFolderPage({
               </Card>
             ))
           )}
-
-          {canManage && (
-            <AddFolderTile
-              label={t("addProject")}
-              dialogTitle={t("addProjectTitle")}
-            >
-              <CreateProjectForm
-                clients={[{ id: clientId, name: client.name }]}
-              />
-            </AddFolderTile>
-          )}
         </div>
 
-        <div>
+        <div className="mt-40 lg:mt-0 min-w-0">
           <Card>
             <CardHeader>
               <CardTitle>{ts("folderShareTitle")}</CardTitle>

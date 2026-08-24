@@ -104,8 +104,12 @@ export function ShareManager({
                   </span>
                   <span className="text-xs text-slate-400">
                     {status === "revoked"
-                      ? t("revokedAt", { date: formatDateTime(link.revoked_at!) })
-                      : t("expiresAt", { date: formatDateTime(link.expires_at) })}
+                      ? t("revokedAt", {
+                          date: formatDateTime(link.revoked_at!),
+                        })
+                      : t("expiresAt", {
+                          date: formatDateTime(link.expires_at),
+                        })}
                   </span>
                 </div>
 

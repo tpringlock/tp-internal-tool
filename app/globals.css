@@ -21,3 +21,75 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/*
+ * Responsive tables: below md (768px) a `.responsive-table` collapses each row
+ * into a card. The header row is visually hidden. Each row becomes a two-column
+ * grid — labeled data cells stack in the left column (column title above value),
+ * and any unlabeled cell (the row's actions) sits in a right-hand column,
+ * vertically centered. `minmax(0, 1fr)` + overflow-wrap lets long values (emails,
+ * URLs) wrap so the card always fits the viewport with no horizontal scroll.
+ * At md+ it renders as an ordinary table.
+ */
+@media (max-width: 767px) {
+  .responsive-table,
+  .responsive-table tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .responsive-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .responsive-table tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 0.75rem;
+    row-gap: 0;
+    margin: 0.75rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--color-slate-200, #e2e8f0);
+    border-radius: 0.5rem;
+  }
+
+  .responsive-table td {
+    grid-column: 1;
+    min-width: 0;
+    padding: 0.3rem 0;
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+
+  .responsive-table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 0.1rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--color-slate-500, #64748b);
+  }
+
+  /* Unlabeled cell = the row's action buttons: right column, full height. */
+  .responsive-table td:not([data-label]) {
+    grid-column: 2;
+    grid-row: 1 / span 99;
+    align-self: center;
+    padding-left: 0.5rem;
+    text-align: right;
+  }
+
+  /* A cell spanning the whole row (e.g. an inline edit form) fills both cols. */
+  .responsive-table td[colspan] {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+}

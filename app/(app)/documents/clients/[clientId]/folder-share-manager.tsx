@@ -95,7 +95,7 @@ export function FolderShareManager({
             const status = statusOf(link);
             return (
               <li key={link.id} className="space-y-2 py-3">
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
                   <span
                     className={
                       status === "active"
@@ -116,7 +116,7 @@ export function FolderShareManager({
 
                 {status === "active" && (
                   <div className="flex flex-wrap items-center gap-2">
-                    <code className="flex-1 truncate rounded bg-slate-50 px-2 py-1 text-xs text-slate-600">
+                    <code className="min-w-0 flex-1 truncate rounded bg-slate-50 px-2 py-1 text-xs text-slate-600">
                       {link.url}
                     </code>
                     <CopyButton url={link.url} />
