@@ -130,18 +130,21 @@ export default async function ClientFolderPage({
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-3">
         <div className="min-w-0 space-y-6 lg:col-span-2">
           {canManage && (
-            <AddFolderTile
-              label={t("addProject")}
-              dialogTitle={t("addProjectTitle")}
-            >
-              <CreateProjectForm
-                clients={[{ id: clientId, name: client.name }]}
-              />
-            </AddFolderTile>
+            <div className="w-fit max-w-full">
+              <AddFolderTile
+                label={t("addProject")}
+                dialogTitle={t("addProjectTitle")}
+              >
+                <CreateProjectForm
+                  clients={[{ id: clientId, name: client.name }]}
+                />
+              </AddFolderTile>
+            </div>
           )}
+
           {groups.length === 0 ? (
             <Card>
               <CardBody>
@@ -154,6 +157,7 @@ export default async function ClientFolderPage({
                 <CardHeader>
                   <CardTitle>{group.name}</CardTitle>
                 </CardHeader>
+
                 <CardBody className="p-0">
                   <ul className="divide-y divide-slate-100">
                     {group.documents.map((d) => (
@@ -167,6 +171,7 @@ export default async function ClientFolderPage({
                         }`}
                       >
                         <FileText className="h-5 w-5 shrink-0 text-slate-400" />
+
                         <div className="min-w-0 flex-1">
                           <Link
                             href={`/documents/${d.id}`}
@@ -174,15 +179,18 @@ export default async function ClientFolderPage({
                           >
                             {d.canonical_name}
                           </Link>
+
                           <div className="text-xs text-slate-400">
                             {dt(d.doc_type)} · {formatBytes(d.file_size)}
                           </div>
                         </div>
+
                         <a
                           href={`/api/documents/${d.id}?dl=1`}
                           className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-slate-700 underline-offset-2 hover:text-slate-900 hover:underline"
                         >
                           <Download className="h-4 w-4 shrink-0" />
+
                           <span className="hidden sm:inline">
                             {t("download")}
                           </span>
@@ -196,12 +204,13 @@ export default async function ClientFolderPage({
           )}
         </div>
 
-        <div className="mt-40 lg:mt-0 min-w-0">
-          <Card>
+        <div className="min-w-0 w-full">
+          <Card className="w-full">
             <CardHeader>
               <CardTitle>{ts("folderShareTitle")}</CardTitle>
             </CardHeader>
-            <CardBody>
+
+            <CardBody className="min-w-0 overflow-hidden">
               <FolderShareManager clientId={clientId} links={shareLinks} />
             </CardBody>
           </Card>
