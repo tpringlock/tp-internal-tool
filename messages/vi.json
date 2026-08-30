@@ -27,7 +27,9 @@
     "documentManagementDesc": "Tải lên, sắp xếp và chia sẻ hợp đồng đã ký và hồ sơ tài chính cho các dự án của bạn.",
     "training": "TP Academy",
     "comingSoon": "Sắp ra mắt",
-    "trainingDesc": "Các khóa đào tạo nội bộ cho nhân viên — xem video và tài liệu."
+    "trainingDesc": "Các khóa đào tạo nội bộ cho nhân viên — xem video và tài liệu.",
+    "calculateBill": "Tính hóa đơn tự động",
+    "calculateBillDesc": "Tự động tính hóa đơn và các con số thanh toán cho dự án của bạn."
   },
   "Auth": {
     "email": "Email",

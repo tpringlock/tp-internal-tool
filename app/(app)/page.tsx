@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { FileText, GraduationCap } from "lucide-react";
+import { FileText, GraduationCap, Calculator } from "lucide-react";
 import { requireUser } from "@/lib/auth/dal";
 import { Card, CardBody } from "@/components/ui/card";
 
@@ -54,6 +54,34 @@ export default async function HomePage() {
             </CardBody>
           </Card>
         </Link>
+
+        <div
+          className="group cursor-not-allowed"
+          aria-disabled
+          title={t("comingSoon")}
+        >
+          <Card className="h-full opacity-60">
+            <CardBody className="flex items-start gap-4">
+              <Calculator
+                className="h-10 w-10 shrink-0 text-primary"
+                aria-hidden
+              />
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <div className="text-sm font-semibold text-primary">
+                    {t("calculateBill")}
+                  </div>
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
+                    {t("comingSoon")}
+                  </span>
+                </div>
+                <p className="text-sm text-slate-500">
+                  {t("calculateBillDesc")}
+                </p>
+              </div>
+            </CardBody>
+          </Card>
+        </div>
       </div>
     </div>
   );

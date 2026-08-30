@@ -27,7 +27,9 @@
     "documentManagementDesc": "Upload, organise and share signed contracts and financial records for your projects.",
     "training": "TP Academy",
     "comingSoon": "Coming soon",
-    "trainingDesc": "Internal training courses for employees — watch videos and read materials."
+    "trainingDesc": "Internal training courses for employees — watch videos and read materials.",
+    "calculateBill": "Calculate Bill Automatically",
+    "calculateBillDesc": "Automatically compute invoices and billing figures for your projects."
   },
   "Auth": {
     "email": "Email",
