@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Textarea } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
+import { useToast, useFormStateToast } from "@/components/ui/toast";
 import { formatBytes } from "@/lib/format";
 import { VideoUploadForm, uploadLessonVideoFile } from "./video-upload-form";
 import { validateVideoFile } from "@/lib/academy/video-validation";
@@ -35,6 +36,7 @@ export function AddLessonForm({
 }) {
   const t = useTranslations("AcademyAdmin");
   const router = useRouter();
+  const { toast } = useToast();
   const [state, setState] = useState<FormState>({});
   const [pending, setPending] = useState(false);
 
@@ -51,6 +53,7 @@ export function AddLessonForm({
       const invalid = validateVideoFile(file, t);
       if (invalid) {
         setState({ fieldErrors: { video_file: [invalid] } });
+        toast(invalid, { tone: "error" });
         return;
       }
       formData.set("video_url", "");
@@ -64,6 +67,7 @@ export function AddLessonForm({
       const res = await addLesson({}, formData);
       if (res.error || res.fieldErrors) {
         setState(res);
+        if (res.error) toast(res.error, { tone: "error" });
         return;
       }
       // 2. If a video was chosen, upload + attach it to the fresh lesson.
@@ -72,10 +76,16 @@ export function AddLessonForm({
           courseId,
           res.lessonId,
           file,
+          {
+            sizeErrorMessage: t("errVideoSize", {
+              size: MAX_VIDEO_SIZE_LABEL,
+            }),
+          },
         );
         if (uploadError) {
           // The lesson exists; only the video failed — it can be added via Edit.
           setState({ error: uploadError });
+          toast(uploadError, { tone: "error" });
           router.refresh();
           return;
         }
@@ -84,7 +94,9 @@ export function AddLessonForm({
       setState({ success: res.success });
       router.refresh();
     } catch (err) {
-      setState({ error: err instanceof Error ? err.message : String(err) });
+      const message = err instanceof Error ? err.message : String(err);
+      setState({ error: message });
+      toast(message, { tone: "error" });
     } finally {
       setPending(false);
     }
@@ -291,6 +303,7 @@ function EditLessonForm({
     updateLesson,
     {},
   );
+  useFormStateToast(state);
 
   return (
     <form action={action} className="space-y-4">
@@ -332,6 +345,7 @@ function UploadFileForm({
     uploadLessonFile,
     {},
   );
+  useFormStateToast(state);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {

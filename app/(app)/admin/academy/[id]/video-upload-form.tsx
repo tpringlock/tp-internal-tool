@@ -16,6 +16,7 @@ import { validateVideoFile } from "@/lib/academy/video-validation";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
+import { useToast } from "@/components/ui/toast";
 
 /**
  * Upload a video file straight from the browser to Supabase Storage (one-time
@@ -27,6 +28,7 @@ export async function uploadLessonVideoFile(
   courseId: string,
   lessonId: string,
   file: File,
+  opts?: { sizeErrorMessage?: string },
 ): Promise<string | null> {
   const signed = await createLessonVideoUploadUrl({
     courseId,
@@ -43,7 +45,18 @@ export async function uploadLessonVideoFile(
     .uploadToSignedUrl(signed.path, signed.token, file, {
       contentType: file.type,
     });
-  if (uploadError) return uploadError.message;
+  if (uploadError) {
+    // Storage rejects oversized objects (bucket file_size_limit or the
+    // project-wide dashboard cap) with a message users can't act on — swap in
+    // the translated size error. Other failures (quota, network) keep theirs.
+    if (
+      opts?.sizeErrorMessage &&
+      /exceed|too large|413|payload/i.test(uploadError.message)
+    ) {
+      return opts.sizeErrorMessage;
+    }
+    return uploadError.message;
+  }
 
   const result = await finalizeLessonVideo({
     lessonId,
@@ -65,9 +78,15 @@ export function VideoUploadForm({
 }) {
   const t = useTranslations("AcademyAdmin");
   const router = useRouter();
+  const { toast } = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function fail(message: string) {
+    setError(message);
+    toast(message, { tone: "error" });
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -76,21 +95,27 @@ export function VideoUploadForm({
     const file = inputRef.current?.files?.[0];
     const invalid = validateVideoFile(file, t);
     if (invalid) {
-      setError(invalid);
+      fail(invalid);
       return;
     }
 
     setPending(true);
     try {
-      const uploadError = await uploadLessonVideoFile(courseId, lessonId, file!);
+      const uploadError = await uploadLessonVideoFile(
+        courseId,
+        lessonId,
+        file!,
+        { sizeErrorMessage: t("errVideoSize", { size: MAX_VIDEO_SIZE_LABEL }) },
+      );
       if (uploadError) {
-        setError(uploadError);
+        fail(uploadError);
         return;
       }
       if (inputRef.current) inputRef.current.value = "";
+      toast(t("videoUploaded"), { tone: "success" });
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      fail(err instanceof Error ? err.message : String(err));
     } finally {
       setPending(false);
     }

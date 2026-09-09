@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
+import { useFormStateToast } from "@/components/ui/toast";
 
 export interface UploadProject {
   id: string;
@@ -32,6 +33,7 @@ export function UploadForm({
     uploadDocument,
     {},
   );
+  useFormStateToast(state);
 
   const clients = useMemo(() => {
     const map = new Map<string, string>();
