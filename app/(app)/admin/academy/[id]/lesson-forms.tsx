@@ -20,11 +20,9 @@ import { Input, Textarea } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
 import { formatBytes } from "@/lib/format";
-import {
-  VideoUploadForm,
-  uploadLessonVideoFile,
-  validateVideoFile,
-} from "./video-upload-form";
+import { VideoUploadForm, uploadLessonVideoFile } from "./video-upload-form";
+import { validateVideoFile } from "@/lib/academy/video-validation";
+import { MAX_VIDEO_SIZE_LABEL } from "@/lib/academy/constants";
 
 type LessonWithFiles = Lesson & { files: Pick<LessonFile, "id" | "file_name" | "file_size">[] };
 
@@ -111,7 +109,7 @@ export function AddLessonForm({
       <Field
         label={t("uploadVideo")}
         error={state.fieldErrors?.video_file?.[0]}
-        hint={t("uploadVideoHint")}
+        hint={t("uploadVideoHint", { size: MAX_VIDEO_SIZE_LABEL })}
       >
         <input
           type="file"

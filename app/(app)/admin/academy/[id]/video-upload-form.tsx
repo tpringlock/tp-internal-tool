@@ -10,9 +10,9 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import {
   ACADEMY_BUCKET,
-  ACCEPTED_VIDEO_MIME,
-  MAX_VIDEO_SIZE,
+  MAX_VIDEO_SIZE_LABEL,
 } from "@/lib/academy/constants";
+import { validateVideoFile } from "@/lib/academy/video-validation";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
@@ -53,20 +53,6 @@ export async function uploadLessonVideoFile(
     fileSize: file.size,
   });
   return result.error ?? null;
-}
-
-/**
- * Client-side guard before uploading: presence, MIME, size. Returns a
- * translated error message, or null when the file is acceptable.
- */
-export function validateVideoFile(
-  file: File | undefined,
-  t: (key: string) => string,
-): string | null {
-  if (!file) return t("errVideoChoose");
-  if (!ACCEPTED_VIDEO_MIME[file.type]) return t("errVideoType");
-  if (file.size > MAX_VIDEO_SIZE) return t("errVideoSize");
-  return null;
 }
 
 /** Standalone upload control shown in the lesson editor (existing lessons). */
@@ -113,7 +99,10 @@ export function VideoUploadForm({
   return (
     <form onSubmit={onSubmit} className="flex flex-wrap items-end gap-3">
       <div className="flex-1">
-        <Field label={t("uploadVideo")} hint={t("uploadVideoHint")}>
+        <Field
+          label={t("uploadVideo")}
+          hint={t("uploadVideoHint", { size: MAX_VIDEO_SIZE_LABEL })}
+        >
           <input
             ref={inputRef}
             type="file"

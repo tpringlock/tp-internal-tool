@@ -30,6 +30,7 @@ import {
   MAX_IMAGE_SIZE,
   ACCEPTED_VIDEO_MIME,
   MAX_VIDEO_SIZE,
+  MAX_VIDEO_SIZE_LABEL,
   buildLessonFilePath,
   buildCourseFilePath,
   buildThumbnailPath,
@@ -523,7 +524,7 @@ export async function createLessonVideoUploadUrl(input: {
   const ext = ACCEPTED_VIDEO_MIME[input.contentType];
   if (!ext) return { error: t("errVideoType") };
   if (input.fileSize <= 0 || input.fileSize > MAX_VIDEO_SIZE) {
-    return { error: t("errVideoSize") };
+    return { error: t("errVideoSize", { size: MAX_VIDEO_SIZE_LABEL }) };
   }
 
   const fileId = crypto.randomUUID();

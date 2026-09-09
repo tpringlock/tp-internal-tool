@@ -47,10 +47,13 @@ export function buildThumbnailPath(
 /**
  * Self-hosted lesson videos: uploaded straight to the private `academy` bucket
  * and streamed via a short-lived signed URL. Limit mirrors the bucket's
- * file_size_limit (see 0014_lesson_video_upload.sql). mp4 (H.264) and webm are
- * the formats the native <video> element plays reliably.
+ * file_size_limit (see 0019_lower_video_size_limit.sql) and must stay within
+ * the project-wide "Upload file size limit" in the Supabase dashboard. mp4
+ * (H.264) and webm are the formats the native <video> element plays reliably.
  */
-export const MAX_VIDEO_SIZE = 1024 * 1024 * 1024; // 1 GiB
+export const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50 MB
+/** Human label kept in sync with MAX_VIDEO_SIZE, for i18n interpolation. */
+export const MAX_VIDEO_SIZE_LABEL = `${MAX_VIDEO_SIZE / 1024 / 1024} MB`;
 export const ACCEPTED_VIDEO_MIME: Record<string, string> = {
   "video/mp4": "mp4",
   "video/webm": "webm",
