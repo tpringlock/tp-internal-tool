@@ -2,13 +2,16 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { addClient, editClient } from "@/app/actions/clients";
+import { X } from "lucide-react";
+import { addClient, editClient, deleteClient } from "@/app/actions/clients";
 import type { FormState } from "@/app/actions/auth";
 import type { Client } from "@/lib/db/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
+import { Dialog } from "@/components/ui/dialog";
+import { useToast, useFormStateToast } from "@/components/ui/toast";
 
 export function CreateClientForm() {
   const t = useTranslations("Admin");
@@ -48,7 +51,13 @@ export function CreateClientForm() {
   );
 }
 
-export function ClientRow({ client }: { client: Client }) {
+export function ClientRow({
+  client,
+  canDelete,
+}: {
+  client: Client;
+  canDelete?: boolean;
+}) {
   const t = useTranslations("Admin");
   const [editing, setEditing] = useState(false);
   const [state, action, pending] = useActionState<FormState, FormData>(
@@ -66,9 +75,12 @@ export function ClientRow({ client }: { client: Client }) {
           {client.code}
         </td>
         <td className="px-5 py-3 text-right">
-          <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>
-            {t("edit")}
-          </Button>
+          <div className="flex items-center justify-end gap-2">
+            <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>
+              {t("edit")}
+            </Button>
+            {canDelete && <DeleteClientButton client={client} />}
+          </div>
         </td>
       </tr>
     );
@@ -105,5 +117,64 @@ export function ClientRow({ client }: { client: Client }) {
         </form>
       </td>
     </tr>
+  );
+}
+
+/**
+ * Delete control for a client row: danger button + confirmation dialog, shown
+ * to admins only (RLS keeps deletion admin-only regardless). Deleting a client
+ * that still has projects is blocked by the DB and surfaced as a toast.
+ */
+function DeleteClientButton({ client }: { client: Client }) {
+  const t = useTranslations("Admin");
+  const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+  const [state, action, pending] = useActionState<FormState, FormData>(
+    deleteClient,
+    {},
+  );
+  useFormStateToast(state);
+
+  useEffect(() => {
+    // Close on any outcome; the toast carries the result. On success the row
+    // itself disappears with the revalidated list.
+    if (state.success || state.error) setOpen(false);
+    if (state.success) toast(state.success, { tone: "success" });
+  }, [state, toast]);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label={t("deleteClient")}
+        title={t("deleteClient")}
+        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-500 hover:border-red-300 hover:bg-red-50 hover:text-red-600"
+      >
+        <X className="h-4 w-4" />
+      </button>
+
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        title={t("deleteClient")}
+      >
+        <p className="text-sm text-slate-600">
+          {t("confirmDeleteClientBody", { name: client.name })}
+        </p>
+        <div className="mt-5 flex justify-end gap-2">
+          <Button variant="secondary" size="sm" onClick={() => setOpen(false)}>
+            {t("cancel")}
+          </Button>
+          <form action={action}>
+            <input type="hidden" name="id" value={client.id} />
+            <input type="hidden" name="name" value={client.name} />
+            <Button variant="danger" size="sm" type="submit" loading={pending}>
+              {t("confirmDelete")}
+            </Button>
+          </form>
+        </div>
+      </Dialog>
+    </>
   );
 }

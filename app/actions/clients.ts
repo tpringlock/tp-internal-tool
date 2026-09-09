@@ -3,13 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
-import { requireContentManager } from "@/lib/auth/dal";
+import { requireAdmin, requireContentManager } from "@/lib/auth/dal";
 import { logActivity } from "@/lib/activity";
 import { clientSchema, translateFieldErrors } from "@/lib/validation";
 import type { FormState } from "@/app/actions/auth";
 
 /** Postgres unique-violation error code. */
 const UNIQUE_VIOLATION = "23505";
+/** Postgres foreign-key-violation error code. */
+const FK_VIOLATION = "23503";
 
 export async function addClient(
   _prev: FormState,
@@ -88,4 +90,48 @@ export async function editClient(
   });
   revalidatePath("/admin/clients");
   return { success: t("clientUpdated") };
+}
+
+/**
+ * Delete a client. Admin-only (RLS policy clients_admin_delete). Blocked by
+ * the DB when the client still has projects (projects.client_id is
+ * `on delete restrict`); folder share links cascade away with the client.
+ */
+export async function deleteClient(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  await requireAdmin();
+
+  const id = String(formData.get("id"));
+  const name = String(formData.get("name") ?? "");
+
+  const supabase = await createClient();
+  // select() confirms a row was actually removed — RLS filtering a row out
+  // would otherwise report a silent success.
+  const { data, error } = await supabase
+    .from("clients")
+    .delete()
+    .eq("id", id)
+    .select("id");
+
+  const t = await getTranslations("Admin");
+  if (error) {
+    if (error.code === FK_VIOLATION) {
+      return { error: t("errClientHasProjects") };
+    }
+    return { error: error.message };
+  }
+  if (!data || data.length === 0) {
+    return { error: t("clientNotFound") };
+  }
+
+  await logActivity(supabase, {
+    action: "client.deleted",
+    entityType: "client",
+    entityId: id,
+    metadata: { name },
+  });
+  revalidatePath("/admin/clients");
+  return { success: t("clientDeleted", { name }) };
 }
