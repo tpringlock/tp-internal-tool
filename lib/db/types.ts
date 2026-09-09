@@ -321,7 +321,13 @@ export interface Database {
         Partial<CourseFile>
       >;
     };
-    Views: Record<string, never>;
+    Views: {
+      // Service-role only (see 0020_user_emails_view.sql).
+      user_emails: {
+        Row: { id: string; email: string | null };
+        Relationships: [];
+      };
+    };
     Functions: Record<string, never>;
     Enums: {
       user_role: UserRole;

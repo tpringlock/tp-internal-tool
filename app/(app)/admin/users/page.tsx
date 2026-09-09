@@ -17,20 +17,33 @@ interface UserRow extends Profile {
   email: string;
 }
 
-async function getUsers(): Promise<UserRow[]> {
+async function getUsers(
+  page: number,
+): Promise<{ users: UserRow[]; total: number }> {
   const admin = createAdminClient();
-  const [{ data: authData }, { data: profiles }] = await Promise.all([
-    admin.auth.admin.listUsers({ perPage: 1000 }),
-    admin.from("profiles").select("*"),
-  ]);
+  const from = (page - 1) * PAGE_SIZE;
+  const { data: profiles, count } = await admin
+    .from("profiles")
+    .select("*", { count: "exact" })
+    .order("full_name")
+    .range(from, from + PAGE_SIZE - 1);
 
-  const emailById = new Map(
-    (authData?.users ?? []).map((u) => [u.id, u.email ?? ""]),
-  );
+  // Emails come from the service-role-only user_emails view (auth.users isn't
+  // exposed via the data API, and the admin API can't fetch by ids in bulk).
+  const ids = (profiles ?? []).map((p) => p.id);
+  const { data: emails } =
+    ids.length > 0
+      ? await admin.from("user_emails").select("id, email").in("id", ids)
+      : { data: [] };
+  const emailById = new Map((emails ?? []).map((u) => [u.id, u.email ?? ""]));
 
-  return (profiles ?? [])
-    .map((p) => ({ ...p, email: emailById.get(p.id) ?? "" }))
-    .sort((a, b) => a.full_name.localeCompare(b.full_name));
+  return {
+    users: (profiles ?? []).map((p) => ({
+      ...p,
+      email: emailById.get(p.id) ?? "",
+    })),
+    total: count ?? 0,
+  };
 }
 
 export default async function AdminUsersPage({
@@ -39,15 +52,12 @@ export default async function AdminUsersPage({
   searchParams: Promise<{ page?: string }>;
 }) {
   const currentAdmin = await requireAdmin();
-  const allUsers = await getUsers();
+  const { page = "1" } = await searchParams;
+  const pageNum = Math.max(1, Number(page) || 1);
+  const { users, total } = await getUsers(pageNum);
   const t = await getTranslations("Admin");
 
-  const { page = "1" } = await searchParams;
-  const total = allUsers.length;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const pageNum = Math.min(Math.max(1, Number(page) || 1), totalPages);
-  const from = (pageNum - 1) * PAGE_SIZE;
-  const users = allUsers.slice(from, from + PAGE_SIZE);
   const hrefForPage = (p: number) => `/admin/users?page=${p}`;
 
   return (
