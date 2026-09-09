@@ -13,6 +13,8 @@ import {
 import type { FormState } from "@/app/actions/auth";
 
 const UNIQUE_VIOLATION = "23505";
+/** Postgres foreign-key-violation error code. */
+const FK_VIOLATION = "23503";
 
 export async function addProject(
   _prev: FormState,
@@ -96,6 +98,50 @@ export async function editProject(
   revalidatePath("/admin/projects");
   revalidatePath(`/admin/projects/${id}`);
   return { success: t("projectUpdated") };
+}
+
+/**
+ * Delete a project. Admin-only (RLS policy projects_admin_delete). Blocked by
+ * the DB when the project still has documents (documents.project_id is
+ * `on delete restrict`); member assignments cascade away with the project.
+ */
+export async function deleteProject(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  await requireAdmin();
+
+  const id = String(formData.get("id"));
+  const name = String(formData.get("name") ?? "");
+
+  const supabase = await createClient();
+  // select() confirms a row was actually removed — RLS filtering a row out
+  // would otherwise report a silent success.
+  const { data, error } = await supabase
+    .from("projects")
+    .delete()
+    .eq("id", id)
+    .select("id");
+
+  const t = await getTranslations("Admin");
+  if (error) {
+    if (error.code === FK_VIOLATION) {
+      return { error: t("errProjectHasDocuments") };
+    }
+    return { error: error.message };
+  }
+  if (!data || data.length === 0) {
+    return { error: t("projectNotFound") };
+  }
+
+  await logActivity(supabase, {
+    action: "project.deleted",
+    entityType: "project",
+    entityId: id,
+    metadata: { name },
+  });
+  revalidatePath("/admin/projects");
+  return { success: t("projectDeleted", { name }) };
 }
 
 export async function assignMember(

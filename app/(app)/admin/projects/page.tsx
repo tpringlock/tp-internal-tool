@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { requireContentManager } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import { CreateProjectForm } from "./project-forms";
+import { DeleteProjectButton } from "./delete-project-button";
 
 const PAGE_SIZE = 50;
 
@@ -23,6 +25,11 @@ export default async function AdminProjectsPage({
   const { page = "1" } = await searchParams;
   const pageNum = Math.max(1, Number(page) || 1);
   const from = (pageNum - 1) * PAGE_SIZE;
+
+  // Request-cached (already resolved by the admin layout); deletion is
+  // admin-only, so managers don't get the button.
+  const user = await requireContentManager();
+  const canDelete = user.profile.role === "admin";
 
   const supabase = await createClient();
 
@@ -110,12 +117,20 @@ export default async function AdminProjectsPage({
                       )}
                     </td>
                     <td className="px-5 py-3 text-right">
-                      <Link
-                        href={`/admin/projects/${p.id}`}
-                        className="text-sm font-medium text-slate-700 underline hover:text-slate-900"
-                      >
-                        {t("manage")}
-                      </Link>
+                      <div className="flex items-center justify-end gap-3">
+                        <Link
+                          href={`/admin/projects/${p.id}`}
+                          className="text-sm font-medium text-slate-700 underline hover:text-slate-900"
+                        >
+                          {t("manage")}
+                        </Link>
+                        {canDelete && (
+                          <DeleteProjectButton
+                            projectId={p.id}
+                            projectName={p.name}
+                          />
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
