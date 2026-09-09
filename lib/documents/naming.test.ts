@@ -13,10 +13,10 @@ describe("buildCanonicalName", () => {
         date,
         disambiguator: "ab12",
       }),
-    ).toBe("Acme Corp_Contract_Tower A_20260806_ab12.pdf");
+    ).toBe("Acme Corp_Hợp đồng_Tower A_20260806_ab12.pdf");
   });
 
-  it("maps multi-word document types to a single filename token", () => {
+  it("uses the Vietnamese filename label for the document type", () => {
     expect(
       buildCanonicalName({
         clientName: "Acme",
@@ -25,7 +25,7 @@ describe("buildCanonicalName", () => {
         date,
         disambiguator: "zz99",
       }),
-    ).toBe("Acme_PaymentRecord_P1_20260806_zz99.pdf");
+    ).toBe("Acme_Chứng từ thanh toán_P1_20260806_zz99.pdf");
   });
 
   it("replaces underscores in names so segment delimiters stay unambiguous", () => {
@@ -37,7 +37,7 @@ describe("buildCanonicalName", () => {
         date,
         disambiguator: "c3d4",
       }),
-    ).toBe("A-B Co_Invoice_P-1_20260806_c3d4.pdf");
+    ).toBe("A-B Co_Hóa đơn_P-1_20260806_c3d4.pdf");
   });
 
   it("removes characters that are illegal in filenames", () => {
@@ -49,7 +49,7 @@ describe("buildCanonicalName", () => {
         date,
         disambiguator: "ab12",
       }),
-    ).toBe("AcmeCorp_Contract_Tower A_20260806_ab12.pdf");
+    ).toBe("AcmeCorp_Hợp đồng_Tower A_20260806_ab12.pdf");
   });
 
   it("trims and collapses internal whitespace", () => {
@@ -61,7 +61,7 @@ describe("buildCanonicalName", () => {
         date,
         disambiguator: "ab12",
       }),
-    ).toBe("Acme Corp_Contract_Tower A_20260806_ab12.pdf");
+    ).toBe("Acme Corp_Hợp đồng_Tower A_20260806_ab12.pdf");
   });
 });
 
