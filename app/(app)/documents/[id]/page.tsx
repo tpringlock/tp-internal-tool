@@ -42,36 +42,38 @@ export default async function DocumentDetailPage({
   const ts = await getTranslations("Shares");
   const ta = await getTranslations("Activity");
 
-  const { data: doc } = await supabase
-    .from("documents")
-    .select(
-      `id, canonical_name, doc_type, created_at, file_size,
-       projects ( name, clients ( name ) ),
-       uploader:profiles!documents_uploaded_by_fkey ( full_name )`,
-    )
-    .eq("id", id)
-    .single<DocDetail>();
+  // All three queries are keyed by the document id — fetch in parallel.
+  const [{ data: doc }, { data: activityData }, { data: shareData }] =
+    await Promise.all([
+      supabase
+        .from("documents")
+        .select(
+          `id, canonical_name, doc_type, created_at, file_size,
+           projects ( name, clients ( name ) ),
+           uploader:profiles!documents_uploaded_by_fkey ( full_name )`,
+        )
+        .eq("id", id)
+        .single<DocDetail>(),
+      supabase
+        .from("activity_log")
+        .select(
+          `id, action, created_at,
+           actor:profiles!activity_log_actor_user_id_fkey ( full_name )`,
+        )
+        .eq("entity_type", "document")
+        .eq("entity_id", id)
+        .order("created_at", { ascending: false })
+        .limit(50),
+      supabase
+        .from("share_links")
+        .select("id, token, expires_at, revoked_at, created_at")
+        .eq("document_id", id)
+        .order("created_at", { ascending: false }),
+    ]);
 
   if (!doc) notFound();
 
-  const { data: activityData } = await supabase
-    .from("activity_log")
-    .select(
-      `id, action, created_at,
-       actor:profiles!activity_log_actor_user_id_fkey ( full_name )`,
-    )
-    .eq("entity_type", "document")
-    .eq("entity_id", id)
-    .order("created_at", { ascending: false })
-    .limit(50);
-
   const activity = (activityData ?? []) as unknown as ActivityRow[];
-
-  const { data: shareData } = await supabase
-    .from("share_links")
-    .select("id, token, expires_at, revoked_at, created_at")
-    .eq("document_id", id)
-    .order("created_at", { ascending: false });
 
   const shareLinks: ShareLinkView[] = (shareData ?? []).map((l) => ({
     id: l.id,

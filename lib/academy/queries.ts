@@ -90,47 +90,46 @@ export async function getCourseTree(
   supabase: Db,
   courseId: string,
 ): Promise<CourseTree | null> {
-  const { data: course } = await supabase
-    .from("courses")
-    .select("*")
-    .eq("id", courseId)
-    .single<Course>();
+  // Course, chapters and lessons are all keyed by courseId — fetch in parallel.
+  // RLS keeps this safe: an invisible course yields no child rows either.
+  const [{ data: course }, { data: chapterRows }, { data: lessonRows }] =
+    await Promise.all([
+      supabase.from("courses").select("*").eq("id", courseId).single<Course>(),
+      supabase
+        .from("chapters")
+        .select("*")
+        .eq("course_id", courseId)
+        .order("position", { ascending: true }),
+      supabase
+        .from("lessons")
+        .select("id, chapter_id, title, position")
+        .eq("course_id", courseId)
+        .order("position", { ascending: true }),
+    ]);
   if (!course) return null;
-
-  const { data: chapterRows } = await supabase
-    .from("chapters")
-    .select("*")
-    .eq("course_id", courseId)
-    .order("position", { ascending: true });
   const chapters = (chapterRows ?? []) as Chapter[];
-
-  const { data: lessonRows } = await supabase
-    .from("lessons")
-    .select("id, chapter_id, title, position")
-    .eq("course_id", courseId)
-    .order("position", { ascending: true });
   const lessons = (lessonRows ?? []) as LessonLite[];
 
   const lessonIds = lessons.map((l) => l.id);
-  let pdfs = 0;
-  if (lessonIds.length > 0) {
-    const { count } = await supabase
-      .from("lesson_files")
-      .select("id", { count: "exact", head: true })
-      .in("lesson_id", lessonIds);
-    pdfs = count ?? 0;
-  }
-
-  // Which chapters carry a quiz (any question) — one cheap query, tallied in JS.
   const chapterIds = chapters.map((ch) => ch.id);
+  const [{ count: pdfCount }, { data: quizRows }] = await Promise.all([
+    lessonIds.length > 0
+      ? supabase
+          .from("lesson_files")
+          .select("id", { count: "exact", head: true })
+          .in("lesson_id", lessonIds)
+      : Promise.resolve({ count: 0 }),
+    // Which chapters carry a quiz (any question) — one cheap query, tallied in JS.
+    chapterIds.length > 0
+      ? supabase
+          .from("quiz_questions")
+          .select("chapter_id")
+          .in("chapter_id", chapterIds)
+      : Promise.resolve({ data: [] as { chapter_id: string }[] }),
+  ]);
+  const pdfs = pdfCount ?? 0;
   const chaptersWithQuiz = new Set<string>();
-  if (chapterIds.length > 0) {
-    const { data: quizRows } = await supabase
-      .from("quiz_questions")
-      .select("chapter_id")
-      .in("chapter_id", chapterIds);
-    for (const row of quizRows ?? []) chaptersWithQuiz.add(row.chapter_id);
-  }
+  for (const row of quizRows ?? []) chaptersWithQuiz.add(row.chapter_id);
 
   const byChapter = new Map<string, LessonLite[]>();
   for (const lesson of lessons) {
