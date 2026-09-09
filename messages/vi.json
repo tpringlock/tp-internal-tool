@@ -2,6 +2,7 @@
   "Common": {
     "title": "Internal Ringlock TP",
     "description": "Công cụ nội bộ và quản lý tài liệu",
+    "dismiss": "Đóng",
     "language": "Ngôn ngữ",
     "tagline": "Công cụ nội bộ",
     "saving": "Đang lưu…",

@@ -2,6 +2,7 @@
   "Common": {
     "title": "Internal Ringlock TP",
     "description": "Internal tools and document management",
+    "dismiss": "Dismiss",
     "language": "Language",
     "tagline": "Internal tools",
     "saving": "Saving…",
