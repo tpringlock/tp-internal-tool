@@ -1,5 +1,6 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
@@ -134,5 +135,11 @@ export async function deleteClient(
     metadata: { name },
   });
   revalidatePath("/admin/clients");
+
+  // Redirect server-side: the manage page we're on belongs to the deleted
+  // client, so re-rendering it (which the action response otherwise does)
+  // would 404 before any client-side navigation runs. Internal paths only.
+  const redirectTo = String(formData.get("redirect_to") ?? "");
+  if (redirectTo.startsWith("/")) redirect(redirectTo);
   return { success: t("clientDeleted", { name }) };
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { X } from "lucide-react";
 import { addClient, editClient, deleteClient } from "@/app/actions/clients";
@@ -88,7 +87,9 @@ export function EditClientForm({ client }: { client: Client }) {
  * Delete control for a client: danger button + confirmation dialog, shown to
  * admins only (RLS keeps deletion admin-only regardless). Deleting a client
  * that still has projects is blocked by the DB and surfaced as a toast. When
- * `redirectTo` is set (manage page), success navigates there.
+ * `redirectTo` is set (manage page), the ACTION redirects server-side on
+ * success — a client-side push would race the action re-rendering the
+ * now-deleted client's page into a 404.
  */
 export function DeleteClientButton({
   client,
@@ -98,7 +99,6 @@ export function DeleteClientButton({
   redirectTo?: string;
 }) {
   const t = useTranslations("Admin");
-  const router = useRouter();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [state, action, pending] = useActionState<FormState, FormData>(
@@ -108,13 +108,11 @@ export function DeleteClientButton({
   useFormStateToast(state);
 
   useEffect(() => {
-    // Close on any outcome; the toast carries the result.
+    // Close on any outcome; the toast carries the result. On success with a
+    // redirect the action navigates away and this state never arrives.
     if (state.success || state.error) setOpen(false);
-    if (state.success) {
-      toast(state.success, { tone: "success" });
-      if (redirectTo) router.push(redirectTo);
-    }
-  }, [state, toast, redirectTo, router]);
+    if (state.success) toast(state.success, { tone: "success" });
+  }, [state, toast]);
 
   return (
     <>
@@ -138,6 +136,9 @@ export function DeleteClientButton({
           <form action={action}>
             <input type="hidden" name="id" value={client.id} />
             <input type="hidden" name="name" value={client.name} />
+            {redirectTo && (
+              <input type="hidden" name="redirect_to" value={redirectTo} />
+            )}
             <Button variant="danger" size="sm" type="submit" loading={pending}>
               {t("confirmDelete")}
             </Button>
