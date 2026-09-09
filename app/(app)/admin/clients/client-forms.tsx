@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { X } from "lucide-react";
 import { addClient, editClient, deleteClient } from "@/app/actions/clients";
@@ -51,82 +52,53 @@ export function CreateClientForm() {
   );
 }
 
-export function ClientRow({
-  client,
-  canDelete,
-}: {
-  client: Client;
-  canDelete?: boolean;
-}) {
+/** Edit form for the client manage page. */
+export function EditClientForm({ client }: { client: Client }) {
   const t = useTranslations("Admin");
-  const [editing, setEditing] = useState(false);
   const [state, action, pending] = useActionState<FormState, FormData>(
     editClient,
     {},
   );
 
-  if (!editing) {
-    return (
-      <tr className="border-b border-slate-50 last:border-0">
-        <td data-label={t("name")} className="px-5 py-3 font-medium text-slate-900">
-          {client.name}
-        </td>
-        <td data-label={t("code")} className="px-5 py-3 text-slate-600">
-          {client.code}
-        </td>
-        <td className="px-5 py-3 text-right">
-          <div className="flex items-center justify-end gap-2">
-            <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>
-              {t("edit")}
-            </Button>
-            {canDelete && <DeleteClientButton client={client} />}
-          </div>
-        </td>
-      </tr>
-    );
-  }
-
   return (
-    <tr className="border-b border-slate-50 last:border-0">
-      <td colSpan={3} className="px-5 py-3">
-        <form action={action} className="space-y-3">
-          <input type="hidden" name="id" value={client.id} />
-          {state.success && <Alert tone="success">{state.success}</Alert>}
-          {state.error && <Alert tone="error">{state.error}</Alert>}
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Field label={t("name")} error={state.fieldErrors?.name?.[0]}>
-              <Input name="name" defaultValue={client.name} required />
-            </Field>
-            <Field label={t("code")} error={state.fieldErrors?.code?.[0]}>
-              <Input name="code" defaultValue={client.code} required />
-            </Field>
-          </div>
-          <div className="flex gap-2">
-            <Button type="submit" size="sm" loading={pending}>
-              {pending ? t("saving") : t("save")}
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setEditing(false)}
-            >
-              {state.success ? t("done") : t("cancel")}
-            </Button>
-          </div>
-        </form>
-      </td>
-    </tr>
+    <form action={action} className="space-y-4">
+      <input type="hidden" name="id" value={client.id} />
+      {state.success && <Alert tone="success">{state.success}</Alert>}
+      {state.error && <Alert tone="error">{state.error}</Alert>}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label={t("name")} error={state.fieldErrors?.name?.[0]}>
+          <Input name="name" defaultValue={client.name} required />
+        </Field>
+        <Field
+          label={t("code")}
+          error={state.fieldErrors?.code?.[0]}
+          hint={t("clientCodeHint")}
+        >
+          <Input name="code" defaultValue={client.code} required />
+        </Field>
+      </div>
+      <Button type="submit" size="sm" loading={pending}>
+        {pending ? t("saving") : t("save")}
+      </Button>
+    </form>
   );
 }
 
 /**
- * Delete control for a client row: danger button + confirmation dialog, shown
- * to admins only (RLS keeps deletion admin-only regardless). Deleting a client
- * that still has projects is blocked by the DB and surfaced as a toast.
+ * Delete control for a client: danger button + confirmation dialog, shown to
+ * admins only (RLS keeps deletion admin-only regardless). Deleting a client
+ * that still has projects is blocked by the DB and surfaced as a toast. When
+ * `redirectTo` is set (manage page), success navigates there.
  */
-function DeleteClientButton({ client }: { client: Client }) {
+export function DeleteClientButton({
+  client,
+  redirectTo,
+}: {
+  client: Client;
+  redirectTo?: string;
+}) {
   const t = useTranslations("Admin");
+  const router = useRouter();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [state, action, pending] = useActionState<FormState, FormData>(
@@ -136,23 +108,20 @@ function DeleteClientButton({ client }: { client: Client }) {
   useFormStateToast(state);
 
   useEffect(() => {
-    // Close on any outcome; the toast carries the result. On success the row
-    // itself disappears with the revalidated list.
+    // Close on any outcome; the toast carries the result.
     if (state.success || state.error) setOpen(false);
-    if (state.success) toast(state.success, { tone: "success" });
-  }, [state, toast]);
+    if (state.success) {
+      toast(state.success, { tone: "success" });
+      if (redirectTo) router.push(redirectTo);
+    }
+  }, [state, toast, redirectTo, router]);
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label={t("deleteClient")}
-        title={t("deleteClient")}
-        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-500 hover:border-red-300 hover:bg-red-50 hover:text-red-600"
-      >
-        <X className="h-4 w-4" />
-      </button>
+      <Button variant="danger" size="sm" onClick={() => setOpen(true)}>
+        <X className="mr-1 h-4 w-4" aria-hidden />
+        {t("deleteClient")}
+      </Button>
 
       <Dialog
         open={open}

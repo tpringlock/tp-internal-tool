@@ -1,9 +1,9 @@
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { requireContentManager } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
-import { CreateClientForm, ClientRow } from "./client-forms";
+import { CreateClientForm } from "./client-forms";
 import type { Client } from "@/lib/db/types";
 
 const PAGE_SIZE = 50;
@@ -16,11 +16,6 @@ export default async function AdminClientsPage({
   const { page = "1" } = await searchParams;
   const pageNum = Math.max(1, Number(page) || 1);
   const from = (pageNum - 1) * PAGE_SIZE;
-
-  // Request-cached (already resolved by the admin layout); deletion is
-  // admin-only, so managers don't get the button.
-  const user = await requireContentManager();
-  const canDelete = user.profile.role === "admin";
 
   const supabase = await createClient();
   const { data, count } = await supabase
@@ -72,11 +67,31 @@ export default async function AdminClientsPage({
               </thead>
               <tbody>
                 {clients.map((client) => (
-                  <ClientRow
+                  <tr
                     key={client.id}
-                    client={client}
-                    canDelete={canDelete}
-                  />
+                    className="border-b border-slate-50 last:border-0"
+                  >
+                    <td
+                      data-label={t("name")}
+                      className="px-5 py-3 font-medium text-slate-900"
+                    >
+                      {client.name}
+                    </td>
+                    <td
+                      data-label={t("code")}
+                      className="px-5 py-3 text-slate-600"
+                    >
+                      {client.code}
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <Link
+                        href={`/admin/clients/${client.id}`}
+                        className="text-sm font-medium text-slate-700 underline hover:text-slate-900"
+                      >
+                        {t("manage")}
+                      </Link>
+                    </td>
+                  </tr>
                 ))}
               </tbody>
             </table>

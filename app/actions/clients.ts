@@ -89,6 +89,7 @@ export async function editClient(
     entityId: id,
   });
   revalidatePath("/admin/clients");
+  revalidatePath(`/admin/clients/${id}`);
   return { success: t("clientUpdated") };
 }
 

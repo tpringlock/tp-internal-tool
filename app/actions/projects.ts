@@ -121,7 +121,7 @@ export async function deleteProject(
     .from("projects")
     .delete()
     .eq("id", id)
-    .select("id");
+    .select("id, client_id");
 
   const t = await getTranslations("Admin");
   if (error) {
@@ -130,7 +130,8 @@ export async function deleteProject(
     }
     return { error: error.message };
   }
-  if (!data || data.length === 0) {
+  const deleted = data?.[0];
+  if (!deleted) {
     return { error: t("projectNotFound") };
   }
 
@@ -141,7 +142,67 @@ export async function deleteProject(
     metadata: { name },
   });
   revalidatePath("/admin/projects");
+  revalidatePath(`/admin/clients/${deleted.client_id}`);
   return { success: t("projectDeleted", { name }) };
+}
+
+/**
+ * Delete several projects at once (client manage page). Each id is deleted
+ * separately so one project that still holds documents (FK restrict) doesn't
+ * abort the rest; the outcome reports both tallies. Admin-only.
+ */
+export async function deleteProjects(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  await requireAdmin();
+
+  const ids = formData.getAll("ids").map(String).filter(Boolean);
+  const t = await getTranslations("Admin");
+  if (ids.length === 0) return { error: t("projectNotFound") };
+
+  const supabase = await createClient();
+  let deletedCount = 0;
+  let blockedCount = 0;
+  const clientIds = new Set<string>();
+
+  for (const id of ids) {
+    const { data, error } = await supabase
+      .from("projects")
+      .delete()
+      .eq("id", id)
+      .select("id, client_id");
+    if (error) {
+      if (error.code === FK_VIOLATION) {
+        blockedCount++;
+        continue;
+      }
+      return { error: error.message };
+    }
+    const deleted = data?.[0];
+    if (!deleted) continue; // already gone or filtered by RLS
+    deletedCount++;
+    clientIds.add(deleted.client_id);
+    await logActivity(supabase, {
+      action: "project.deleted",
+      entityType: "project",
+      entityId: id,
+    });
+  }
+
+  revalidatePath("/admin/projects");
+  for (const clientId of clientIds) {
+    revalidatePath(`/admin/clients/${clientId}`);
+  }
+
+  return {
+    success:
+      deletedCount > 0 ? t("projectsDeleted", { count: deletedCount }) : undefined,
+    error:
+      blockedCount > 0
+        ? t("errProjectsHaveDocuments", { count: blockedCount })
+        : undefined,
+  };
 }
 
 export async function assignMember(

@@ -1,10 +1,11 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { requireUser } from "@/lib/auth/dal";
+import { requireAdmin, requireUser } from "@/lib/auth/dal";
 import { logActivity } from "@/lib/activity";
 import { buildCanonicalName, buildStoragePath } from "@/lib/documents/naming";
 import { DOC_TYPES, MAX_FILE_SIZE, ACCEPTED_MIME } from "@/lib/documents/constants";
@@ -120,4 +121,44 @@ export async function uploadDocument(
   });
 
   redirect(`/documents/${inserted.id}`);
+}
+
+/**
+ * Delete a document: the row (RLS policy documents_delete_admin, share links
+ * cascade away with it) and then the PDF in storage. Admin-only.
+ */
+export async function deleteDocument(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  await requireAdmin();
+
+  const id = String(formData.get("id"));
+  const supabase = await createClient();
+  // select() returns the removed row — both to confirm RLS didn't silently
+  // filter the delete and to learn the storage path for cleanup.
+  const { data, error } = await supabase
+    .from("documents")
+    .delete()
+    .eq("id", id)
+    .select("id, project_id, storage_path, canonical_name");
+
+  const t = await getTranslations("Admin");
+  if (error) return { error: error.message };
+  const doc = data?.[0];
+  if (!doc) return { error: t("documentNotFound") };
+
+  // Row is gone; remove the file with the service role (private bucket). A
+  // failure here leaves an orphaned file, which is preferable to a dangling row.
+  await createAdminClient().storage.from(STORAGE_BUCKET).remove([doc.storage_path]);
+
+  await logActivity(supabase, {
+    action: "document.deleted",
+    entityType: "document",
+    entityId: id,
+    metadata: { project_id: doc.project_id, canonical_name: doc.canonical_name },
+  });
+  revalidatePath(`/admin/projects/${doc.project_id}`);
+  revalidatePath("/documents");
+  return { success: t("documentDeleted", { name: doc.canonical_name }) };
 }
