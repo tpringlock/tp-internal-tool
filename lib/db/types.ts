@@ -36,6 +36,9 @@ export type Client = {
   id: string;
   name: string;
   code: string;
+  address: string | null;
+  tax_code: string | null;
+  phone: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
@@ -232,7 +235,7 @@ export interface Database {
       >;
       clients: Table<
         Client,
-        Insert<Client, "id" | "created_at" | "updated_at" | "created_by">,
+        Insert<Client, "id" | "created_at" | "updated_at" | "created_by" | "address" | "tax_code" | "phone">,
         Partial<Client>
       >;
       projects: Table<

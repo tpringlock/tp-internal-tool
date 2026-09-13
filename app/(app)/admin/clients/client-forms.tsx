@@ -42,6 +42,20 @@ export function CreateClientForm() {
         >
           <Input id="code" name="code" required />
         </Field>
+        <Field
+          label={t("taxCode")}
+          htmlFor="tax_code"
+          error={state.fieldErrors?.tax_code?.[0]}
+        >
+          <Input id="tax_code" name="tax_code" />
+        </Field>
+        <Field
+          label={t("address")}
+          htmlFor="address"
+          error={state.fieldErrors?.address?.[0]}
+        >
+          <Input id="address" name="address" />
+        </Field>
       </div>
 
       <Button type="submit" loading={pending}>
@@ -74,6 +88,12 @@ export function EditClientForm({ client }: { client: Client }) {
           hint={t("clientCodeHint")}
         >
           <Input name="code" defaultValue={client.code} required />
+        </Field>
+        <Field label={t("taxCode")} error={state.fieldErrors?.tax_code?.[0]}>
+          <Input name="tax_code" defaultValue={client.tax_code ?? ""} />
+        </Field>
+        <Field label={t("address")} error={state.fieldErrors?.address?.[0]}>
+          <Input name="address" defaultValue={client.address ?? ""} />
         </Field>
       </div>
       <Button type="submit" size="sm" loading={pending}>

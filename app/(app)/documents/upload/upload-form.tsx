@@ -6,7 +6,11 @@ import { uploadDocument } from "@/app/actions/documents";
 import type { FormState } from "@/app/actions/auth";
 import type { DocType } from "@/lib/db/types";
 import { buildCanonicalName } from "@/lib/documents/naming";
-import { DOC_TYPES } from "@/lib/documents/constants";
+import {
+  DOC_TYPES,
+  MAX_FILE_SIZE,
+  ACCEPTED_MIME,
+} from "@/lib/documents/constants";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
@@ -20,12 +24,19 @@ export interface UploadProject {
   clientName: string;
 }
 
+const NEW_PROJECT = "__new__";
+
 export function UploadForm({
   projects,
   defaultClientId = "",
+  allClients,
+  canCreateProject = false,
 }: {
   projects: UploadProject[];
   defaultClientId?: string;
+  /** Full client list for content managers; falls back to clients derived from projects. */
+  allClients?: { id: string; name: string }[];
+  canCreateProject?: boolean;
 }) {
   const t = useTranslations("Documents");
   const dt = useTranslations("DocTypes");
@@ -36,14 +47,15 @@ export function UploadForm({
   useFormStateToast(state);
 
   const clients = useMemo(() => {
+    if (allClients) return allClients;
     const map = new Map<string, string>();
     for (const p of projects) map.set(p.clientId, p.clientName);
     return [...map.entries()].map(([id, name]) => ({ id, name }));
-  }, [projects]);
+  }, [projects, allClients]);
 
   // Preselect the client when arriving from its folder, and its project too if
   // there is only one — only if the user actually has access to it.
-  const initialClientId = projects.some((p) => p.clientId === defaultClientId)
+  const initialClientId = clients.some((c) => c.id === defaultClientId)
     ? defaultClientId
     : "";
   const initialProjects = projects.filter(
@@ -55,15 +67,25 @@ export function UploadForm({
     initialProjects.length === 1 ? initialProjects[0].id : "",
   );
   const [docType, setDocType] = useState<DocType | "">("");
+  const [newProjectName, setNewProjectName] = useState("");
+  // Checked on selection so oversized/non-PDF files are rejected before the
+  // form ever posts (a too-large body would otherwise die in the framework).
+  const [fileError, setFileError] = useState<string | null>(null);
 
   const clientProjects = projects.filter((p) => p.clientId === clientId);
   const selectedProject = projects.find((p) => p.id === projectId);
+  const creatingProject = projectId === NEW_PROJECT;
+
+  const previewProjectName = creatingProject
+    ? newProjectName.trim()
+    : selectedProject?.name;
+  const previewClientName = clients.find((c) => c.id === clientId)?.name;
 
   const preview =
-    selectedProject && docType
+    previewClientName && previewProjectName && docType
       ? buildCanonicalName({
-          clientName: selectedProject.clientName,
-          projectName: selectedProject.name,
+          clientName: previewClientName,
+          projectName: previewProjectName,
           docType,
           date: new Date(),
           disambiguator: "xxxx",
@@ -113,9 +135,31 @@ export function UploadForm({
               {p.name}
             </option>
           ))}
+          {canCreateProject && clientId && (
+            <option value={NEW_PROJECT}>{t("createNewProject")}</option>
+          )}
         </Select>
       </Field>
       <input type="hidden" name="project_id" value={projectId} />
+      <input type="hidden" name="client_id" value={clientId} />
+
+      {creatingProject && (
+        <Field
+          label={t("newProjectName")}
+          htmlFor="new_project_name"
+          error={state.fieldErrors?.new_project_name?.[0]}
+          hint={t("newProjectHint")}
+        >
+          <Input
+            id="new_project_name"
+            name="new_project_name"
+            value={newProjectName}
+            onChange={(e) => setNewProjectName(e.target.value)}
+            required
+            maxLength={120}
+          />
+        </Field>
+      )}
 
       <Field
         label={t("documentType")}
@@ -142,10 +186,22 @@ export function UploadForm({
       <Field
         label={t("pdfFile")}
         htmlFor="file"
-        error={state.fieldErrors?.file?.[0]}
+        error={fileError ?? state.fieldErrors?.file?.[0]}
         hint={t("pdfHint")}
       >
-        <Input id="file" name="file" type="file" accept="application/pdf" />
+        <Input
+          id="file"
+          name="file"
+          type="file"
+          accept="application/pdf"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (!file) setFileError(null);
+            else if (file.type !== ACCEPTED_MIME) setFileError(t("errFilePdf"));
+            else if (file.size > MAX_FILE_SIZE) setFileError(t("errFileSize"));
+            else setFileError(null);
+          }}
+        />
       </Field>
 
       {preview && (
@@ -171,7 +227,7 @@ export function UploadForm({
         <p className="text-xs text-red-600">{state.fieldErrors.signed[0]}</p>
       )}
 
-      <Button type="submit" loading={pending}>
+      <Button type="submit" loading={pending} disabled={!!fileError}>
         {pending ? t("uploading") : t("uploadDocument")}
       </Button>
     </form>

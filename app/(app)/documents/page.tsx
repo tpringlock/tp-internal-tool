@@ -6,6 +6,7 @@ import { canManageContent } from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody } from "@/components/ui/card";
+import { Pagination } from "@/components/ui/pagination";
 import { AddFolderTile } from "@/components/add-folder-tile";
 import { CreateClientForm } from "@/app/(app)/admin/clients/client-forms";
 import { DocumentSearch } from "./document-search";
@@ -20,7 +21,16 @@ interface ClientFolder {
   count: number;
 }
 
-export default async function DocumentsPage() {
+// Folder tiles per page; divisible by the 2- and 3-column grid layouts.
+const PAGE_SIZE = 24;
+
+export default async function DocumentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const { page = "1" } = await searchParams;
+  const pageNum = Math.max(1, Number(page) || 1);
   const user = await requireUser();
   const canManage = canManageContent(user.profile.role);
   const supabase = await createClient();
@@ -35,6 +45,16 @@ export default async function DocumentsPage() {
 
   const rows = (data ?? []) as unknown as DocClientRow[];
   const byClient = new Map<string, ClientFolder>();
+  // Content managers see every client as a folder, including ones without any
+  // projects or documents yet, so they can start filing from here.
+  if (canManage) {
+    const { data: clientRows } = await supabase
+      .from("clients")
+      .select("id, name");
+    for (const c of clientRows ?? []) {
+      byClient.set(c.id, { id: c.id, name: c.name, count: 0 });
+    }
+  }
   for (const row of rows) {
     const c = row.projects?.clients;
     if (!c) continue;
@@ -42,8 +62,14 @@ export default async function DocumentsPage() {
     if (existing) existing.count += 1;
     else byClient.set(c.id, { id: c.id, name: c.name, count: 1 });
   }
-  const folders = [...byClient.values()].sort((a, b) =>
+  const allFolders = [...byClient.values()].sort((a, b) =>
     a.name.localeCompare(b.name),
+  );
+  const total = allFolders.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const folders = allFolders.slice(
+    (pageNum - 1) * PAGE_SIZE,
+    pageNum * PAGE_SIZE,
   );
 
   return (
@@ -71,7 +97,7 @@ export default async function DocumentsPage() {
 
       <DocumentSearch />
 
-      {folders.length === 0 && !canManage ? (
+      {total === 0 && !canManage ? (
         <Card>
           <CardBody>
             <p className="text-sm text-slate-500">{t("noDocuments")}</p>
@@ -112,6 +138,13 @@ export default async function DocumentsPage() {
           ))}
         </div>
       )}
+
+      <Pagination
+        page={pageNum}
+        totalPages={totalPages}
+        total={total}
+        hrefForPage={(p) => `/documents?page=${p}`}
+      />
     </div>
   );
 }

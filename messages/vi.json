@@ -155,7 +155,11 @@
     "errFileSize": "Tệp lớn hơn 25 MB",
     "errNoProjectAccess": "Bạn không có quyền truy cập dự án đó.",
     "errUploadFailed": "Tải lên thất bại: {message}",
-    "errSaveFailed": "Không thể lưu tài liệu. Vui lòng thử lại."
+    "errSaveFailed": "Không thể lưu tài liệu. Vui lòng thử lại.",
+    "createNewProject": "+ Tạo dự án mới…",
+    "newProjectName": "Tên dự án mới",
+    "newProjectHint": "Dự án sẽ được tạo cho khách hàng này khi tải lên. Mã dự án tự sinh từ tên.",
+    "errProjectName": "Hãy nhập tên dự án (tối đa 120 ký tự)"
   },
   "Shares": {
     "title": "Chia sẻ với khách hàng",
@@ -286,6 +290,10 @@
     "allClients": "Tất cả khách hàng ({count})",
     "noClients": "Chưa có khách hàng nào. Hãy thêm khách hàng đầu tiên ở trên.",
     "clientCodeHint": "Mã ngắn, duy nhất, ví dụ ACME.",
+    "taxCode": "Mã số thuế",
+    "address": "Địa chỉ",
+    "searchClients": "Tìm kiếm",
+    "searchClientsPlaceholder": "Tên, mã hoặc mã số thuế…",
     "clientCreated": "Đã tạo khách hàng “{name}”.",
     "clientUpdated": "Đã cập nhật khách hàng.",
     "clientDeleted": "Đã xóa khách hàng “{name}”.",

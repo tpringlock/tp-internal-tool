@@ -29,8 +29,11 @@ that PostgREST does not expose, and the trigger-only functions have their
 ## 3. Configure Auth
 
 - **Authentication → Providers → Email**: enabled. Public sign-ups are not used
-  (accounts are created by admins), so you may disable "Allow new users to sign
-  up" once your first admin exists.
+  (accounts are created by admins), so **disable "Allow new users to sign up"**
+  once your first admin exists. Since `0023_role_from_app_metadata.sql` the
+  initial role is read from `app_metadata` (settable only via the admin API),
+  so a self-signup can no longer pick its own role — but sign-ups should stay
+  off regardless.
 - **Authentication → Sign In / Providers → Password**: enable **Leaked password
   protection** (checks passwords against HaveIBeenPwned). This clears the
   `auth_leaked_password_protection` security-advisor warning, which cannot be

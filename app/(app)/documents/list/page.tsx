@@ -11,7 +11,7 @@ import { DOC_TYPES } from "@/lib/documents/constants";
 import { formatBytes, formatDateTime } from "@/lib/format";
 import type { DocType } from "@/lib/db/types";
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 25;
 
 interface DocRow {
   id: string;

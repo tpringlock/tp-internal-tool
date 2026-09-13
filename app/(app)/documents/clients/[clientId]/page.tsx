@@ -13,6 +13,7 @@ import { canManageContent } from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
+import { Pagination } from "@/components/ui/pagination";
 import { AddFolderTile } from "@/components/add-folder-tile";
 import { CreateProjectForm } from "@/app/(app)/admin/projects/project-forms";
 import { formatBytes } from "@/lib/format";
@@ -39,15 +40,17 @@ interface ProjectGroup {
   documents: DocRow[];
 }
 
+const PAGE_SIZE = 25;
+
 export default async function ClientFolderPage({
   params,
   searchParams,
 }: {
   params: Promise<{ clientId: string }>;
-  searchParams: Promise<{ highlight?: string }>;
+  searchParams: Promise<{ highlight?: string; page?: string }>;
 }) {
   const { clientId } = await params;
-  const { highlight = "" } = await searchParams;
+  const { highlight = "", page = "" } = await searchParams;
   const user = await requireUser();
   const canManage = canManageContent(user.profile.role);
   const supabase = await createClient();
@@ -63,16 +66,46 @@ export default async function ClientFolderPage({
 
   if (!client) notFound();
 
-  const { data: docData } = await supabase
+  let pageNum = Math.max(1, Number(page) || 1);
+
+  // Search results deep-link with ?highlight=<docId> but no page; locate the
+  // page containing that document (created_at desc order) so the scroll-to
+  // target is actually rendered.
+  if (highlight && !page) {
+    const { data: hlDoc } = await supabase
+      .from("documents")
+      .select("created_at, projects!inner ( client_id )")
+      .eq("id", highlight)
+      .eq("projects.client_id", clientId)
+      .single<{ created_at: string }>();
+    if (hlDoc) {
+      const { count: newer } = await supabase
+        .from("documents")
+        .select("id, projects!inner ( client_id )", {
+          count: "exact",
+          head: true,
+        })
+        .eq("projects.client_id", clientId)
+        .gt("created_at", hlDoc.created_at);
+      pageNum = Math.floor((newer ?? 0) / PAGE_SIZE) + 1;
+    }
+  }
+
+  const from = (pageNum - 1) * PAGE_SIZE;
+  const { data: docData, count } = await supabase
     .from("documents")
     .select(
       `id, canonical_name, doc_type, file_size, created_at,
        projects!inner ( id, name, client_id )`,
+      { count: "exact" },
     )
     .eq("projects.client_id", clientId)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(from, from + PAGE_SIZE - 1);
 
   const documents = (docData ?? []) as unknown as DocRow[];
+  const total = count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   // Group by project (alphabetical by project name).
   const byProject = new Map<string, ProjectGroup>();
@@ -202,6 +235,13 @@ export default async function ClientFolderPage({
               </Card>
             ))
           )}
+
+          <Pagination
+            page={pageNum}
+            totalPages={totalPages}
+            total={total}
+            hrefForPage={(p) => `/documents/clients/${clientId}?page=${p}`}
+          />
         </div>
 
         <div className="min-w-0 w-full">

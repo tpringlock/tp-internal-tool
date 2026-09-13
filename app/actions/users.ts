@@ -36,6 +36,10 @@ export async function createUser(
     email_confirm: true, // internal accounts are pre-verified
     user_metadata: {
       full_name: parsed.data.full_name,
+    },
+    // Role must live in app_metadata: the handle_new_user trigger (0023) only
+    // trusts it there, since user_metadata is self-service via the signup API.
+    app_metadata: {
       role: parsed.data.role,
     },
   });

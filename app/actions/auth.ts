@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { logActivity } from "@/lib/activity";
 import { env } from "@/lib/env";
+import { safeInternalPath } from "@/lib/utils";
 import {
   loginSchema,
   forgotPasswordSchema,
@@ -20,8 +21,7 @@ export interface FormState {
 
 /** Only permit same-origin relative redirect targets. */
 function safeNext(next: FormDataEntryValue | null): string {
-  const value = typeof next === "string" ? next : "";
-  return value.startsWith("/") && !value.startsWith("//") ? value : "/";
+  return safeInternalPath(next);
 }
 
 export async function login(

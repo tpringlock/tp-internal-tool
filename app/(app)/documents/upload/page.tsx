@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth/dal";
+import { canManageContent } from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert } from "@/components/ui/alert";
@@ -19,7 +20,8 @@ export default async function UploadPage({
   searchParams: Promise<{ client?: string }>;
 }) {
   const { client = "" } = await searchParams;
-  await requireUser();
+  const user = await requireUser();
+  const canManage = canManageContent(user.profile.role);
   const supabase = await createClient();
   const t = await getTranslations("Documents");
 
@@ -39,6 +41,17 @@ export default async function UploadPage({
     clientId: p.client_id,
     clientName: p.clients?.name ?? "—",
   }));
+
+  // Content managers can pick any client — including ones without projects
+  // yet — and create the project inline while uploading.
+  let allClients: { id: string; name: string }[] | undefined;
+  if (canManage) {
+    const { data: clientRows } = await supabase
+      .from("clients")
+      .select("id, name")
+      .order("name");
+    allClients = clientRows ?? undefined;
+  }
 
   return (
     <div className="space-y-6">
@@ -77,10 +90,15 @@ export default async function UploadPage({
 
       <Card>
         <CardBody>
-          {projects.length === 0 ? (
+          {projects.length === 0 && !canManage ? (
             <Alert tone="info">{t("noActiveProjects")}</Alert>
           ) : (
-            <UploadForm projects={projects} defaultClientId={client} />
+            <UploadForm
+              projects={projects}
+              defaultClientId={client}
+              allClients={allClients}
+              canCreateProject={canManage}
+            />
           )}
         </CardBody>
       </Card>

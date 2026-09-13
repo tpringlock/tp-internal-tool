@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAdmin, requireContentManager } from "@/lib/auth/dal";
 import { logActivity } from "@/lib/activity";
 import { clientSchema, translateFieldErrors } from "@/lib/validation";
+import { safeInternalPath } from "@/lib/utils";
 import type { FormState } from "@/app/actions/auth";
 
 /** Postgres unique-violation error code. */
@@ -23,6 +24,8 @@ export async function addClient(
   const parsed = clientSchema.safeParse({
     name: formData.get("name"),
     code: formData.get("code"),
+    tax_code: formData.get("tax_code"),
+    address: formData.get("address"),
   });
   if (!parsed.success) {
     const tv = await getTranslations("Validation");
@@ -64,6 +67,8 @@ export async function editClient(
   const parsed = clientSchema.safeParse({
     name: formData.get("name"),
     code: formData.get("code"),
+    tax_code: formData.get("tax_code"),
+    address: formData.get("address"),
   });
   if (!parsed.success) {
     const tv = await getTranslations("Validation");
@@ -139,7 +144,7 @@ export async function deleteClient(
   // Redirect server-side: the manage page we're on belongs to the deleted
   // client, so re-rendering it (which the action response otherwise does)
   // would 404 before any client-side navigation runs. Internal paths only.
-  const redirectTo = String(formData.get("redirect_to") ?? "");
-  if (redirectTo.startsWith("/")) redirect(redirectTo);
+  const redirectTo = safeInternalPath(formData.get("redirect_to"), "");
+  if (redirectTo) redirect(redirectTo);
   return { success: t("clientDeleted", { name }) };
 }

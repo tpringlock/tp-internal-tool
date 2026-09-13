@@ -6,14 +6,20 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin, requireUser } from "@/lib/auth/dal";
+import { canManageContent } from "@/lib/auth/roles";
 import { logActivity } from "@/lib/activity";
 import { buildCanonicalName, buildStoragePath } from "@/lib/documents/naming";
+import { generateProjectCode } from "@/lib/projects/code";
 import { DOC_TYPES, MAX_FILE_SIZE, ACCEPTED_MIME } from "@/lib/documents/constants";
 import type { DocType } from "@/lib/db/types";
 import type { FormState } from "@/app/actions/auth";
 
 const STORAGE_BUCKET = "documents";
 const DOC_TYPE_VALUES = new Set(DOC_TYPES.map((t) => t.value));
+/** Postgres unique-violation error code. */
+const UNIQUE_VIOLATION = "23505";
+/** Sentinel project_id posted by the upload form's "create new project" option. */
+const NEW_PROJECT = "__new__";
 
 interface ProjectForUpload {
   id: string;
@@ -28,13 +34,26 @@ export async function uploadDocument(
   const user = await requireUser();
   const t = await getTranslations("Documents");
 
-  const projectId = String(formData.get("project_id") ?? "");
+  let projectId = String(formData.get("project_id") ?? "");
+  const clientId = String(formData.get("client_id") ?? "");
+  const newProjectName = String(formData.get("new_project_name") ?? "").trim();
   const docType = String(formData.get("doc_type") ?? "") as DocType;
   const signed = formData.get("signed") === "on" || formData.get("signed") === "true";
   const file = formData.get("file");
 
+  const creatingProject = projectId === NEW_PROJECT;
+
   const fieldErrors: Record<string, string[]> = {};
-  if (!projectId) fieldErrors.project_id = [t("errProject")];
+  if (creatingProject) {
+    // Only content managers may create a project on the fly during upload.
+    if (!canManageContent(user.profile.role) || !clientId) {
+      fieldErrors.project_id = [t("errProject")];
+    } else if (!newProjectName || newProjectName.length > 120) {
+      fieldErrors.new_project_name = [t("errProjectName")];
+    }
+  } else if (!projectId) {
+    fieldErrors.project_id = [t("errProject")];
+  }
   if (!DOC_TYPE_VALUES.has(docType)) fieldErrors.doc_type = [t("errDocType")];
   if (!signed) {
     fieldErrors.signed = [t("errSigned")];
@@ -54,6 +73,42 @@ export async function uploadDocument(
   const pdf = file as File;
 
   const supabase = await createClient();
+
+  if (creatingProject) {
+    // Code is auto-derived from the name; retry with a numeric suffix on
+    // collisions. RLS also enforces the content-manager check done above.
+    let createdId: string | null = null;
+    for (let attempt = 0; attempt < 5 && !createdId; attempt++) {
+      const code = generateProjectCode(newProjectName, attempt);
+      const { data: created, error: createError } = await supabase
+        .from("projects")
+        .insert({
+          name: newProjectName,
+          code,
+          client_id: clientId,
+          status: "active",
+          created_by: user.id,
+        })
+        .select("id")
+        .single();
+      if (created) {
+        createdId = created.id;
+        await logActivity(supabase, {
+          action: "project.created",
+          entityType: "project",
+          entityId: created.id,
+          metadata: { code, via: "document_upload" },
+        });
+      } else if (createError?.code !== UNIQUE_VIOLATION) {
+        return { error: createError?.message ?? t("errSaveFailed") };
+      }
+    }
+    if (!createdId) {
+      return { fieldErrors: { new_project_name: [t("errProjectName")] } };
+    }
+    projectId = createdId;
+    revalidatePath("/admin/projects");
+  }
 
   // RLS: this returns the project only if the user is an admin or a member,
   // so it doubles as the upload permission check.

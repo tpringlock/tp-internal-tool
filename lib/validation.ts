@@ -63,9 +63,20 @@ export const codeSchema = z
   .regex(/^[A-Za-z0-9_-]+$/, "codeFormat")
   .transform((v) => v.toUpperCase());
 
+/** Optional free-text field; empty submissions become null. */
+const optionalText = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max, "textTooLong")
+    .optional()
+    .transform((v) => (v ? v : null));
+
 export const clientSchema = z.object({
   name: z.string().trim().min(1, "nameRequired").max(120, "nameTooLong"),
   code: codeSchema,
+  tax_code: optionalText(20),
+  address: optionalText(300),
 });
 
 export const projectSchema = z.object({
@@ -81,14 +92,6 @@ export const memberSchema = z.object({
 });
 
 // --- TP Academy ---------------------------------------------------------
-
-const optionalText = (max: number) =>
-  z
-    .string()
-    .trim()
-    .max(max, "textTooLong")
-    .optional()
-    .transform((v) => (v ? v : null));
 
 export const courseSchema = z.object({
   title: z.string().trim().min(1, "titleRequired").max(160, "titleTooLong"),

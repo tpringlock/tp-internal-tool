@@ -155,7 +155,11 @@
     "errFileSize": "File is larger than 25 MB",
     "errNoProjectAccess": "You don't have access to that project.",
     "errUploadFailed": "Upload failed: {message}",
-    "errSaveFailed": "Could not save the document. Please try again."
+    "errSaveFailed": "Could not save the document. Please try again.",
+    "createNewProject": "+ Create a new project…",
+    "newProjectName": "New project name",
+    "newProjectHint": "The project is created for this client on upload. Its code is derived from the name.",
+    "errProjectName": "Enter a project name (max 120 characters)"
   },
   "Shares": {
     "title": "Share with a client",
@@ -286,6 +290,10 @@
     "allClients": "All clients ({count})",
     "noClients": "No clients yet. Add your first one above.",
     "clientCodeHint": "Short unique code, e.g. ACME.",
+    "taxCode": "Tax code",
+    "address": "Address",
+    "searchClients": "Search",
+    "searchClientsPlaceholder": "Name, code or tax code…",
     "clientCreated": "Client “{name}” created.",
     "clientUpdated": "Client updated.",
     "clientDeleted": "Client “{name}” deleted.",
