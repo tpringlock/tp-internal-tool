@@ -50,7 +50,11 @@ theo **từng loại** (mỗi loại có watermark riêng trong `misa_sync_state
 theo `misa_id` nên chạy lại không tạo trùng.
 
 ### Thủ công (UI)
-<!-- TODO (Bước 7): nút "Đồng bộ ngay" trên /admin/misa. -->
+Trang `/admin/misa` (chỉ admin/manager) hiển thị trạng thái đồng bộ từng loại
+(lần cuối, số upsert/xoá, lỗi) và có nút **"Đồng bộ ngay"** cho từng loại hoặc
+**"Đồng bộ tất cả"** (gọi server action `syncMisaNow`). Dữ liệu xem ở các tab
+Khách hàng / Vật tư / Tồn kho. Trang test endpoint chuyển sang
+`/admin/misa/playground` (chỉ admin).
 
 ### Qua API
 `POST /api/misa/sync` — chỉ **admin/manager** (kiểm tra session). Body tùy chọn:
@@ -100,5 +104,64 @@ và normalizer ở `lib/misa/normalize.ts` (Bước 4).
 
 ## 5. Thêm một loại dữ liệu mới
 
-<!-- TODO (Bước 9): endpoint -> type -> normalizer + test -> bảng/migration ->
-     hàm sync -> key sync_state -> trang UI. -->
+Ví dụ thêm "đơn vị tính" (`get_dictionary` data_type = 4). Các bước:
+
+1. **Bắt dữ liệu thật:** thêm target vào `scripts/misa-test.ts`, chạy
+   `node scripts/misa-test.ts`, kiểm fixture đã che ở `lib/misa/__fixtures__/`.
+2. **data_type:** nếu là `get_dictionary`, thêm hằng vào `MISA_DATA_TYPE`
+   (`lib/misa/types.ts`) — **map bằng dữ liệu thật**, đừng tin comment cũ
+   (xem §6).
+3. **Bảng + type:** thêm bảng `misa_<x>` vào một migration mới
+   `supabase/migrations/00xx_*.sql` (giữ `misa_id` unique + `raw jsonb`, RLS
+   SELECT cho content-manager, không policy write). Thêm type vào
+   `lib/db/types.ts` và đăng ký trong `Database.Tables`.
+4. **Normalizer + test:** thêm `normalize<X>` (pure) vào `lib/misa/normalize.ts`
+   và ca test trong `normalize.test.ts` dựa trên fixture.
+5. **Sync:** thêm nhánh vào `lib/misa/sync.ts` (`MisaSyncType`,
+   `MISA_SYNC_TYPES`, handler upsert theo `misa_id` + soft-delete nếu có
+   `get_dictionary_delete`).
+6. **UI:** thêm nhãn vào `MisaSync.types` / `MisaData` (vi + en), một tab trong
+   `misa-tabs.tsx` và trang `app/(app)/admin/misa/<x>/page.tsx` (copy mẫu từ
+   `customers/page.tsx`).
+
+`misa_sync_state` không cần seed: watermark khởi tạo `null` (lần đầu = full
+sync), các lần sau tăng dần.
+
+---
+
+## 6. Bản đồ data_type (đã verify bằng dữ liệu thật)
+
+Comment trong `lib/misa/endpoints.ts` **không chính xác** cho tenant hiện tại.
+Mapping thật (probe bằng `scripts/misa-test.ts`), nguồn chuẩn là hằng
+`MISA_DATA_TYPE`:
+
+| data_type | Thực thể | Field id chính |
+| --- | --- | --- |
+| 1 | Đối tượng (KH/NCC/NV) | `account_object_id` |
+| 2 | Vật tư hàng hoá | `inventory_item_id` |
+| 3 | Kho | `stock_id` |
+| 4 | Đơn vị tính | `unit_id` |
+| 5 | Tài khoản | `account_id` |
+| 6 | Đơn vị tổ chức | `organization_unit_id` |
+| 7 | Công việc (jobs) | `job_id` |
+| 8 | Tài khoản ngân hàng | `bank_account_id` |
+| 9 | Khoản mục chi phí | `expense_item_id` |
+| 10 | Công trình/dự án | `project_work_id` |
+
+Lưu ý: field `dictionary_type` trong response **không** trùng với `data_type`
+gửi đi — luôn dựa vào `data_type` request và tên field để xác định thực thể.
+
+---
+
+## 7. Áp dụng migration & pha sau
+
+- **Migration:** trước khi sync/UI chạy thật, apply
+  `supabase/migrations/0024_misa_master_data.sql` bằng `supabase db push`
+  (hoặc `supabase db reset` ở local). Bảng `misa_token` chỉ service-role chạm
+  được; các bảng còn lại content-manager được SELECT.
+- **Pha sau (chưa làm):** chứng từ **bán hàng** và **xuất/nhập kho** (kèm dòng
+  chi tiết). Chúng không có GET phân trang trực tiếp mà đi qua luồng async
+  `request_data` → `get_call_back_detail_error`; cần bắt response thật trước rồi
+  thêm bảng `misa_sales_vouchers` / `misa_stock_vouchers` (+ `*_lines`) theo
+  quy trình §5. Xoá của tồn kho (`get_list_inventory_balance_delete`) cũng để
+  lại pha sau (chưa rõ shape).
