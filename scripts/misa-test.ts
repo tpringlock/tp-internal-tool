@@ -134,12 +134,14 @@ function saveFixture(name: string, data: unknown): void {
   console.log(`  → ${name}.json (${count} record${count === 1 ? "" : "s"})`);
 }
 
-// Endpoints to capture. Small `take` keeps fixtures readable.
+// Endpoints to capture. data_type codes are mapped empirically (see the probe
+// history / lib/misa/types.ts): 1=customers, 2=inventory items, 3=stocks.
+// Small `take` keeps fixtures readable.
 const TARGETS: { name: string; endpoint: string; body: Record<string, unknown> }[] = [
   { name: "company_info", endpoint: "get_company_info", body: { branch_id: null } },
   { name: "customers", endpoint: "get_dictionary", body: { data_type: 1, skip: 0, take: 5, last_sync_time: null } },
-  { name: "products", endpoint: "get_dictionary", body: { data_type: 3, skip: 0, take: 5, last_sync_time: null } },
-  { name: "stocks", endpoint: "get_dictionary", body: { data_type: 5, skip: 0, take: 5, last_sync_time: null } },
+  { name: "products", endpoint: "get_dictionary", body: { data_type: 2, skip: 0, take: 5, last_sync_time: null } },
+  { name: "stocks", endpoint: "get_dictionary", body: { data_type: 3, skip: 0, take: 5, last_sync_time: null } },
   { name: "customers_deleted", endpoint: "get_dictionary_delete", body: { data_type: 1, skip: 0, take: 5, last_sync_time: null } },
   { name: "inventory_balance", endpoint: "get_list_inventory_balance", body: { skip: 0, take: 5 } },
   { name: "inventory_balance_deleted", endpoint: "get_list_inventory_balance_delete", body: { skip: 0, take: 5 } },

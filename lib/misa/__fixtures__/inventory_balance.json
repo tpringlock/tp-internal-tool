@@ -1,0 +1,72 @@
+[
+  {
+    "inventory_item_id": "7e5b7228-b9f8-4223-aa9a-7b033df5afe2",
+    "inventory_item_code": "VT0022",
+    "inventory_item_name": "Giáo ringlock 2.5m Kẽm",
+    "stock_id": "d66e6677-c659-4eab-9fcb-d29acb4e2bf0",
+    "stock_code": "VINACONEX",
+    "stock_name": "VINACONEX / Vũng Áng, Hà Tinh",
+    "organization_unit_id": "db6e46e8-331e-4367-a215-fcc4bd8e16f3",
+    "organization_unit_code": "QTMWSVIK",
+    "organization_unit_name": "CÔNG TY CỔ PHẦN TẬP ĐOÀN THIẾT BỊ XÂY DỰNG TP",
+    "quantity_balance": 0,
+    "amount_balance": -15632105,
+    "unit_price": 166053.02
+  },
+  {
+    "inventory_item_id": "7baa1d56-54e2-4771-a08d-26ea6a8622e2",
+    "inventory_item_code": "VT0138",
+    "inventory_item_name": "Giằng chéo ringlock 1870mm",
+    "stock_id": "790d3a43-d96e-45d2-ae46-8ab7b58c1818",
+    "stock_code": "FCU",
+    "stock_name": "FCU / Vũng Áng, Kỳ Anh, Hà Tĩnh",
+    "organization_unit_id": "db6e46e8-331e-4367-a215-fcc4bd8e16f3",
+    "organization_unit_code": "QTMWSVIK",
+    "organization_unit_name": "CÔNG TY CỔ PHẦN TẬP ĐOÀN THIẾT BỊ XÂY DỰNG TP",
+    "quantity_balance": 0,
+    "amount_balance": 0,
+    "unit_price": 123105.19
+  },
+  {
+    "inventory_item_id": "0c32e391-3978-487b-8ab6-400278f6524a",
+    "inventory_item_code": "VT0048",
+    "inventory_item_name": "Kích chân D38 L600 - Eku To",
+    "stock_id": "53243f26-fa3c-49fa-b766-565cb9132349",
+    "stock_code": "Matec-9",
+    "stock_name": "Matec / Ecopark Văn Giang",
+    "organization_unit_id": "db6e46e8-331e-4367-a215-fcc4bd8e16f3",
+    "organization_unit_code": "QTMWSVIK",
+    "organization_unit_name": "CÔNG TY CỔ PHẦN TẬP ĐOÀN THIẾT BỊ XÂY DỰNG TP",
+    "quantity_balance": 0,
+    "amount_balance": -5676228,
+    "unit_price": 0
+  },
+  {
+    "inventory_item_id": "3dcc9bec-18aa-45f3-b654-324fc085e312",
+    "inventory_item_code": "VT0021",
+    "inventory_item_name": "Giáo ringlock 1.0m Kẽm",
+    "stock_id": "790d3a43-d96e-45d2-ae46-8ab7b58c1818",
+    "stock_code": "FCU",
+    "stock_name": "FCU / Vũng Áng, Kỳ Anh, Hà Tĩnh",
+    "organization_unit_id": "db6e46e8-331e-4367-a215-fcc4bd8e16f3",
+    "organization_unit_code": "QTMWSVIK",
+    "organization_unit_name": "CÔNG TY CỔ PHẦN TẬP ĐOÀN THIẾT BỊ XÂY DỰNG TP",
+    "quantity_balance": 0,
+    "amount_balance": 0,
+    "unit_price": 66460.57
+  },
+  {
+    "inventory_item_id": "2cd6fbd9-9b4d-4983-910f-f367d27aa6a6",
+    "inventory_item_code": "VT0156",
+    "inventory_item_name": "Giằng ngang ringlock 1.6m",
+    "stock_id": "c6737948-c219-416d-be4d-6583211d367e",
+    "stock_code": "HÀN KHOÁN 4",
+    "stock_name": "THỦY VINH",
+    "organization_unit_id": "db6e46e8-331e-4367-a215-fcc4bd8e16f3",
+    "organization_unit_code": "QTMWSVIK",
+    "organization_unit_name": "CÔNG TY CỔ PHẦN TẬP ĐOÀN THIẾT BỊ XÂY DỰNG TP",
+    "quantity_balance": 0,
+    "amount_balance": -7223,
+    "unit_price": 0
+  }
+]

@@ -48,16 +48,20 @@ export interface MisaConnection {
 }
 
 /**
- * `get_dictionary` data_type values (see lib/misa/endpoints.ts). Phase 1 syncs
- * customers/products/stocks; the rest are here for future reference.
+ * `get_dictionary` request `data_type` codes, mapped EMPIRICALLY from real
+ * responses (see scripts/misa-test.ts probe) — the docs comment in
+ * lib/misa/endpoints.ts is wrong for this tenant. Observed:
+ *   1=account objects · 2=inventory items · 3=stocks · 4=units · 5=accounts ·
+ *   6=org units · 7=jobs · 8=bank accounts · 9=expense items · 10=projects.
+ * Phase 1 syncs customers/products/stocks.
  */
 export const MISA_DATA_TYPE = {
   /** Đối tượng: khách hàng / nhà cung cấp / nhân viên. */
   ACCOUNTING_OBJECT: 1,
   /** Vật tư hàng hoá. */
-  INVENTORY_ITEM: 3,
+  INVENTORY_ITEM: 2,
   /** Kho. */
-  STOCK: 5,
+  STOCK: 3,
 } as const;
 
 export type MisaDataType = (typeof MISA_DATA_TYPE)[keyof typeof MISA_DATA_TYPE];
