@@ -90,6 +90,9 @@ describe("normalizeInventoryBalance", () => {
     const row = normalizeInventoryBalance(raw);
     expect(row.stock_misa_id).toBe(raw.stock_id);
     expect(row.product_misa_id).toBe(raw.inventory_item_id);
+    expect(row.product_code).toBe(raw.inventory_item_code);
+    expect(row.product_name).toBe(raw.inventory_item_name);
+    expect(row.stock_name).toBe(raw.stock_name);
     expect(row.value).toBe("-15632105");
     expect(typeof row.value).toBe("string");
     expect(row.quantity).toBe("0");

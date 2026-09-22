@@ -127,6 +127,10 @@ export function normalizeInventoryBalance(
   return {
     stock_misa_id: pickString(record, "stock_id"),
     product_misa_id: pickString(record, "inventory_item_id"),
+    product_code: pickString(record, "inventory_item_code"),
+    product_name: pickString(record, "inventory_item_name"),
+    stock_code: pickString(record, "stock_code"),
+    stock_name: pickString(record, "stock_name"),
     quantity: toNumericString(record.quantity_balance),
     value: toNumericString(record.amount_balance),
     as_of: null,

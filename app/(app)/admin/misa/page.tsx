@@ -5,6 +5,7 @@ import { requireContentManager } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { MISA_SYNC_TYPES } from "@/lib/misa/sync";
 import { MisaSyncDashboard, type MisaSyncRow } from "./misa-sync-dashboard";
+import { MisaTabs } from "./misa-tabs";
 
 export default async function MisaSyncStatusPage() {
   const user = await requireContentManager();
@@ -61,6 +62,7 @@ export default async function MisaSyncStatusPage() {
         )}
       </div>
 
+      <MisaTabs />
       <MisaSyncDashboard rows={rows} />
     </div>
   );

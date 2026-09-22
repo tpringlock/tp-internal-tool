@@ -111,6 +111,38 @@
       "error": "Error"
     }
   },
+  "MisaData": {
+    "tabs": {
+      "dashboard": "Overview",
+      "customers": "Customers",
+      "products": "Items",
+      "inventory": "Inventory"
+    },
+    "customersTitle": "Customers / Vendors",
+    "customersSubtitle": "Accounting objects synced from MISA.",
+    "productsTitle": "Inventory items",
+    "productsSubtitle": "Item catalog synced from MISA.",
+    "inventoryTitle": "Inventory balance",
+    "inventorySubtitle": "Stock balance by item and warehouse.",
+    "search": "Search",
+    "filter": "Filter",
+    "searchCustomers": "Name, code or tax code…",
+    "searchProducts": "Item name or code…",
+    "searchInventory": "Item or warehouse name/code…",
+    "count": "{count} records",
+    "empty": "No data yet. Run a sync from the Overview tab.",
+    "colName": "Name",
+    "colCode": "Code",
+    "colTaxCode": "Tax code",
+    "colType": "Type",
+    "colUnit": "Unit",
+    "colCategory": "Category",
+    "colUpdated": "Updated",
+    "colProduct": "Item",
+    "colStock": "Warehouse",
+    "colQuantity": "Quantity",
+    "colValue": "Value"
+  },
   "ApiDocs": {
     "title": "API documentation",
     "subtitle": "Reference of the internal tool's HTTP endpoints and server actions.",

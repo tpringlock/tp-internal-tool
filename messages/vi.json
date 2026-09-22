@@ -111,6 +111,38 @@
       "error": "Lỗi"
     }
   },
+  "MisaData": {
+    "tabs": {
+      "dashboard": "Tổng quan",
+      "customers": "Khách hàng",
+      "products": "Vật tư",
+      "inventory": "Tồn kho"
+    },
+    "customersTitle": "Khách hàng / Nhà cung cấp",
+    "customersSubtitle": "Danh mục đối tượng đồng bộ từ MISA.",
+    "productsTitle": "Vật tư hàng hoá",
+    "productsSubtitle": "Danh mục vật tư đồng bộ từ MISA.",
+    "inventoryTitle": "Tồn kho",
+    "inventorySubtitle": "Số dư tồn kho theo vật tư và kho.",
+    "search": "Tìm kiếm",
+    "filter": "Lọc",
+    "searchCustomers": "Tên, mã hoặc MST…",
+    "searchProducts": "Tên hoặc mã vật tư…",
+    "searchInventory": "Tên/mã vật tư hoặc kho…",
+    "count": "{count} bản ghi",
+    "empty": "Chưa có dữ liệu. Hãy chạy đồng bộ ở tab Tổng quan.",
+    "colName": "Tên",
+    "colCode": "Mã",
+    "colTaxCode": "MST",
+    "colType": "Loại",
+    "colUnit": "ĐVT",
+    "colCategory": "Nhóm",
+    "colUpdated": "Cập nhật",
+    "colProduct": "Vật tư",
+    "colStock": "Kho",
+    "colQuantity": "Số lượng",
+    "colValue": "Giá trị"
+  },
   "ApiDocs": {
     "title": "Tài liệu API",
     "subtitle": "Danh sách các endpoint HTTP và server action của hệ thống nội bộ.",

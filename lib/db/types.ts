@@ -282,6 +282,10 @@ export type MisaInventoryBalance = {
   id: string;
   stock_misa_id: string | null;
   product_misa_id: string | null;
+  product_code: string | null;
+  product_name: string | null;
+  stock_code: string | null;
+  stock_name: string | null;
   quantity: string | null;
   value: string | null;
   as_of: string | null;
@@ -490,6 +494,10 @@ export interface Database {
           | "raw"
           | "stock_misa_id"
           | "product_misa_id"
+          | "product_code"
+          | "product_name"
+          | "stock_code"
+          | "stock_name"
           | "quantity"
           | "value"
           | "as_of"

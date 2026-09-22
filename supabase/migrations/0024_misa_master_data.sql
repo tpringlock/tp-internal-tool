@@ -127,6 +127,12 @@ create table public.misa_inventory_balances (
   id              uuid primary key default gen_random_uuid(),
   stock_misa_id   text,
   product_misa_id text,
+  -- Denormalized item/stock code+name from the balance payload so the list view
+  -- can search and display without joining the dictionary tables.
+  product_code    text,
+  product_name    text,
+  stock_code      text,
+  stock_name      text,
   quantity        numeric,
   value           numeric(18, 2),
   as_of           timestamptz,
