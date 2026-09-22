@@ -59,7 +59,7 @@
     "projects": "Dự án",
     "academy": "Đào tạo",
     "activity": "Hoạt động",
-    "misa": "API MISA",
+    "misa": "MISA",
     "docs": "Tài liệu API",
     "menu": "Menu quản trị",
     "collapse": "Thu gọn menu",
@@ -85,6 +85,31 @@
     "send": "Gửi",
     "responseTitle": "Response",
     "status": "HTTP status"
+  },
+  "MisaSync": {
+    "title": "Đồng bộ MISA",
+    "subtitle": "Trạng thái đồng bộ dữ liệu từ MISA AMIS Kế toán.",
+    "statusTitle": "Trạng thái đồng bộ",
+    "syncAll": "Đồng bộ tất cả",
+    "syncNow": "Đồng bộ",
+    "type": "Loại dữ liệu",
+    "lastSync": "Lần cuối",
+    "records": "Upsert / Xoá",
+    "statusCol": "Trạng thái",
+    "openPlayground": "Mở trang test API",
+    "syncedCount": "Đã đồng bộ {count} bản ghi.",
+    "syncHadErrors": "Đồng bộ xong nhưng có lỗi ở một số loại.",
+    "types": {
+      "customers": "Khách hàng",
+      "products": "Vật tư",
+      "stocks": "Kho",
+      "inventory_balance": "Tồn kho"
+    },
+    "statuses": {
+      "running": "Đang chạy",
+      "success": "Thành công",
+      "error": "Lỗi"
+    }
   },
   "ApiDocs": {
     "title": "Tài liệu API",

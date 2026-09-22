@@ -59,7 +59,7 @@
     "projects": "Projects",
     "academy": "Academy",
     "activity": "Activity",
-    "misa": "MISA API",
+    "misa": "MISA",
     "docs": "API docs",
     "menu": "Admin menu",
     "collapse": "Collapse menu",
@@ -85,6 +85,31 @@
     "send": "Send",
     "responseTitle": "Response",
     "status": "HTTP status"
+  },
+  "MisaSync": {
+    "title": "MISA sync",
+    "subtitle": "Status of data synced from MISA AMIS Kế toán.",
+    "statusTitle": "Sync status",
+    "syncAll": "Sync all",
+    "syncNow": "Sync",
+    "type": "Data type",
+    "lastSync": "Last sync",
+    "records": "Upsert / Deleted",
+    "statusCol": "Status",
+    "openPlayground": "Open API tester",
+    "syncedCount": "Synced {count} records.",
+    "syncHadErrors": "Sync finished with errors on some types.",
+    "types": {
+      "customers": "Customers",
+      "products": "Items",
+      "stocks": "Stocks",
+      "inventory_balance": "Inventory balance"
+    },
+    "statuses": {
+      "running": "Running",
+      "success": "Success",
+      "error": "Error"
+    }
   },
   "ApiDocs": {
     "title": "API documentation",

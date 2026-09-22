@@ -1,10 +1,17 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { requireAdmin } from "@/lib/auth/dal";
+import { requireAdmin, requireContentManager } from "@/lib/auth/dal";
 import { logActivity } from "@/lib/activity";
 import { env } from "@/lib/env";
 import { MISA_ENDPOINTS } from "@/lib/misa/endpoints";
+import {
+  runSync,
+  MISA_SYNC_TYPES,
+  type MisaSyncType,
+  type SyncResult,
+} from "@/lib/misa/sync";
 
 /**
  * Result of a MISA API call surfaced to the admin playground. Unlike form
@@ -183,4 +190,43 @@ export async function misaRequest(
   });
 
   return { ok: res.ok, status: res.status, data };
+}
+
+/**
+ * Run the MISA data sync from the admin UI ("Đồng bộ ngay"). Restricted to
+ * content managers (admin/manager). Pass specific `types` or omit to sync all.
+ * Logs the trigger + per-type status only (never customer data).
+ */
+export async function syncMisaNow(
+  types?: MisaSyncType[],
+): Promise<{ ok: boolean; results: SyncResult[] }> {
+  const user = await requireContentManager();
+
+  const selected =
+    types && types.length
+      ? types.filter((t) => (MISA_SYNC_TYPES as string[]).includes(t))
+      : MISA_SYNC_TYPES;
+
+  const results = await runSync(selected, {
+    trigger: "manual",
+    actorUserId: user.id,
+  });
+
+  const supabase = await createClient();
+  await logActivity(supabase, {
+    action: "misa.sync",
+    metadata: {
+      trigger: "manual",
+      results: results.map((r) => ({
+        type: r.type,
+        status: r.status,
+        upserted: r.upserted,
+        deleted: r.deleted,
+      })),
+    },
+  });
+
+  revalidatePath("/admin/misa");
+  const ok = results.every((r) => r.status === "success");
+  return { ok, results };
 }

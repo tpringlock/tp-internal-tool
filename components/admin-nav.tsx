@@ -44,7 +44,7 @@ const items: {
     Icon: GraduationCap,
   },
   { href: "/admin/activity", key: "activity", adminOnly: true, Icon: Activity },
-  { href: "/admin/misa", key: "misa", adminOnly: true, Icon: Receipt },
+  { href: "/admin/misa", key: "misa", adminOnly: false, Icon: Receipt },
   { href: "/admin/docs", key: "docs", adminOnly: true, Icon: FileCode },
 ];
 
