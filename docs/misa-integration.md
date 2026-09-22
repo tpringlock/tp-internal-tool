@@ -45,14 +45,38 @@ Token **không bao giờ** được ghi log.
 
 ## 3. Chạy sync
 
+Các loại dữ liệu: `customers`, `products`, `stocks`, `inventory_balance`. Sync
+theo **từng loại** (mỗi loại có watermark riêng trong `misa_sync_state`), upsert
+theo `misa_id` nên chạy lại không tạo trùng.
+
 ### Thủ công (UI)
 <!-- TODO (Bước 7): nút "Đồng bộ ngay" trên /admin/misa. -->
 
 ### Qua API
-<!-- TODO (Bước 6): POST /api/misa/sync với body { types?: string[] }. -->
+`POST /api/misa/sync` — chỉ **admin/manager** (kiểm tra session). Body tùy chọn:
+
+```json
+{ "types": ["customers", "products"] }
+```
+
+Bỏ `types` để sync tất cả. Trả `{ ok, results: [{ type, status, upserted, deleted, error? }] }`
+(HTTP 200 nếu tất cả thành công, 207 nếu có loại lỗi). Với dữ liệu lớn nên gọi
+**từng loại một** để tránh vượt giới hạn thời gian hàm Vercel (`maxDuration = 60`).
 
 ### Vercel Cron (mặc định TẮT)
-<!-- TODO (Bước 6/9): snippet vercel.json + header Authorization: Bearer CRON_SECRET. -->
+`GET /api/misa/sync` chạy sync tất cả loại, chỉ khi header
+`Authorization: Bearer <CRON_SECRET>` khớp; thiếu/không set `CRON_SECRET` → 401
+(nên mặc định tắt). Để bật, đặt `CRON_SECRET` và thêm vào `vercel.json`:
+
+```json
+{
+  "crons": [{ "path": "/api/misa/sync", "schedule": "0 * * * *" }]
+}
+```
+
+Vercel Cron tự gắn header `Authorization: Bearer <CRON_SECRET>` khi biến môi
+trường `CRON_SECRET` được cấu hình trên project. Bắt đầu bằng lịch thưa (vd mỗi
+giờ) rồi điều chỉnh.
 
 ---
 
