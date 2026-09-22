@@ -214,6 +214,103 @@ export type ActivityLog = {
   created_at: string;
 };
 
+// ---------------------------------------------------------------------------
+// MISA AMIS Kế toán (ACT Open API) — read-only master data cache.
+// Money/quantity columns are `numeric` in Postgres; supabase-js returns them as
+// strings, so they are typed as `string | null` to avoid float precision loss.
+// ---------------------------------------------------------------------------
+export type MisaSyncStatus = "running" | "success" | "error";
+export type MisaSyncTrigger = "manual" | "cron";
+
+export type MisaToken = {
+  id: string;
+  org_company_code: string;
+  access_token: string;
+  tenant_code: string | null;
+  app_name: string | null;
+  expired_at: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MisaCustomer = {
+  id: string;
+  misa_id: string;
+  code: string | null;
+  name: string;
+  tax_code: string | null;
+  phone: string | null;
+  address: string | null;
+  object_type: string | null;
+  is_deleted: boolean;
+  raw: Record<string, unknown>;
+  misa_modified_at: string | null;
+  synced_at: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MisaProduct = {
+  id: string;
+  misa_id: string;
+  code: string | null;
+  name: string;
+  unit: string | null;
+  category: string | null;
+  is_deleted: boolean;
+  raw: Record<string, unknown>;
+  misa_modified_at: string | null;
+  synced_at: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MisaStock = {
+  id: string;
+  misa_id: string;
+  code: string | null;
+  name: string;
+  is_deleted: boolean;
+  raw: Record<string, unknown>;
+  misa_modified_at: string | null;
+  synced_at: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MisaInventoryBalance = {
+  id: string;
+  stock_misa_id: string | null;
+  product_misa_id: string | null;
+  quantity: string | null;
+  value: string | null;
+  as_of: string | null;
+  raw: Record<string, unknown>;
+  synced_at: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MisaSyncState = {
+  data_type: string;
+  last_sync_time: string | null;
+  last_deleted_sync_time: string | null;
+  updated_at: string;
+};
+
+export type MisaSyncLog = {
+  id: number;
+  data_type: string;
+  status: MisaSyncStatus;
+  started_at: string;
+  finished_at: string | null;
+  records_upserted: number;
+  records_deleted: number;
+  error: string | null;
+  triggered_by: MisaSyncTrigger;
+  actor_user_id: string | null;
+};
+
 type Insert<T, Optional extends keyof T> = Omit<T, Optional> &
   Partial<Pick<T, Optional>>;
 
@@ -322,6 +419,103 @@ export interface Database {
         CourseFile,
         Insert<CourseFile, "id" | "created_at" | "created_by" | "mime_type">,
         Partial<CourseFile>
+      >;
+      misa_token: Table<
+        MisaToken,
+        Insert<MisaToken, "id" | "created_at" | "updated_at" | "tenant_code" | "app_name">,
+        Partial<MisaToken>
+      >;
+      misa_customers: Table<
+        MisaCustomer,
+        Insert<
+          MisaCustomer,
+          | "id"
+          | "created_at"
+          | "updated_at"
+          | "synced_at"
+          | "is_deleted"
+          | "raw"
+          | "name"
+          | "code"
+          | "tax_code"
+          | "phone"
+          | "address"
+          | "object_type"
+          | "misa_modified_at"
+        >,
+        Partial<MisaCustomer>
+      >;
+      misa_products: Table<
+        MisaProduct,
+        Insert<
+          MisaProduct,
+          | "id"
+          | "created_at"
+          | "updated_at"
+          | "synced_at"
+          | "is_deleted"
+          | "raw"
+          | "name"
+          | "code"
+          | "unit"
+          | "category"
+          | "misa_modified_at"
+        >,
+        Partial<MisaProduct>
+      >;
+      misa_stocks: Table<
+        MisaStock,
+        Insert<
+          MisaStock,
+          | "id"
+          | "created_at"
+          | "updated_at"
+          | "synced_at"
+          | "is_deleted"
+          | "raw"
+          | "name"
+          | "code"
+          | "misa_modified_at"
+        >,
+        Partial<MisaStock>
+      >;
+      misa_inventory_balances: Table<
+        MisaInventoryBalance,
+        Insert<
+          MisaInventoryBalance,
+          | "id"
+          | "created_at"
+          | "updated_at"
+          | "synced_at"
+          | "raw"
+          | "stock_misa_id"
+          | "product_misa_id"
+          | "quantity"
+          | "value"
+          | "as_of"
+        >,
+        Partial<MisaInventoryBalance>
+      >;
+      misa_sync_state: Table<
+        MisaSyncState,
+        Insert<MisaSyncState, "updated_at" | "last_sync_time" | "last_deleted_sync_time">,
+        Partial<MisaSyncState>
+      >;
+      misa_sync_log: Table<
+        MisaSyncLog,
+        Insert<
+          MisaSyncLog,
+          | "id"
+          | "status"
+          | "started_at"
+          | "finished_at"
+          | "records_upserted"
+          | "records_deleted"
+          | "error"
+          | "triggered_by"
+          | "actor_user_id"
+        >,
+        Partial<MisaSyncLog>
       >;
     };
     Views: {
