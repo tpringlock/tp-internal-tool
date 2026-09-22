@@ -27,4 +27,8 @@ export const env = {
     ),
   siteUrl: () =>
     process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  // MISA ACT Open API. `app_id` is a secret credential issued by MISA and must
+  // never reach the browser — only read it inside server actions.
+  misaAppId: () => required("MISA_APP_ID", process.env.MISA_APP_ID),
+  misaApiUrl: () => process.env.MISA_API_URL ?? "https://actapp.misa.vn",
 };
