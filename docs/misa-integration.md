@@ -25,8 +25,21 @@ Xem `.env.example` để copy sang `.env.local`.
 
 ## 2. Luồng token
 
-<!-- TODO (Bước 3): mô tả getAccessToken() — đọc bảng misa_token, kiểm tra hạn,
-     refresh bằng connect() khi hết hạn, lưu lại DB. Không log token. -->
+`lib/misa/client.ts` (server-only) tự quản token — **không** dùng biến toàn cục
+(Vercel serverless không giữ state giữa các lần gọi):
+
+- `getAccessToken()` đọc dòng token trong bảng `misa_token` (theo
+  `MISA_ORG_COMPANY_CODE`, qua service-role). Nếu còn hạn (trừ margin 5 phút) thì
+  dùng lại; nếu hết/thiếu thì gọi `connect()` rồi **upsert** token + `expired_at`
+  vào DB.
+- `connect()` POST `/api/oauth/actopen/connect` với `app_id/access_code/org_company_code`
+  từ env, bóc envelope `{ Success, Data }` (Data là JSON dạng chuỗi).
+- `misaFetch()` chèn `app_id`, gắn header `X-MISA-AccessToken`, có **timeout**
+  (AbortController, mặc định 30s) và **retry backoff** khi lỗi mạng/5xx; gặp 401
+  thì refresh token một lần rồi thử lại.
+- `paginate()` lặp `skip/take` (take ≤ 100) đến khi trang ngắn hơn `take`.
+
+Token **không bao giờ** được ghi log.
 
 ---
 
@@ -45,8 +58,19 @@ Xem `.env.example` để copy sang `.env.local`.
 
 ## 4. Bắt dữ liệu thật để dựng type/fixture
 
-<!-- TODO (Bước 3): npx tsx --env-file=.env scripts/misa-test.ts — che MST/SĐT,
-     ghi fixture vào lib/misa/__fixtures__/. -->
+`scripts/misa-test.ts` kết nối MISA, gọi từng endpoint đọc một lần, **che**
+MST/SĐT/email/số tài khoản rồi ghi mẫu vào `lib/misa/__fixtures__/`. Script
+**không** đụng tới DB.
+
+```bash
+# Node 22.18+/23+ chạy .ts trực tiếp (repo đang dùng Node 24):
+node scripts/misa-test.ts
+# Node cũ hơn: npx tsx scripts/misa-test.ts
+```
+
+Credential đọc từ `process.env`; nếu chưa có, script tự nạp `.env.local` (rồi
+`.env`) ở thư mục gốc. Sau khi có fixture, tinh chỉnh type ở `lib/misa/types.ts`
+và normalizer ở `lib/misa/normalize.ts` (Bước 4).
 
 ---
 
