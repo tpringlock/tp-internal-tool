@@ -194,7 +194,7 @@ export default async function CoursePage({
         </div>
 
         {/* Sticky aside */}
-        <aside className="space-y-4 lg:sticky lg:top-6">
+        <aside className="space-y-4 lg:sticky lg:top-24">
           <Card className="overflow-hidden">
             <CourseThumb course={course} />
             <CardBody className="space-y-4">

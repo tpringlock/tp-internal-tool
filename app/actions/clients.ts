@@ -54,6 +54,8 @@ export async function addClient(
     metadata: { code: parsed.data.code },
   });
   revalidatePath("/admin/clients");
+  // Refresh the Documents workspace (client sidebar + counts live in its layout).
+  revalidatePath("/documents", "layout");
   return { success: t("clientCreated", { name: parsed.data.name }) };
 }
 
@@ -96,6 +98,8 @@ export async function editClient(
   });
   revalidatePath("/admin/clients");
   revalidatePath(`/admin/clients/${id}`);
+  // Refresh the Documents workspace (client sidebar + counts live in its layout).
+  revalidatePath("/documents", "layout");
   return { success: t("clientUpdated") };
 }
 
@@ -140,6 +144,7 @@ export async function deleteClient(
     metadata: { name },
   });
   revalidatePath("/admin/clients");
+  revalidatePath("/documents", "layout");
 
   // Redirect server-side: the manage page we're on belongs to the deleted
   // client, so re-rendering it (which the action response otherwise does)

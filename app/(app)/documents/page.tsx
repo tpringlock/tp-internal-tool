@@ -1,150 +1,114 @@
 import Link from "next/link";
-import { Folder, List, Upload } from "lucide-react";
+import { Building2, CloudUpload, FileText, List } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth/dal";
-import { canManageContent } from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/server";
-import { Button } from "@/components/ui/button";
-import { Card, CardBody } from "@/components/ui/card";
-import { Pagination } from "@/components/ui/pagination";
-import { AddFolderTile } from "@/components/add-folder-tile";
-import { CreateClientForm } from "@/app/(app)/admin/clients/client-forms";
 import { DocumentSearch } from "./document-search";
+import { DocumentTable, type DocumentTableRow } from "./document-table";
+import type { DocType } from "@/lib/db/types";
 
-interface DocClientRow {
-  projects: { clients: { id: string; name: string } | null } | null;
-}
-
-interface ClientFolder {
+interface RecentRow {
   id: string;
-  name: string;
-  count: number;
+  canonical_name: string;
+  doc_type: DocType;
+  file_size: number;
+  created_at: string;
+  projects: { name: string; clients: { name: string } | null } | null;
 }
 
-// Folder tiles per page; divisible by the 2- and 3-column grid layouts.
-const PAGE_SIZE = 24;
+const RECENT_LIMIT = 10;
 
-export default async function DocumentsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ page?: string }>;
-}) {
-  const { page = "1" } = await searchParams;
-  const pageNum = Math.max(1, Number(page) || 1);
+/**
+ * Documents landing page: search, shortcuts and the latest uploads the user
+ * can see. Customers are picked from the sidebar (drawer on small screens).
+ */
+export default async function DocumentsPage() {
   const user = await requireUser();
-  const canManage = canManageContent(user.profile.role);
   const supabase = await createClient();
-  const t = await getTranslations("Documents");
+  const t = await getTranslations("DocWorkspace");
 
-  // Derive folders from documents the user can actually see (documents RLS
-  // applies), so employees only get folders for clients with visible files and
-  // the counts are accurate.
   const { data } = await supabase
     .from("documents")
-    .select("projects!inner ( clients!inner ( id, name ) )");
+    .select(
+      `id, canonical_name, doc_type, file_size, created_at,
+       projects ( name, clients ( name ) )`,
+    )
+    .order("created_at", { ascending: false })
+    .limit(RECENT_LIMIT);
 
-  const rows = (data ?? []) as unknown as DocClientRow[];
-  const byClient = new Map<string, ClientFolder>();
-  // Content managers see every client as a folder, including ones without any
-  // projects or documents yet, so they can start filing from here.
-  if (canManage) {
-    const { data: clientRows } = await supabase
-      .from("clients")
-      .select("id, name");
-    for (const c of clientRows ?? []) {
-      byClient.set(c.id, { id: c.id, name: c.name, count: 0 });
-    }
-  }
-  for (const row of rows) {
-    const c = row.projects?.clients;
-    if (!c) continue;
-    const existing = byClient.get(c.id);
-    if (existing) existing.count += 1;
-    else byClient.set(c.id, { id: c.id, name: c.name, count: 1 });
-  }
-  const allFolders = [...byClient.values()].sort((a, b) =>
-    a.name.localeCompare(b.name),
-  );
-  const total = allFolders.length;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const folders = allFolders.slice(
-    (pageNum - 1) * PAGE_SIZE,
-    pageNum * PAGE_SIZE,
+  const recent: DocumentTableRow[] = ((data ?? []) as unknown as RecentRow[]).map(
+    (d) => ({
+      id: d.id,
+      canonical_name: d.canonical_name,
+      doc_type: d.doc_type,
+      file_size: d.file_size,
+      created_at: d.created_at,
+      context: [d.projects?.clients?.name, d.projects?.name]
+        .filter(Boolean)
+        .join(" / "),
+    }),
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="mx-auto max-w-[1400px] space-y-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-primary">{t("title")}</h1>
-          <p className="text-sm text-slate-500">{t("subtitle")}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+            {t("moduleName")}
+          </p>
+          <h1 className="mt-1.5 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+            {t("overviewTitle")}
+          </h1>
+          <p className="mt-1.5 text-sm text-slate-500">
+            {t("overviewSubtitle")}
+          </p>
         </div>
-        <div className="flex gap-2">
-          <Link href="/documents/list">
-            <Button variant="secondary">
-              <List className="mr-1.5 h-4 w-4" />
-              {t("viewAsList")}
-            </Button>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/documents/list"
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+          >
+            <List className="h-4 w-4" aria-hidden />
+            {t("viewAsList")}
           </Link>
-          <Link href="/documents/upload">
-            <Button>
-              <Upload className="mr-1.5 h-4 w-4" />
-              {t("uploadDocument")}
-            </Button>
+          <Link
+            href="/documents/upload"
+            className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-hover"
+          >
+            <CloudUpload className="h-4 w-4" aria-hidden />
+            {t("upload")}
           </Link>
         </div>
       </div>
 
       <DocumentSearch />
 
-      {total === 0 && !canManage ? (
-        <Card>
-          <CardBody>
-            <p className="text-sm text-slate-500">{t("noDocuments")}</p>
-          </CardBody>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {canManage && (
-            <AddFolderTile
-              label={t("addCustomer")}
-              dialogTitle={t("addCustomerTitle")}
-            >
-              <CreateClientForm />
-            </AddFolderTile>
-          )}
-          {folders.map((f) => (
-            <Link
-              key={f.id}
-              href={`/documents/clients/${f.id}`}
-              className="group"
-            >
-              <Card className="h-full transition group-hover:border-primary group-hover:shadow-md">
-                <CardBody className="flex items-center gap-3">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    <Folder className="h-6 w-6" />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="truncate font-medium text-slate-900">
-                      {f.name}
-                    </p>
-                    <p className="text-xs text-slate-400">
-                      {t("filesCount", { count: f.count })}
-                    </p>
-                  </div>
-                </CardBody>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      )}
+      <div className="hidden items-center gap-3 rounded-2xl border border-dashed border-slate-300 bg-white/60 px-5 py-4 text-sm text-slate-600 lg:flex">
+        <Building2 className="h-5 w-5 shrink-0 text-primary" aria-hidden />
+        {t("pickCustomerHint")}
+      </div>
 
-      <Pagination
-        page={pageNum}
-        totalPages={totalPages}
-        total={total}
-        hrefForPage={(p) => `/documents?page=${p}`}
-      />
+      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <header className="border-b border-slate-100 px-5 py-4">
+          <h2 className="text-lg font-bold text-slate-900">{t("recentTitle")}</h2>
+          <p className="text-sm text-slate-500">
+            {t("recentSubtitle")}
+          </p>
+        </header>
+        {recent.length === 0 ? (
+          <div className="flex flex-col items-center gap-2 px-5 py-14 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+              <FileText className="h-6 w-6" aria-hidden />
+            </span>
+            <p className="text-sm text-slate-500">{t("noFiles")}</p>
+          </div>
+        ) : (
+          <DocumentTable
+            documents={recent}
+            canDelete={user.profile.role === "admin"}
+          />
+        )}
+      </section>
     </div>
   );
 }

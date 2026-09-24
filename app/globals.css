@@ -16,6 +16,39 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Dropdown menus (components/ui/dropdown-menu.tsx) and drawers. */
+@keyframes menu-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes drawer-in {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: none;
+  }
+}
+.menu-pop {
+  animation: menu-pop 120ms ease-out;
+  transform-origin: top;
+}
+.drawer-in {
+  animation: drawer-in 180ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .menu-pop,
+  .drawer-in {
+    animation: none;
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

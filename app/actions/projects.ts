@@ -55,6 +55,8 @@ export async function addProject(
     metadata: { code: parsed.data.code },
   });
   revalidatePath("/admin/projects");
+  // Refresh the Documents workspace (client sidebar + counts live in its layout).
+  revalidatePath("/documents", "layout");
   return { success: t("projectCreated", { name: parsed.data.name }) };
 }
 
@@ -97,6 +99,8 @@ export async function editProject(
   });
   revalidatePath("/admin/projects");
   revalidatePath(`/admin/projects/${id}`);
+  // Refresh the Documents workspace (client sidebar + counts live in its layout).
+  revalidatePath("/documents", "layout");
   return { success: t("projectUpdated") };
 }
 
@@ -143,6 +147,8 @@ export async function deleteProject(
   });
   revalidatePath("/admin/projects");
   revalidatePath(`/admin/clients/${deleted.client_id}`);
+  // Refresh the Documents workspace (client sidebar + counts live in its layout).
+  revalidatePath("/documents", "layout");
   return { success: t("projectDeleted", { name }) };
 }
 

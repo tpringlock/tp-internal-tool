@@ -175,6 +175,7 @@ export async function uploadDocument(
     metadata: { project_id: projectId, doc_type: docType, canonical_name: canonicalName },
   });
 
+  revalidatePath("/documents", "layout");
   redirect(`/documents/${inserted.id}`);
 }
 
@@ -214,6 +215,6 @@ export async function deleteDocument(
     metadata: { project_id: doc.project_id, canonical_name: doc.canonical_name },
   });
   revalidatePath(`/admin/projects/${doc.project_id}`);
-  revalidatePath("/documents");
+  revalidatePath("/documents", "layout");
   return { success: t("documentDeleted", { name: doc.canonical_name }) };
 }

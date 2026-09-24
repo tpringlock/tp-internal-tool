@@ -136,7 +136,7 @@ export function AdminNav({ role }: { role: UserRole }) {
       <nav
         aria-label={t("menu")}
         className={cn(
-          "sticky top-8 hidden h-fit shrink-0 flex-col gap-1 self-start border-r border-slate-200 pr-3 transition-[width] duration-200 md:flex",
+          "sticky top-24 hidden h-fit shrink-0 flex-col gap-1 self-start border-r border-slate-200 pr-3 transition-[width] duration-200 md:flex",
           collapsed ? "w-14" : "w-52",
         )}
       >

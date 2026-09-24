@@ -561,5 +561,64 @@
     "activity": "Activity",
     "profile": "Profile",
     "new": "New"
+  },
+  "AppModules": {
+    "apps": "Apps",
+    "switch": "Switch app",
+    "documents": {
+      "name": "Documents",
+      "description": "Files and records by customer"
+    },
+    "academy": {
+      "name": "TP Academy",
+      "description": "Internal courses and training"
+    },
+    "admin": {
+      "name": "Admin Panel",
+      "description": "Customers, projects, users, MISA"
+    }
+  },
+  "DocWorkspace": {
+    "moduleName": "Documents",
+    "overviewTitle": "Documents overview",
+    "overviewSubtitle": "Search for a file or pick a customer to browse by project.",
+    "pickCustomerHint": "Pick a customer on the left to browse their files by project.",
+    "recentTitle": "Recently uploaded",
+    "recentSubtitle": "The latest files you have access to.",
+    "viewAsList": "View as list",
+    "customers": "Customers",
+    "customerCount": "{count, plural, one {# customer} other {# customers}}",
+    "chooseCustomer": "Choose a customer…",
+    "addCustomer": "Add customer",
+    "filterCustomers": "Filter customers…",
+    "noCustomers": "No customers yet.",
+    "noCustomerMatches": "No matching customers.",
+    "close": "Close",
+    "fileCount": "{count, plural, one {# file} other {# files}}",
+    "eyebrow": "Customer workspace",
+    "customerCode": "Code",
+    "taxCode": "Tax ID",
+    "noTaxCode": "No tax ID yet",
+    "statFiles": "Files",
+    "statStorage": "Storage",
+    "statProjects": "Projects",
+    "tabsLabel": "View",
+    "tabFiles": "Files",
+    "tabShare": "Folder sharing",
+    "projects": "Projects",
+    "addProject": "Add project",
+    "allFiles": "All files",
+    "archived": "Archived",
+    "noProjects": "No projects yet.",
+    "manageProject": "Manage project",
+    "uploadLimit": "PDF, up to 25 MB per file",
+    "upload": "Upload",
+    "noFiles": "No files yet.",
+    "colFile": "File",
+    "colType": "Type",
+    "colDate": "Date",
+    "colActions": "Actions",
+    "download": "Download",
+    "downloadFile": "Download {name}"
   }
 }

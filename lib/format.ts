@@ -28,3 +28,13 @@ export function formatDateTime(iso: string): string {
     timeZone: DISPLAY_TIME_ZONE,
   });
 }
+
+/** Deterministic date for tables, e.g. 23/09/2026 (ICT). */
+export function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString(DISPLAY_LOCALE, {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: DISPLAY_TIME_ZONE,
+  });
+}

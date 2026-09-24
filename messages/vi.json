@@ -561,5 +561,64 @@
     "activity": "Hoạt động",
     "profile": "Hồ sơ",
     "new": "Mới"
+  },
+  "AppModules": {
+    "apps": "Ứng dụng",
+    "switch": "Chuyển ứng dụng",
+    "documents": {
+      "name": "Quản lí tài liệu",
+      "description": "Hồ sơ và chứng từ theo khách hàng"
+    },
+    "academy": {
+      "name": "TP Academy",
+      "description": "Khóa học và đào tạo nội bộ"
+    },
+    "admin": {
+      "name": "Admin Panel",
+      "description": "Khách hàng, dự án, người dùng, MISA"
+    }
+  },
+  "DocWorkspace": {
+    "moduleName": "Quản lí tài liệu",
+    "overviewTitle": "Tổng quan tài liệu",
+    "overviewSubtitle": "Tìm nhanh hồ sơ hoặc chọn một khách hàng để xem theo dự án.",
+    "pickCustomerHint": "Chọn một khách hàng ở cột bên trái để xem hồ sơ theo từng dự án.",
+    "recentTitle": "Mới tải lên",
+    "recentSubtitle": "Các hồ sơ gần đây nhất mà bạn có quyền xem.",
+    "viewAsList": "Xem dạng danh sách",
+    "customers": "Khách hàng",
+    "customerCount": "{count, plural, other {# khách hàng}}",
+    "chooseCustomer": "Chọn khách hàng…",
+    "addCustomer": "Thêm khách hàng",
+    "filterCustomers": "Lọc khách hàng…",
+    "noCustomers": "Chưa có khách hàng nào.",
+    "noCustomerMatches": "Không có khách hàng phù hợp.",
+    "close": "Đóng",
+    "fileCount": "{count, plural, other {# hồ sơ}}",
+    "eyebrow": "Không gian khách hàng",
+    "customerCode": "Mã KH",
+    "taxCode": "MST",
+    "noTaxCode": "Chưa nhập mã số thuế",
+    "statFiles": "Hồ sơ",
+    "statStorage": "Dung lượng",
+    "statProjects": "Dự án",
+    "tabsLabel": "Chế độ xem",
+    "tabFiles": "Hồ sơ dữ liệu",
+    "tabShare": "Chia sẻ thư mục",
+    "projects": "Dự án",
+    "addProject": "Thêm dự án",
+    "allFiles": "Tất cả hồ sơ",
+    "archived": "Đã lưu trữ",
+    "noProjects": "Chưa có dự án.",
+    "manageProject": "Quản lý dự án",
+    "uploadLimit": "PDF, tối đa 25 MB/tệp",
+    "upload": "Tải tệp lên",
+    "noFiles": "Chưa có hồ sơ nào.",
+    "colFile": "Hồ sơ",
+    "colType": "Loại",
+    "colDate": "Ngày",
+    "colActions": "Thao tác",
+    "download": "Tải xuống",
+    "downloadFile": "Tải xuống {name}"
   }
 }

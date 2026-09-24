@@ -1,112 +1,125 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { ChevronDown, LogOut, UserRound } from "lucide-react";
+import { logout } from "@/app/actions/auth";
 import { cn } from "@/lib/utils";
 import type { UserRole } from "@/lib/db/types";
-import { canManageContent } from "@/lib/auth/roles";
+import { DropdownMenu, menuItemClass } from "@/components/ui/dropdown-menu";
 
-interface MenuItem {
-  href: string;
-  label: string;
+/**
+ * Letter shown in the avatar. Vietnamese names put the given name last
+ * ("Bùi Viết Quyền" -> "Q"), so use the first letter of the last word.
+ */
+export function avatarInitial(fullName: string): string {
+  const words = fullName.trim().split(/\s+/).filter(Boolean);
+  const word = words[words.length - 1] ?? "";
+  return (word.charAt(0) || "?").toLocaleUpperCase("vi");
 }
 
+/**
+ * Header account control: name + email + letter avatar as the trigger (avatar
+ * only on small screens); the menu holds the profile link and sign-out.
+ */
 export function UserMenu({
   fullName,
+  email,
   role,
 }: {
   fullName: string;
+  email: string | null;
   role: UserRole;
 }) {
   const t = useTranslations("Nav");
-  const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const items: MenuItem[] = [{ href: "/profile", label: t("profile") }];
-  if (canManageContent(role)) {
-    // Managers can't reach /admin/users; send them to a section they can use.
-    items.push({
-      href: role === "admin" ? "/admin/users" : "/admin/clients",
-      label: t("admin"),
-    });
-  }
-
-  // Close on outside click and Escape.
-  useEffect(() => {
-    if (!open) return;
-
-    const onPointerDown = (event: PointerEvent) => {
-      if (!containerRef.current?.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    };
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-
-    document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open]);
+  const roleLabel =
+    role === "admin" ? t("admin") : role === "manager" ? t("manager") : null;
 
   return (
-    <div ref={containerRef} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((value) => !value)}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        aria-label={t("openUserMenu")}
-        className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
-      >
-        <span className="hidden sm:inline">{fullName}</span>
-        {role !== "employee" && (
-          <span className="rounded bg-primary px-1.5 py-0.5 text-xs text-white">
-            {role === "admin" ? t("admin") : t("manager")}
+    <DropdownMenu
+      label={t("openUserMenu")}
+      align="end"
+      triggerClassName="flex items-center gap-3 rounded-xl p-1 text-left transition-colors hover:bg-slate-100 aria-expanded:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:pl-3"
+      menuClassName="w-64"
+      trigger={(open) => (
+        <>
+          <span className="hidden min-w-0 text-right sm:block">
+            <span className="block max-w-[14rem] truncate text-sm font-semibold text-slate-900">
+              {fullName}
+            </span>
+            {email && (
+              <span className="block max-w-[14rem] truncate text-xs text-slate-500">
+                {email}
+              </span>
+            )}
           </span>
-        )}
-        <svg
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          aria-hidden="true"
-          className={cn(
-            "h-4 w-4 text-slate-400 transition-transform",
-            open && "rotate-180",
-          )}
-        >
-          <path
-            fillRule="evenodd"
-            d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.06l3.71-3.83a.75.75 0 1 1 1.08 1.04l-4.25 4.39a.75.75 0 0 1-1.08 0L5.21 8.27a.75.75 0 0 1 .02-1.06Z"
-            clipRule="evenodd"
+          <span
+            aria-hidden
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary"
+          >
+            {avatarInitial(fullName)}
+          </span>
+          <ChevronDown
+            aria-hidden
+            className={cn(
+              "hidden h-4 w-4 shrink-0 text-slate-400 transition-transform sm:block",
+              open && "rotate-180",
+            )}
           />
-        </svg>
-      </button>
-
-      {open && (
-        <div
-          role="menu"
-          className="absolute right-0 z-20 mt-1 w-44 overflow-hidden rounded-md border border-slate-200 bg-white py-1 shadow-lg"
-        >
-          <div className="border-b border-slate-100 px-3 py-2 text-sm font-medium text-slate-900 sm:hidden">
-            {fullName}
-          </div>
-          {items.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              role="menuitem"
-              onClick={() => setOpen(false)}
-              className="block px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </div>
+        </>
       )}
-    </div>
+    >
+      {(close) => (
+        <>
+          <div className="flex items-center gap-3 px-3 py-2.5">
+            <span
+              aria-hidden
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white"
+            >
+              {avatarInitial(fullName)}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-slate-900">
+                {fullName}
+              </p>
+              {email && (
+                <p className="truncate text-xs text-slate-500">{email}</p>
+              )}
+              {roleLabel && (
+                <span className="mt-1 inline-block rounded bg-primary/10 px-1.5 py-0.5 text-[11px] font-medium text-primary">
+                  {roleLabel}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="my-1 h-px bg-slate-100" role="separator" />
+
+          <Link
+            href="/profile"
+            role="menuitem"
+            onClick={close}
+            className={menuItemClass}
+          >
+            <UserRound className="h-4 w-4 text-slate-400" aria-hidden />
+            {t("profile")}
+          </Link>
+
+          <form action={logout}>
+            <button
+              type="submit"
+              role="menuitem"
+              className={cn(
+                menuItemClass,
+                "text-red-600 hover:bg-red-50 hover:text-red-700 focus-visible:bg-red-50",
+              )}
+            >
+              <LogOut className="h-4 w-4" aria-hidden />
+              {t("signOut")}
+            </button>
+          </form>
+        </>
+      )}
+    </DropdownMenu>
   );
 }

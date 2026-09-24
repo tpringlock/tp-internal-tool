@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { X } from "lucide-react";
+import { Trash2, X } from "lucide-react";
 import { deleteDocument } from "@/app/actions/documents";
 import type { FormState } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
@@ -18,9 +18,12 @@ import { useToast, useFormStateToast } from "@/components/ui/toast";
 export function DeleteDocumentButton({
   documentId,
   documentName,
+  variant = "outline",
 }: {
   documentId: string;
   documentName: string;
+  /** "outline": bordered X (admin tables); "ghost": red trash icon (workspace). */
+  variant?: "outline" | "ghost";
 }) {
   const t = useTranslations("Admin");
   const { toast } = useToast();
@@ -45,9 +48,17 @@ export function DeleteDocumentButton({
         onClick={() => setOpen(true)}
         aria-label={t("deleteDocument")}
         title={t("deleteDocument")}
-        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-500 hover:border-red-300 hover:bg-red-50 hover:text-red-600"
+        className={
+          variant === "ghost"
+            ? "inline-flex h-9 w-9 items-center justify-center rounded-lg text-red-500 transition-colors hover:bg-red-50 hover:text-red-600"
+            : "inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-500 hover:border-red-300 hover:bg-red-50 hover:text-red-600"
+        }
       >
-        <X className="h-4 w-4" />
+        {variant === "ghost" ? (
+          <Trash2 className="h-[18px] w-[18px]" />
+        ) : (
+          <X className="h-4 w-4" />
+        )}
       </button>
 
       <Dialog

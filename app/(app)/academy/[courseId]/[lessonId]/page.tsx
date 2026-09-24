@@ -285,7 +285,7 @@ export default async function LessonPage({
         </div>
 
         {/* Right column: course content / documents toggle */}
-        <aside className="lg:sticky lg:top-6">
+        <aside className="lg:sticky lg:top-24">
           <CourseContentPanel
             documents={courseFiles}
             contentMeta={t("lessonsDone", { done: doneCount, total })}
