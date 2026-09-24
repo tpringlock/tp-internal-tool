@@ -17,6 +17,22 @@ export function formatBytes(bytes: number): string {
 const DISPLAY_LOCALE = "en-GB";
 const DISPLAY_TIME_ZONE = "Asia/Ho_Chi_Minh";
 
+/**
+ * Vietnamese Dong for display, e.g. 1.234.567 ₫. Accepts a string (numeric
+ * columns come back as strings from supabase-js) or number; returns "—" for
+ * missing/invalid values. VND has no minor unit, so no decimals are shown.
+ */
+export function formatVND(amount: string | number | null | undefined): string {
+  if (amount === null || amount === undefined || amount === "") return "—";
+  const value = typeof amount === "string" ? Number(amount) : amount;
+  if (!Number.isFinite(value)) return "—";
+  return new Intl.NumberFormat(DISPLAY_LOCALE, {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
 /** Deterministic date-time for display, e.g. 6 Aug 2026, 14:30 (ICT). */
 export function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString(DISPLAY_LOCALE, {

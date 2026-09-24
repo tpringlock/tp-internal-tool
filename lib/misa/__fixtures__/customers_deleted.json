@@ -1,0 +1,18 @@
+[
+  {
+    "sync_deleted_di_id": "4df06540-8b98-4f38-b9c7-84db64a06387",
+    "id": "609980ec-eb37-4428-bb0f-af9b01d2b229",
+    "type": 1,
+    "delete_date": "2026-09-14T17:32:40.5205207+07:00",
+    "data": "{\"account_object_code\":\"PHU THINH-01\",\"account_object_name\":\"CÔNG TY TNHH THƯƠNG MẠI VÀ DU LỊCH PHÚ THỊNH\",\"branch_id\":\"db6e46e8-331e-4367-a215-fcc4bd8e16f3\"}",
+    "branch_id": "db6e46e8-331e-4367-a215-fcc4bd8e16f3"
+  },
+  {
+    "sync_deleted_di_id": "a3442c5b-a4ed-4a22-b027-03b7f32dafbc",
+    "id": "7610b4b1-4cdc-4b60-924c-98c96005dfee",
+    "type": 1,
+    "delete_date": "2026-09-09T16:21:52.9419413+07:00",
+    "data": "{\"account_object_code\":\"ssss\",\"account_object_name\":\"CÔNG TY CỔ PHẦN XÂY DỰNG PHCONS\",\"branch_id\":\"db6e46e8-331e-4367-a215-fcc4bd8e16f3\"}",
+    "branch_id": "db6e46e8-331e-4367-a215-fcc4bd8e16f3"
+  }
+]
