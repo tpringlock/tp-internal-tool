@@ -46,19 +46,17 @@ export async function CourseCard({
 
   return (
     <Link href={`/academy/${course.id}`} className="group block">
-      <Card className="flex h-full flex-col overflow-hidden transition-colors group-hover:border-slate-300">
+      <Card className="flex h-full flex-col overflow-hidden transition group-hover:-translate-y-0.5 group-hover:border-primary/40 group-hover:shadow-md">
         <CourseThumb course={course} />
-        <div className="flex flex-1 flex-col gap-2 p-4">
-          <div className="flex items-start gap-2">
-            <h3 className="flex-1 text-sm font-semibold text-primary">
-              {course.title}
-            </h3>
-            {course.category && (
-              <span className="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
-                {course.category}
-              </span>
-            )}
-          </div>
+        <div className="flex flex-1 flex-col gap-2 p-5">
+          {course.category && (
+            <span className="w-fit rounded-full border border-primary/20 bg-primary/5 px-2.5 py-0.5 text-xs font-medium text-primary">
+              {course.category}
+            </span>
+          )}
+          <h3 className="font-semibold leading-snug text-slate-900 group-hover:text-primary">
+            {course.title}
+          </h3>
           {course.instructor && (
             <p className="text-xs text-slate-500">{course.instructor}</p>
           )}
@@ -81,7 +79,7 @@ export async function CourseCard({
                 </p>
               </div>
             ) : (
-              <span className="inline-flex h-8 items-center justify-center rounded-md bg-primary px-3 text-sm font-medium text-white group-hover:bg-primary-hover">
+              <span className="inline-flex h-9 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-white group-hover:bg-primary-hover">
                 {t("viewCourse")}
               </span>
             )}

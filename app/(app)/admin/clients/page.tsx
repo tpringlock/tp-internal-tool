@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { CreateClientForm } from "./client-forms";
 import type { Client } from "@/lib/db/types";
+import { ModuleEyebrow } from "@/components/page-title";
+import { DialogButton } from "@/components/dialog-button";
 
 const PAGE_SIZE = 50;
 
@@ -47,21 +49,18 @@ export default async function AdminClientsPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold text-primary">
-          {t("clientsTitle")}
-        </h1>
-        <p className="text-sm text-slate-500">{t("clientsSubtitle")}</p>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("addClient")}</CardTitle>
-        </CardHeader>
-        <CardBody>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <ModuleEyebrow id="admin" />
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+            {t("clientsTitle")}
+          </h1>
+          <p className="mt-1.5 text-sm text-slate-500">{t("clientsSubtitle")}</p>
+        </div>
+        <DialogButton label={t("addClient")}>
           <CreateClientForm />
-        </CardBody>
-      </Card>
+        </DialogButton>
+      </div>
 
       <Card>
         <CardBody>

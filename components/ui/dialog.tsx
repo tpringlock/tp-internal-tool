@@ -49,12 +49,12 @@ export function Dialog({
         aria-label={title}
         onClick={(e) => e.stopPropagation()}
         className={cn(
-          "my-8 w-full max-w-lg rounded-lg border border-slate-200 bg-white shadow-xl",
+          "my-8 w-full max-w-lg rounded-2xl border border-slate-200 bg-white shadow-xl",
           className,
         )}
       >
         <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-          <h2 className="text-base font-semibold text-primary">{title}</h2>
+          <h2 className="text-base font-bold text-slate-900">{title}</h2>
           <button
             type="button"
             onClick={onClose}

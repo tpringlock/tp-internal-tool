@@ -12,10 +12,10 @@ export default async function HomePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-primary">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
           {t("welcome", { name: firstName })}
         </h1>
-        <p className="text-sm text-slate-500">{t("subtitle")}</p>
+        <p className="mt-1.5 text-sm text-slate-500">{t("subtitle")}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

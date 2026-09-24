@@ -68,14 +68,22 @@ export default async function CoursePage({
 
   return (
     <div className="space-y-6">
-      {/* Signature-blue hero — full content width (cancels the layout's px-4/py-8). */}
-      <div className="-mx-4 bg-linear-to-br from-primary to-primary-hover px-4 py-12 text-white sm:px-8 sm:py-14">
-        <div className="mx-auto max-w-6xl">
-          <h1 className="max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl">
-            {course.title}
-          </h1>
-          <p className="mt-4 text-sm text-white/85">{meta}</p>
-        </div>
+      <Link
+        href="/academy"
+        className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"
+      >
+        ← {t("backToLibrary")}
+      </Link>
+
+      {/* Signature-blue hero card. */}
+      <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-primary to-primary-hover px-6 py-10 text-white shadow-sm sm:px-10 sm:py-12">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/70">
+          {course.category ?? t("title")}
+        </p>
+        <h1 className="mt-2 max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl">
+          {course.title}
+        </h1>
+        <p className="mt-4 text-sm text-white/85">{meta}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:items-start">

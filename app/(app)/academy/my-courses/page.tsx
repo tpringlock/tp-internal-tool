@@ -4,8 +4,8 @@ import { requireUser } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody } from "@/components/ui/card";
 import { getMyCourses, type MyCourseItem } from "@/lib/academy/queries";
-import { AcademyTabs } from "../academy-tabs";
 import { CourseCard } from "../course-card";
+import { ModuleEyebrow } from "@/components/page-title";
 
 export default async function MyCoursesPage() {
   const user = await requireUser();
@@ -24,7 +24,10 @@ export default async function MyCoursesPage() {
     withProgress?: boolean;
   }) => (
     <section className="space-y-3">
-      <h2 className="text-base font-semibold text-slate-800">{title}</h2>
+      <h2 className="text-lg font-bold text-slate-900">
+        {title}{" "}
+        <span className="text-sm font-medium text-slate-400">{items.length}</span>
+      </h2>
       {items.length === 0 ? (
         <Card>
           <CardBody>
@@ -37,7 +40,7 @@ export default async function MyCoursesPage() {
           </CardBody>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {items.map((item) => (
             <CourseCard
               key={item.course.id}
@@ -57,11 +60,10 @@ export default async function MyCoursesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-primary">{t("myCourses")}</h1>
-        <p className="text-sm text-slate-500">{t("myCoursesSubtitle")}</p>
+        <ModuleEyebrow id="academy" />
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{t("myCourses")}</h1>
+        <p className="mt-1.5 text-sm text-slate-500">{t("myCoursesSubtitle")}</p>
       </div>
-
-      <AcademyTabs active="mine" />
 
       <Section title={t("inProgress")} items={inProgress} withProgress />
       <Section title={t("completed")} items={completed} />

@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { requireAdmin } from "@/lib/auth/dal";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
+import { ModuleEyebrow } from "@/components/page-title";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
 
@@ -149,8 +150,9 @@ export default async function ApiDocsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-primary">{t("title")}</h1>
-        <p className="text-sm text-slate-500">{t("subtitle")}</p>
+        <ModuleEyebrow id="admin" />
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{t("title")}</h1>
+        <p className="mt-1.5 text-sm text-slate-500">{t("subtitle")}</p>
       </div>
 
       <Card>

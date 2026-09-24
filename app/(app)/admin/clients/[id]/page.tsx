@@ -7,6 +7,7 @@ import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { EditClientForm, DeleteClientButton } from "../client-forms";
 import { ClientProjectsManager, type ClientProject } from "./client-projects-manager";
 import type { Client } from "@/lib/db/types";
+import { ModuleEyebrow } from "@/components/page-title";
 
 export default async function ClientManagePage({
   params,
@@ -44,7 +45,8 @@ export default async function ClientManagePage({
           >
             ← {t("backClients")}
           </Link>
-          <h1 className="mt-1 text-xl font-semibold text-primary">
+          <ModuleEyebrow id="admin" className="mt-2" />
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
             {client.name}
           </h1>
         </div>

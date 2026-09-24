@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { MISA_SYNC_TYPES } from "@/lib/misa/sync";
 import { MisaSyncDashboard, type MisaSyncRow } from "./misa-sync-dashboard";
 import { MisaTabs } from "./misa-tabs";
+import { ModuleEyebrow } from "@/components/page-title";
 
 export default async function MisaSyncStatusPage() {
   const user = await requireContentManager();
@@ -49,8 +50,9 @@ export default async function MisaSyncStatusPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-primary">{t("title")}</h1>
-          <p className="text-sm text-slate-500">{t("subtitle")}</p>
+          <ModuleEyebrow id="admin" />
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{t("title")}</h1>
+          <p className="mt-1.5 text-sm text-slate-500">{t("subtitle")}</p>
         </div>
         {user.profile.role === "admin" && (
           <Link

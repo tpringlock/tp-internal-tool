@@ -9,6 +9,7 @@ import { Pagination } from "@/components/ui/pagination";
 import { formatDateTime } from "@/lib/format";
 import type { MisaProduct } from "@/lib/db/types";
 import { MisaTabs } from "../misa-tabs";
+import { ModuleEyebrow } from "@/components/page-title";
 
 const PAGE_SIZE = 50;
 
@@ -50,10 +51,11 @@ export default async function MisaProductsPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-primary">
+        <ModuleEyebrow id="admin" />
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
           {t("productsTitle")}
         </h1>
-        <p className="text-sm text-slate-500">{t("productsSubtitle")}</p>
+        <p className="mt-1.5 text-sm text-slate-500">{t("productsSubtitle")}</p>
       </div>
 
       <MisaTabs />

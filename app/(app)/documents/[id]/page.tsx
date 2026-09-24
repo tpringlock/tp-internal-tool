@@ -11,6 +11,7 @@ import { env } from "@/lib/env";
 import { labelForAction } from "@/lib/activity-labels";
 import { ShareManager, type ShareLinkView } from "./share-manager";
 import type { DocType } from "@/lib/db/types";
+import { ModuleEyebrow } from "@/components/page-title";
 
 interface DocDetail {
   id: string;
@@ -93,7 +94,8 @@ export default async function DocumentDetailPage({
           >
             ← {t("title")}
           </Link>
-          <h1 className="mt-1 break-all text-xl font-semibold text-primary">
+          <ModuleEyebrow id="documents" className="mt-3" />
+          <h1 className="break-all text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
             {doc.canonical_name}
           </h1>
         </div>

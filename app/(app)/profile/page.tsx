@@ -12,8 +12,8 @@ export default async function ProfilePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-primary">{t("title")}</h1>
-        <p className="text-sm text-slate-500">{t("subtitle")}</p>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{t("title")}</h1>
+        <p className="mt-1.5 text-sm text-slate-500">{t("subtitle")}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

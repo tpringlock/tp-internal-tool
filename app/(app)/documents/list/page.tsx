@@ -10,6 +10,7 @@ import { Pagination } from "@/components/ui/pagination";
 import { DOC_TYPES } from "@/lib/documents/constants";
 import { formatBytes, formatDateTime } from "@/lib/format";
 import type { DocType } from "@/lib/db/types";
+import { ModuleEyebrow } from "@/components/page-title";
 
 const PAGE_SIZE = 25;
 
@@ -86,7 +87,8 @@ export default async function DocumentsListPage({
             <ArrowLeft className="h-4 w-4" />
             {t("backToFolders")}
           </Link>
-          <h1 className="mt-1 text-xl font-semibold text-primary">
+          <ModuleEyebrow id="documents" className="mt-3" />
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
             {t("title")}
           </h1>
           <p className="text-sm text-slate-500">{t("subtitle")}</p>

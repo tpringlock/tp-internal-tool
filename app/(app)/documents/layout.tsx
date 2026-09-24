@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import { requireUser } from "@/lib/auth/dal";
 import { canManageContent } from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/server";
+import { WorkspaceContent } from "@/components/workspace-content";
 import { ClientSidebar, type SidebarClient } from "./client-sidebar";
 
 interface DocClientRow {
@@ -49,10 +51,10 @@ export default async function DocumentsLayout({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-      <ClientSidebar clients={clients} canManage={canManage} />
-      <div className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-        {children}
-      </div>
+      <Suspense>
+        <ClientSidebar clients={clients} canManage={canManage} />
+      </Suspense>
+      <WorkspaceContent>{children}</WorkspaceContent>
     </div>
   );
 }

@@ -15,7 +15,7 @@ export function PageSkeleton() {
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="h-32 animate-pulse rounded-lg border border-slate-200 bg-white"
+            className="h-32 animate-pulse rounded-2xl border border-slate-200 bg-white"
           />
         ))}
       </div>

@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { requireAdmin } from "@/lib/auth/dal";
+import { requireContentManager } from "@/lib/auth/dal";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreateCourseForm } from "../course-forms";
+import { ModuleEyebrow } from "@/components/page-title";
 
 export default async function NewCoursePage() {
-  await requireAdmin();
+  await requireContentManager();
   const t = await getTranslations("AcademyAdmin");
 
   return (
@@ -17,7 +18,8 @@ export default async function NewCoursePage() {
         >
           ← {t("backToCourses")}
         </Link>
-        <h1 className="mt-2 text-xl font-semibold text-primary">
+        <ModuleEyebrow id="admin" className="mt-2" />
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
           {t("newCourse")}
         </h1>
       </div>

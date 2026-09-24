@@ -10,6 +10,8 @@ import { RoleSelect } from "./role-select";
 import { EditUserButton } from "./edit-user-button";
 import { DeleteUserButton } from "./delete-user-button";
 import type { Profile } from "@/lib/db/types";
+import { ModuleEyebrow } from "@/components/page-title";
+import { DialogButton } from "@/components/dialog-button";
 
 const PAGE_SIZE = 50;
 
@@ -62,21 +64,18 @@ export default async function AdminUsersPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold text-primary">
-          {t("usersTitle")}
-        </h1>
-        <p className="text-sm text-slate-500">{t("usersSubtitle")}</p>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("addUser")}</CardTitle>
-        </CardHeader>
-        <CardBody>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <ModuleEyebrow id="admin" />
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+            {t("usersTitle")}
+          </h1>
+          <p className="mt-1.5 text-sm text-slate-500">{t("usersSubtitle")}</p>
+        </div>
+        <DialogButton label={t("addUser")}>
           <CreateUserForm />
-        </CardBody>
-      </Card>
+        </DialogButton>
+      </div>
 
       <Card>
         <CardHeader>

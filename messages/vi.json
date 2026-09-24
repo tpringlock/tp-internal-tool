@@ -63,7 +63,12 @@
     "docs": "Tài liệu API",
     "menu": "Menu quản trị",
     "collapse": "Thu gọn menu",
-    "expand": "Mở rộng menu"
+    "expand": "Mở rộng menu",
+    "sectionData": "Dữ liệu",
+    "sectionTraining": "Đào tạo",
+    "sectionSystem": "Hệ thống",
+    "signedInAs": "Quyền: {role}",
+    "courses": "Khóa học"
   },
   "MisaTest": {
     "title": "Test API MISA",
@@ -699,5 +704,13 @@
     "colActions": "Thao tác",
     "download": "Tải xuống",
     "downloadFile": "Tải xuống {name}"
+  },
+  "AcademyNav": {
+    "library": "Thư viện",
+    "manage": "Quản lý",
+    "manageCourses": "Quản lý khóa học",
+    "courseCount": "{count, plural, other {# khóa học}}",
+    "progressTitle": "Tiến độ của bạn",
+    "resultCount": "{count, plural, other {# kết quả}}"
   }
 }

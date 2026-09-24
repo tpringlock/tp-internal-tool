@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { cn } from "@/lib/utils";
+import { segmentedTabClass, segmentedTabsClass } from "@/components/page-title";
 
 const TABS = [
   { href: "/admin/misa", key: "dashboard" },
@@ -18,19 +18,15 @@ export function MisaTabs() {
   const t = useTranslations("MisaData");
 
   return (
-    <nav className="flex flex-wrap gap-1 border-b border-slate-200">
+    <nav className={segmentedTabsClass}>
       {TABS.map((tab) => {
         const active = pathname === tab.href;
         return (
           <Link
             key={tab.href}
             href={tab.href}
-            className={cn(
-              "-mb-px border-b-2 px-3 py-2 text-sm font-medium",
-              active
-                ? "border-primary text-primary"
-                : "border-transparent text-slate-500 hover:text-slate-900",
-            )}
+            aria-current={active ? "page" : undefined}
+            className={segmentedTabClass(active)}
           >
             {t(`tabs.${tab.key}`)}
           </Link>

@@ -9,6 +9,7 @@ import { Pagination } from "@/components/ui/pagination";
 import { formatVND } from "@/lib/format";
 import type { MisaInventoryBalance } from "@/lib/db/types";
 import { MisaTabs } from "../misa-tabs";
+import { ModuleEyebrow } from "@/components/page-title";
 
 const PAGE_SIZE = 50;
 
@@ -51,10 +52,11 @@ export default async function MisaInventoryPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-primary">
+        <ModuleEyebrow id="admin" />
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
           {t("inventoryTitle")}
         </h1>
-        <p className="text-sm text-slate-500">{t("inventorySubtitle")}</p>
+        <p className="mt-1.5 text-sm text-slate-500">{t("inventorySubtitle")}</p>
       </div>
 
       <MisaTabs />

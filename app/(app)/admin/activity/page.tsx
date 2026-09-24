@@ -7,6 +7,7 @@ import { Select } from "@/components/ui/input";
 import { Card, CardBody } from "@/components/ui/card";
 import { formatDateTime } from "@/lib/format";
 import { labelForAction, FILTERABLE_ACTIONS } from "@/lib/activity-labels";
+import { ModuleEyebrow } from "@/components/page-title";
 
 const PAGE_SIZE = 50;
 
@@ -67,10 +68,11 @@ export default async function AdminActivityPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-primary">
+        <ModuleEyebrow id="admin" />
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
           {t("activityTitle")}
         </h1>
-        <p className="text-sm text-slate-500">{t("activitySubtitle")}</p>
+        <p className="mt-1.5 text-sm text-slate-500">{t("activitySubtitle")}</p>
       </div>
 
       <Card>

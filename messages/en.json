@@ -63,7 +63,12 @@
     "docs": "API docs",
     "menu": "Admin menu",
     "collapse": "Collapse menu",
-    "expand": "Expand menu"
+    "expand": "Expand menu",
+    "sectionData": "Data",
+    "sectionTraining": "Training",
+    "sectionSystem": "System",
+    "signedInAs": "Role: {role}",
+    "courses": "Courses"
   },
   "MisaTest": {
     "title": "MISA API tester",
@@ -699,5 +704,13 @@
     "colActions": "Actions",
     "download": "Download",
     "downloadFile": "Download {name}"
+  },
+  "AcademyNav": {
+    "library": "Library",
+    "manage": "Manage",
+    "manageCourses": "Manage courses",
+    "courseCount": "{count, plural, one {# course} other {# courses}}",
+    "progressTitle": "Your progress",
+    "resultCount": "{count, plural, one {# result} other {# results}}"
   }
 }

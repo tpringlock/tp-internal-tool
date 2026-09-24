@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert } from "@/components/ui/alert";
 import { UploadForm, type UploadProject } from "./upload-form";
+import { ModuleEyebrow } from "@/components/page-title";
 
 interface ProjectRow {
   id: string;
@@ -62,7 +63,8 @@ export default async function UploadPage({
         >
           ← {t("title")}
         </Link>
-        <h1 className="mt-1 text-xl font-semibold text-primary">
+        <ModuleEyebrow id="documents" className="mt-3" />
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
           {t("uploadTitle")}
         </h1>
       </div>

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { FileText, Trash2 } from "lucide-react";
-import { requireAdmin } from "@/lib/auth/dal";
+import { requireContentManager } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +24,7 @@ import type {
   LessonFile,
   CourseFile,
 } from "@/lib/db/types";
+import { ModuleEyebrow } from "@/components/page-title";
 
 type FileRow = Pick<LessonFile, "id" | "lesson_id" | "file_name" | "file_size">;
 type CourseDocRow = Pick<CourseFile, "id" | "file_name" | "file_size">;
@@ -33,7 +34,8 @@ export default async function AdminCoursePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireAdmin();
+  const user = await requireContentManager();
+  const isAdmin = user.profile.role === "admin";
   const { id } = await params;
   const supabase = await createClient();
   const t = await getTranslations("AcademyAdmin");
@@ -82,7 +84,7 @@ export default async function AdminCoursePage({
     lessonsByChapter.set(lesson.chapter_id, list);
   }
 
-  // Quiz questions + options grouped by chapter (admins see correct answers).
+  // Quiz questions + options grouped by chapter (content managers see answers).
   const chapterIds = chapters.map((c) => c.id);
   const quizByChapter = new Map<string, AdminQuizQuestion[]>();
   if (chapterIds.length > 0) {
@@ -147,7 +149,8 @@ export default async function AdminCoursePage({
         </Link>
         <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold text-primary">{course.title}</h1>
+            <ModuleEyebrow id="admin" />
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{course.title}</h1>
             <span
               className={
                 published
@@ -166,12 +169,15 @@ export default async function AdminCoursePage({
                 {published ? t("unpublish") : t("publish")}
               </Button>
             </form>
-            <form action={deleteCourse}>
-              <input type="hidden" name="id" value={course.id} />
-              <Button type="submit" variant="danger" size="sm">
-                {t("deleteCourse")}
-              </Button>
-            </form>
+            {/* Deleting a whole course is admin-only (managers edit content). */}
+            {isAdmin && (
+              <form action={deleteCourse}>
+                <input type="hidden" name="id" value={course.id} />
+                <Button type="submit" variant="danger" size="sm">
+                  {t("deleteCourse")}
+                </Button>
+              </form>
+            )}
           </div>
         </div>
       </div>

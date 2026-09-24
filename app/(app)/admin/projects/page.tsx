@@ -6,6 +6,8 @@ import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import { CreateProjectForm } from "./project-forms";
 import { DeleteProjectButton } from "./delete-project-button";
+import { ModuleEyebrow } from "@/components/page-title";
+import { DialogButton } from "@/components/dialog-button";
 
 const PAGE_SIZE = 50;
 
@@ -52,21 +54,18 @@ export default async function AdminProjectsPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold text-primary">
-          {t("projectsTitle")}
-        </h1>
-        <p className="text-sm text-slate-500">{t("projectsSubtitle")}</p>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("addProject")}</CardTitle>
-        </CardHeader>
-        <CardBody>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <ModuleEyebrow id="admin" />
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+            {t("projectsTitle")}
+          </h1>
+          <p className="mt-1.5 text-sm text-slate-500">{t("projectsSubtitle")}</p>
+        </div>
+        <DialogButton label={t("addProject")}>
           <CreateProjectForm clients={clients} />
-        </CardBody>
-      </Card>
+        </DialogButton>
+      </div>
 
       <Card>
         <CardHeader>

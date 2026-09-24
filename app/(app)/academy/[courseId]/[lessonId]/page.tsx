@@ -183,7 +183,7 @@ export default async function LessonPage({
           )}
 
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h1 className="text-xl font-semibold text-primary">{lesson.title}</h1>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">{lesson.title}</h1>
             <div className="flex items-center gap-2">
               <CompleteCheckbox
                 courseId={courseId}

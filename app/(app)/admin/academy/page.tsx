@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { Pencil } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { requireAdmin } from "@/lib/auth/dal";
+import { requireContentManager } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Course } from "@/lib/db/types";
+import { ModuleEyebrow } from "@/components/page-title";
 
 export default async function AdminAcademyPage() {
-  await requireAdmin();
+  await requireContentManager();
   const supabase = await createClient();
   const t = await getTranslations("AcademyAdmin");
 
@@ -23,8 +24,9 @@ export default async function AdminAcademyPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-primary">{t("title")}</h1>
-          <p className="text-sm text-slate-500">{t("subtitle")}</p>
+          <ModuleEyebrow id="admin" />
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{t("title")}</h1>
+          <p className="mt-1.5 text-sm text-slate-500">{t("subtitle")}</p>
         </div>
         <Link href="/admin/academy/new">
           <Button>{t("addCourse")}</Button>

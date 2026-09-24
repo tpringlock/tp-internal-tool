@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Building2, ChevronDown, Plus, Search, X } from "lucide-react";
+import { Building2, Plus, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog } from "@/components/ui/dialog";
+import { AsideHeading, WorkspaceAside } from "@/components/workspace-aside";
 import { CreateClientForm } from "@/app/(app)/admin/clients/client-forms";
 
 export interface SidebarClient {
@@ -32,9 +33,8 @@ function activeClientId(pathname: string): string | undefined {
 }
 
 /**
- * Customer list for the Documents workspace. Sticky full-height column on
- * `lg`+; below that a bar showing the current customer that opens the same
- * list in a slide-in drawer.
+ * Customer list for the Documents workspace, in the shared WorkspaceAside
+ * shell (sticky column on `lg`+, drawer below).
  */
 export function ClientSidebar({
   clients,
@@ -47,91 +47,25 @@ export function ClientSidebar({
   const pathname = usePathname();
   const activeId = activeClientId(pathname);
   const active = clients.find((c) => c.id === activeId);
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
-  const [prevPathname, setPrevPathname] = useState(pathname);
-
-  // Close the drawer after navigating (state adjusted during render).
-  if (pathname !== prevPathname) {
-    setPrevPathname(pathname);
-    setDrawerOpen(false);
-  }
-
-  // While the drawer is open: Escape closes it and the page behind is locked.
-  useEffect(() => {
-    if (!drawerOpen) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setDrawerOpen(false);
-    };
-    document.addEventListener("keydown", onKeyDown);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [drawerOpen]);
-
-  const panel = (variant: "sidebar" | "drawer") => (
-    <ClientList
-      clients={clients}
-      activeId={activeId}
-      canManage={canManage}
-      onAdd={() => setAddOpen(true)}
-      onClose={variant === "drawer" ? () => setDrawerOpen(false) : undefined}
-    />
-  );
 
   return (
     <>
-      {/* Desktop column */}
-      <aside
-        aria-label={t("customers")}
-        className="sticky top-16 hidden h-[calc(100dvh-4rem)] w-80 shrink-0 flex-col border-r border-slate-200 bg-white lg:flex"
+      <WorkspaceAside
+        label={t("customers")}
+        current={active ? active.name : t("chooseCustomer")}
+        icon={<Building2 className="h-4 w-4" aria-hidden />}
+        widthClass="w-80"
       >
-        {panel("sidebar")}
-      </aside>
-
-      {/* Mobile / tablet: current customer + drawer trigger */}
-      <div className="border-b border-slate-200 bg-white px-4 py-3 sm:px-6 lg:hidden">
-        <button
-          type="button"
-          onClick={() => setDrawerOpen(true)}
-          aria-expanded={drawerOpen}
-          className="flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 text-left shadow-sm hover:border-slate-300"
-        >
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <Building2 className="h-4 w-4" aria-hidden />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-              {t("customers")}
-            </span>
-            <span className="block truncate text-sm font-medium text-slate-900">
-              {active ? active.name : t("chooseCustomer")}
-            </span>
-          </span>
-          <ChevronDown className="h-4 w-4 shrink-0 text-slate-400" aria-hidden />
-        </button>
-      </div>
-
-      {drawerOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-slate-900/40 lg:hidden"
-          onClick={() => setDrawerOpen(false)}
-          role="presentation"
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label={t("customers")}
-            onClick={(e) => e.stopPropagation()}
-            className="drawer-in flex h-full w-80 max-w-[85%] flex-col bg-white shadow-xl"
-          >
-            {panel("drawer")}
-          </div>
-        </div>
-      )}
+        {() => (
+          <ClientList
+            clients={clients}
+            activeId={activeId}
+            canManage={canManage}
+            onAdd={() => setAddOpen(true)}
+          />
+        )}
+      </WorkspaceAside>
 
       {canManage && (
         <Dialog
@@ -151,13 +85,11 @@ function ClientList({
   activeId,
   canManage,
   onAdd,
-  onClose,
 }: {
   clients: SidebarClient[];
   activeId: string | undefined;
   canManage: boolean;
   onAdd: () => void;
-  onClose?: () => void;
 }) {
   const t = useTranslations("DocWorkspace");
   const [query, setQuery] = useState("");
@@ -169,39 +101,23 @@ function ClientList({
 
   return (
     <>
-      <div className="flex items-start justify-between gap-3 px-5 pb-3 pt-5">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
-            {t("customers")}
-          </p>
-          <p className="mt-0.5 text-sm text-slate-600">
-            {t("customerCount", { count: clients.length })}
-          </p>
-        </div>
-        <div className="flex items-center gap-1.5">
-          {canManage && (
+      <AsideHeading
+        title={t("customers")}
+        subtitle={t("customerCount", { count: clients.length })}
+        action={
+          canManage && (
             <button
               type="button"
               onClick={onAdd}
               aria-label={t("addCustomer")}
               title={t("addCustomer")}
-              className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white shadow-sm transition-colors hover:bg-primary-hover"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-white shadow-sm transition-colors hover:bg-primary-hover"
             >
               <Plus className="h-4 w-4" />
             </button>
-          )}
-          {onClose && (
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label={t("close")}
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          )}
-        </div>
-      </div>
+          )
+        }
+      />
 
       <div className="px-5 pb-3">
         <label className="relative block">

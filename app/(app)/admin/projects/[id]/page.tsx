@@ -9,6 +9,7 @@ import { EditProjectForm } from "../project-forms";
 import { AssignMemberForm, RemoveMemberButton } from "./member-forms";
 import { DeleteDocumentButton } from "./delete-document-button";
 import type { Project } from "@/lib/db/types";
+import { ModuleEyebrow } from "@/components/page-title";
 
 interface MemberRow {
   user_id: string;
@@ -83,7 +84,8 @@ export default async function ProjectDetailPage({
         >
           ← {t("backProjects")}
         </Link>
-        <h1 className="mt-1 text-xl font-semibold text-primary">
+        <ModuleEyebrow id="admin" className="mt-2" />
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
           {(project as Project).name}
         </h1>
       </div>
