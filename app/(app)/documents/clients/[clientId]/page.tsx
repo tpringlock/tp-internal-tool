@@ -16,6 +16,7 @@ import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 import { Pagination } from "@/components/ui/pagination";
 import { formatBytes } from "@/lib/format";
+import { documentStatsByProject } from "@/lib/documents/counts";
 import { env } from "@/lib/env";
 import { DocumentSearch } from "../../document-search";
 import { DocumentTable, type DocumentTableRow } from "../../document-table";
@@ -86,33 +87,16 @@ export default async function ClientWorkspacePage({
   // Projects ("thư mục") the user may see — RLS: all for admins/managers,
   // assigned ones for employees — plus per-project counts and total size from
   // the documents the user can see.
-  const [{ data: projectData }, { data: statData }] = await Promise.all([
+  const [{ data: projectData }, projStats] = await Promise.all([
     supabase
       .from("projects")
       .select("id, name, status")
       .eq("client_id", clientId)
       .order("status")
       .order("name"),
-    supabase
-      .from("documents")
-      .select("project_id, file_size, projects!inner ( client_id )")
-      .eq("projects.client_id", clientId),
+    documentStatsByProject(supabase, clientId),
   ]);
-
-  const countByProject = new Map<string, number>();
-  let totalBytes = 0;
-  let totalFiles = 0;
-  for (const row of (statData ?? []) as {
-    project_id: string;
-    file_size: number;
-  }[]) {
-    countByProject.set(
-      row.project_id,
-      (countByProject.get(row.project_id) ?? 0) + 1,
-    );
-    totalBytes += row.file_size;
-    totalFiles += 1;
-  }
+  const { countByProject, totalFiles, totalBytes } = projStats;
 
   // Employees only see projects they belong to; for them hide assigned-but-
   // empty archived projects to keep the list short.

@@ -533,7 +533,16 @@ export interface Database {
         Relationships: [];
       };
     };
-    Functions: Record<string, never>;
+    Functions: {
+      document_counts_by_client: {
+        Args: Record<string, never>;
+        Returns: { client_id: string; client_name: string; doc_count: number }[];
+      };
+      document_stats_by_project: {
+        Args: { p_client_id: string };
+        Returns: { project_id: string; doc_count: number; byte_sum: number }[];
+      };
+    };
     Enums: {
       user_role: UserRole;
       doc_type: DocType;

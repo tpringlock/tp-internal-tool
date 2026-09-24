@@ -3,11 +3,8 @@ import { requireUser } from "@/lib/auth/dal";
 import { canManageContent } from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/server";
 import { WorkspaceContent } from "@/components/workspace-content";
+import { documentCountsByClient } from "@/lib/documents/counts";
 import { ClientSidebar, type SidebarClient } from "./client-sidebar";
-
-interface DocClientRow {
-  projects: { clients: { id: string; name: string } | null } | null;
-}
 
 /**
  * Documents workspace shell: the customer ("công ty") sidebar on the left and
@@ -25,25 +22,22 @@ export default async function DocumentsLayout({
   const canManage = canManageContent(user.profile.role);
   const supabase = await createClient();
 
-  const [{ data: docRows }, clientRes] = await Promise.all([
-    supabase
-      .from("documents")
-      .select("projects!inner ( clients!inner ( id, name ) )"),
+  const [counts, clientRes] = await Promise.all([
+    documentCountsByClient(supabase),
     canManage
       ? supabase.from("clients").select("id, name")
       : Promise.resolve({ data: [] as { id: string; name: string }[] }),
   ]);
 
   const byClient = new Map<string, SidebarClient>();
+  // Content managers also see customers without documents yet (count stays 0).
   for (const c of clientRes.data ?? []) {
     byClient.set(c.id, { id: c.id, name: c.name, count: 0 });
   }
-  for (const row of (docRows ?? []) as unknown as DocClientRow[]) {
-    const c = row.projects?.clients;
-    if (!c) continue;
-    const existing = byClient.get(c.id);
-    if (existing) existing.count += 1;
-    else byClient.set(c.id, { id: c.id, name: c.name, count: 1 });
+  for (const row of counts) {
+    const existing = byClient.get(row.id);
+    if (existing) existing.count = row.count;
+    else byClient.set(row.id, { id: row.id, name: row.name, count: row.count });
   }
   const clients = [...byClient.values()].sort((a, b) =>
     a.name.localeCompare(b.name, "vi"),
