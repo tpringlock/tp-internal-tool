@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import {
   Calculator,
   CalendarOff,
+  FileCheck2,
   FileSpreadsheet,
   FileText,
   History,
@@ -21,11 +22,13 @@ export function BillingNav({
   uploadCount,
   draftCount,
   showDemo,
+  isAdmin,
 }: {
   contractCount: number;
   uploadCount: number;
   draftCount: number;
   showDemo: boolean;
+  isAdmin: boolean;
 }) {
   const pathname = usePathname();
   const t = useTranslations("BillingNav");
@@ -78,6 +81,19 @@ export function BillingNav({
       ],
     },
   ];
+  if (isAdmin) {
+    sections.push({
+      title: t("sectionAdmin"),
+      items: [
+        {
+          href: "/billing/compare",
+          label: t("compare"),
+          icon: <FileCheck2 aria-hidden />,
+          active: under("/billing/compare"),
+        },
+      ],
+    });
+  }
 
   const current =
     sections.flatMap((s) => s.items).find((i) => i.active)?.label ??

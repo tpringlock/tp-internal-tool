@@ -203,6 +203,15 @@ export const billingExcludedRangeSchema = z
   })
   .refine((v) => v.date_to >= v.date_from, { message: "rangeOrder", path: ["date_to"] });
 
+/** Excel comparison (admin): MISA files + a date range, no contract. */
+export const compareDemoSchema = z
+  .object({
+    upload_ids: z.array(z.string().uuid()).min(1, "chooseUpload").max(12),
+    date_from: isoDate,
+    date_to: isoDate,
+  })
+  .refine((v) => v.date_to >= v.date_from, { message: "rangeOrder", path: ["date_to"] });
+
 /** Longest custom range accepted (a sanity cap; files must still cover it). */
 export const MAX_RANGE_DAYS = 400;
 

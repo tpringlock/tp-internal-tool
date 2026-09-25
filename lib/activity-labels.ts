@@ -51,6 +51,7 @@ export const ACTION_LABEL: Record<string, string> = {
   "billing.contract_deleted": "Deleted a billing contract",
   "billing.range_created": "Added a non-billable period",
   "billing.range_deleted": "Removed a non-billable period",
+  "billing.compared": "Compared demo prices with the Excel tool",
 };
 
 /** Minimal shape of a next-intl translator (from useTranslations/getTranslations). */

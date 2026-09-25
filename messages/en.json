@@ -328,7 +328,8 @@
     "billing_contract_config_saved": "Updated contract prices",
     "billing_contract_deleted": "Deleted a billing contract",
     "billing_range_created": "Added a non-billable period",
-    "billing_range_deleted": "Removed a non-billable period"
+    "billing_range_deleted": "Removed a non-billable period",
+    "billing_compared": "Compared demo prices with the Excel tool"
   },
   "Admin": {
     "name": "Name",
@@ -950,7 +951,21 @@
     "demoBanner": "Assumed prices – not for payment dossiers. This contract is only for comparing with the Excel tool.",
     "fractionalBanner": "Some items have fractional quantities, so amounts are not whole numbers (see warnings below). Usually a raw material sits in the rental warehouse by mistake. Check that item code in the contract and recalculate. The draft is kept but can't be confirmed.",
     "errDemoNotConfirmable": "Demo contract: prices are for comparison only and can't be confirmed.",
-    "errFractionalNotConfirmable": "This calculation has fractional quantities and can't be confirmed yet. Check that item code and recalculate."
+    "errFractionalNotConfirmable": "This calculation has fractional quantities and can't be confirmed yet. Check that item code and recalculate.",
+    "compareTitle": "Compare with the Excel tool",
+    "compareSubtitle": "Calculate every demo contract (prices from the Excel tool's DATA ĐƠN GIÁ sheet) for a date range, to check against the BÁO CÁO TIỀN THUÊ sheet.",
+    "compareBanner": "Demo data – only for comparing the two systems, never for payment dossiers. {count} demo contracts. This page only calculates; nothing is saved.",
+    "compareHint": "No non-billable days are applied (the Excel tool has none). The MISA files must cover the whole range.",
+    "compareRun": "Calculate {count} demo contracts",
+    "comparing": "Calculating…",
+    "comparePositiveTotal": "Total of warehouses above 0đ ({count})",
+    "compareRange": "Date range",
+    "compareContracts": "Contracts calculated",
+    "compareContractsValue": "{count} contracts · {errors} errors",
+    "hideZero": "Hide 0đ warehouses",
+    "note": "Note",
+    "errNoDemoContracts": "No demo contracts yet. Run npm run seed:gia-dinh first.",
+    "errCompareNotCovered": "The selected MISA files only cover {fileFrom} – {fileTo}, not the whole chosen range."
   },
   "BillingNav": {
     "subtitle": "Phase 1: equipment rent",
@@ -964,6 +979,8 @@
     "excludedRanges": "Non-billable days",
     "scopeNote": "This phase only calculates EQUIPMENT RENT. Transport, VAT, deductions, receivables and payment requests are still done as today.",
     "showDemo": "Show demo data",
-    "showDemoHint": "Excel-price contracts, for comparison only"
+    "showDemoHint": "Excel-price contracts, for comparison only",
+    "sectionAdmin": "Admin",
+    "compare": "Excel comparison"
   }
 }

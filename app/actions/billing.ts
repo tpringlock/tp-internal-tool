@@ -13,6 +13,7 @@ import {
   billingContractConfigSchema,
   billingContractSchema,
   billingExcludedRangeSchema,
+  compareDemoSchema,
   computeRentSchema,
   translateFieldErrors,
 } from "@/lib/validation";
@@ -31,8 +32,11 @@ import {
   MAX_MISA_FILE_SIZE,
   XLSX_MIME,
   loadContract,
+  loadDemoConfigs,
   loadMergedLedger,
 } from "@/lib/billing/server";
+import { compareContracts, type CompareSummary } from "@/lib/billing/compare";
+import { formatVnDate } from "@/lib/billing/dates";
 import { SHOW_DEMO_COOKIE } from "@/lib/billing/queries";
 import type { FormState } from "@/app/actions/auth";
 
@@ -608,6 +612,77 @@ export async function deleteBillingContract(
   });
   revalidateBilling();
   redirect("/billing/contracts");
+}
+
+// ---------------------------------------------------------------------------
+// Excel comparison (admin only)
+// ---------------------------------------------------------------------------
+
+export interface CompareState extends FormState {
+  result?: CompareSummary & { from: string; to: string; contractCount: number };
+}
+
+/**
+ * Calculate every demo contract (Excel tool prices) over one date range from
+ * the chosen MISA files, to compare with the Excel "BÁO CÁO TIỀN THUÊ"
+ * sheet. Read-only: nothing is saved. Admin only.
+ */
+export async function compareDemoContracts(
+  _prev: CompareState,
+  formData: FormData,
+): Promise<CompareState> {
+  const user = await requireBillingUser();
+  const t = await getTranslations("Billing");
+  if (user.profile.role !== "admin") return { error: t("errAdminOnly") };
+
+  const parsed = compareDemoSchema.safeParse({
+    upload_ids: formData.getAll("upload_ids").map(String),
+    date_from: formData.get("date_from"),
+    date_to: formData.get("date_to"),
+  });
+  if (!parsed.success) {
+    const tv = await getTranslations("Validation");
+    return { fieldErrors: translateFieldErrors(tv, parsed.error) };
+  }
+  const { upload_ids: uploadIds, date_from: from, date_to: to } = parsed.data;
+
+  const supabase = await createClient();
+  const [{ data: uploads }, contracts] = await Promise.all([
+    supabase
+      .from("billing_misa_uploads")
+      .select("id, storage_path, file_name, file_from")
+      .in("id", uploadIds),
+    loadDemoConfigs(supabase),
+  ]);
+  if (!uploads || uploads.length !== uploadIds.length) return { error: t("errUploadNotFound") };
+  if (contracts.length === 0) return { error: t("errNoDemoContracts") };
+
+  let summary: CompareSummary;
+  try {
+    const ledger = await loadMergedLedger(
+      [...uploads].sort((a, b) => (a.file_from < b.file_from ? -1 : 1)),
+    );
+    // The file must cover the range, same rule as the engine (checked once
+    // here so the page shows one clear message instead of 209 copies).
+    if (ledger.from > from || ledger.to < to) {
+      return {
+        error: t("errCompareNotCovered", {
+          fileFrom: formatVnDate(ledger.from),
+          fileTo: formatVnDate(ledger.to),
+        }),
+      };
+    }
+    summary = compareContracts(ledger, contracts, { from, to });
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : t("errComputeFailed") };
+  }
+
+  await logActivity(supabase, {
+    action: "billing.compared",
+    entityType: "billing_upload",
+    metadata: { from, to, uploads: uploadIds, contracts: contracts.length, total: summary.positiveTotal },
+  });
+  return { result: { ...summary, from, to, contractCount: contracts.length } };
 }
 
 // ---------------------------------------------------------------------------

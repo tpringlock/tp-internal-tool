@@ -328,7 +328,8 @@
     "billing_contract_config_saved": "Đã sửa đơn giá hợp đồng",
     "billing_contract_deleted": "Đã xóa hợp đồng tính tiền",
     "billing_range_created": "Đã thêm ngày miễn tính",
-    "billing_range_deleted": "Đã xóa ngày miễn tính"
+    "billing_range_deleted": "Đã xóa ngày miễn tính",
+    "billing_compared": "Đã đối chiếu đơn giá giả định với tool Excel"
   },
   "Admin": {
     "name": "Tên",
@@ -950,7 +951,21 @@
     "demoBanner": "Đơn giá giả định – không dùng để lập HSTT. Hợp đồng này chỉ để đối chiếu với tool Excel.",
     "fractionalBanner": "Có mặt hàng số lượng lẻ nên thành tiền không phải số nguyên (xem cảnh báo bên dưới). Thường là do nguyên vật liệu nằm nhầm trong kho cho thuê. Hãy kiểm tra lại mã hàng đó trong hợp đồng rồi tính lại. Bản tính vẫn lưu nháp nhưng không xác nhận được.",
     "errDemoNotConfirmable": "Hợp đồng giả định: đơn giá chỉ để đối chiếu, không được xác nhận.",
-    "errFractionalNotConfirmable": "Bản tính có mặt hàng số lượng lẻ nên chưa xác nhận được. Hãy kiểm tra lại mã hàng đó rồi tính lại."
+    "errFractionalNotConfirmable": "Bản tính có mặt hàng số lượng lẻ nên chưa xác nhận được. Hãy kiểm tra lại mã hàng đó rồi tính lại.",
+    "compareTitle": "Đối chiếu với tool Excel",
+    "compareSubtitle": "Tính tất cả hợp đồng giả định (đơn giá lấy từ sheet DATA ĐƠN GIÁ của tool Excel) cho một khoảng ngày, để so với sheet BÁO CÁO TIỀN THUÊ.",
+    "compareBanner": "Dữ liệu giả định – chỉ để đối chiếu hai hệ thống, không dùng để lập HSTT. Đang có {count} hợp đồng giả định. Trang này chỉ tính, không lưu gì.",
+    "compareHint": "Không áp dụng ngày miễn tính (tool Excel không có). File MISA phải phủ trọn khoảng ngày.",
+    "compareRun": "Tính {count} hợp đồng giả định",
+    "comparing": "Đang tính…",
+    "comparePositiveTotal": "Tổng các kho có tiền > 0 ({count} kho)",
+    "compareRange": "Khoảng ngày",
+    "compareContracts": "Hợp đồng đã tính",
+    "compareContractsValue": "{count} hợp đồng · {errors} lỗi",
+    "hideZero": "Ẩn các kho 0đ",
+    "note": "Ghi chú",
+    "errNoDemoContracts": "Chưa có hợp đồng giả định. Chạy npm run seed:gia-dinh trước.",
+    "errCompareNotCovered": "File MISA đã chọn chỉ có dữ liệu {fileFrom} – {fileTo}, không phủ trọn khoảng ngày đã chọn."
   },
   "BillingNav": {
     "subtitle": "Giai đoạn 1: tiền thuê thiết bị",
@@ -964,6 +979,8 @@
     "excludedRanges": "Ngày miễn tính",
     "scopeNote": "Giai đoạn này chỉ tính TIỀN THUÊ THIẾT BỊ. Vận chuyển, VAT, giảm trừ, công nợ và giấy đề nghị thanh toán vẫn làm như hiện tại.",
     "showDemo": "Hiện dữ liệu giả định",
-    "showDemoHint": "Hợp đồng đơn giá Excel, chỉ để đối chiếu"
+    "showDemoHint": "Hợp đồng đơn giá Excel, chỉ để đối chiếu",
+    "sectionAdmin": "Quản trị",
+    "compare": "Đối chiếu Excel"
   }
 }

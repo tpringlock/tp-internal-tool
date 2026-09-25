@@ -14,7 +14,7 @@ export default async function BillingLayout({
 }: {
   children: React.ReactNode;
 }) {
-  await requireBillingUser();
+  const user = await requireBillingUser();
   const supabase = await createClient();
   const showDemo = await getShowDemo();
 
@@ -46,6 +46,7 @@ export default async function BillingLayout({
           uploadCount={uploads.count ?? 0}
           draftCount={drafts.count ?? 0}
           showDemo={showDemo}
+          isAdmin={user.profile.role === "admin"}
         />
       </Suspense>
       <WorkspaceContent>{children}</WorkspaceContent>
