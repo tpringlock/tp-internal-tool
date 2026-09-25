@@ -122,7 +122,10 @@ export async function setUserRole(
   const admin = await requireAdmin();
   const userId = String(formData.get("user_id"));
   const raw = String(formData.get("role"));
-  const role = raw === "admin" || raw === "manager" ? raw : "employee";
+  const role =
+    raw === "admin" || raw === "manager" || raw === "accountant"
+      ? raw
+      : "employee";
 
   if (userId === admin.id && role !== "admin") {
     // Don't let the last admin demote themselves by accident.

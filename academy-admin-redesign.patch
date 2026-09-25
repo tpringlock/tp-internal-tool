@@ -1,0 +1,2194 @@
+diff --git a/app/(app)/academy/[courseId]/[lessonId]/page.tsx b/app/(app)/academy/[courseId]/[lessonId]/page.tsx
+index cbb0588..f3b4812 100644
+--- a/app/(app)/academy/[courseId]/[lessonId]/page.tsx
++++ b/app/(app)/academy/[courseId]/[lessonId]/page.tsx
+@@ -183,7 +183,7 @@ export default async function LessonPage({
+           )}
+ 
+           <div className="flex flex-wrap items-center justify-between gap-3">
+-            <h1 className="text-xl font-semibold text-primary">{lesson.title}</h1>
++            <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">{lesson.title}</h1>
+             <div className="flex items-center gap-2">
+               <CompleteCheckbox
+                 courseId={courseId}
+diff --git a/app/(app)/academy/[courseId]/page.tsx b/app/(app)/academy/[courseId]/page.tsx
+index 4be1152..e297356 100644
+--- a/app/(app)/academy/[courseId]/page.tsx
++++ b/app/(app)/academy/[courseId]/page.tsx
+@@ -68,14 +68,22 @@ export default async function CoursePage({
+ 
+   return (
+     <div className="space-y-6">
+-      {/* Signature-blue hero — full content width (cancels the layout's px-4/py-8). */}
+-      <div className="-mx-4 bg-linear-to-br from-primary to-primary-hover px-4 py-12 text-white sm:px-8 sm:py-14">
+-        <div className="mx-auto max-w-6xl">
+-          <h1 className="max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl">
+-            {course.title}
+-          </h1>
+-          <p className="mt-4 text-sm text-white/85">{meta}</p>
+-        </div>
++      <Link
++        href="/academy"
++        className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900"
++      >
++        ← {t("backToLibrary")}
++      </Link>
++
++      {/* Signature-blue hero card. */}
++      <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-primary to-primary-hover px-6 py-10 text-white shadow-sm sm:px-10 sm:py-12">
++        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/70">
++          {course.category ?? t("title")}
++        </p>
++        <h1 className="mt-2 max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl">
++          {course.title}
++        </h1>
++        <p className="mt-4 text-sm text-white/85">{meta}</p>
+       </div>
+ 
+       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:items-start">
+diff --git a/app/(app)/academy/academy-nav.tsx b/app/(app)/academy/academy-nav.tsx
+new file mode 100644
+index 0000000..91ca80e
+--- /dev/null
++++ b/app/(app)/academy/academy-nav.tsx
+@@ -0,0 +1,153 @@
++"use client";
++
++import Link from "next/link";
++import { usePathname, useSearchParams } from "next/navigation";
++import { useTranslations } from "next-intl";
++import {
++  BookMarked,
++  GraduationCap,
++  Library,
++  Settings2,
++  Tag,
++  TrendingUp,
++} from "lucide-react";
++import { AsideHeading, WorkspaceAside } from "@/components/workspace-aside";
++import { SidebarNav, type SidebarNavSection } from "@/components/sidebar-nav";
++
++export interface AcademyCategory {
++  name: string;
++  count: number;
++}
++
++/** True on /academy/<courseId>/... (course, lesson and quiz pages). */
++function isCoursePage(pathname: string): boolean {
++  const seg = pathname.split("/").filter(Boolean);
++  return seg[0] === "academy" && seg.length >= 2 && seg[1] !== "my-courses";
++}
++
++/**
++ * TP Academy sidebar: library, the user's courses, categories and (for
++ * content managers) a shortcut to course management, plus a progress card.
++ */
++export function AcademyNav({
++  categories,
++  totalCourses,
++  inProgress,
++  completed,
++  canManage,
++}: {
++  categories: AcademyCategory[];
++  totalCourses: number;
++  inProgress: number;
++  completed: number;
++  canManage: boolean;
++}) {
++  const pathname = usePathname();
++  const searchParams = useSearchParams();
++  const t = useTranslations("AcademyNav");
++  const ta = useTranslations("Academy");
++
++  if (isCoursePage(pathname)) return null;
++
++  const category =
++    pathname === "/academy" ? (searchParams.get("category") ?? "") : "";
++
++  const sections: SidebarNavSection[] = [
++    {
++      title: t("library"),
++      items: [
++        {
++          href: "/academy",
++          label: ta("allCoursesTab"),
++          icon: <Library aria-hidden />,
++          active: pathname === "/academy" && !category,
++          meta: String(totalCourses),
++        },
++        {
++          href: "/academy/my-courses",
++          label: ta("myCourses"),
++          icon: <BookMarked aria-hidden />,
++          active: pathname === "/academy/my-courses",
++          meta: String(inProgress + completed),
++        },
++      ],
++    },
++  ];
++  if (categories.length > 0) {
++    sections.push({
++      title: ta("category"),
++      items: categories.map((c) => ({
++        href: `/academy?category=${encodeURIComponent(c.name)}`,
++        label: c.name,
++        icon: <Tag aria-hidden />,
++        active: category === c.name,
++        meta: String(c.count),
++      })),
++    });
++  }
++  if (canManage) {
++    sections.push({
++      title: t("manage"),
++      items: [
++        {
++          href: "/admin/academy",
++          label: t("manageCourses"),
++          icon: <Settings2 aria-hidden />,
++          active: false,
++        },
++      ],
++    });
++  }
++
++  const current =
++    sections.flatMap((s) => s.items).find((i) => i.active)?.label ??
++    ta("title");
++
++  return (
++    <WorkspaceAside
++      label={ta("title")}
++      current={current}
++      icon={<GraduationCap className="h-4 w-4" aria-hidden />}
++    >
++      {({ close }) => (
++        <>
++          <AsideHeading
++            title={ta("title")}
++            subtitle={t("courseCount", { count: totalCourses })}
++          />
++          <SidebarNav
++            label={ta("title")}
++            sections={sections}
++            onNavigate={close}
++          />
++          <div className="p-3 pt-0">
++            <Link
++              href="/academy/my-courses"
++              onClick={close}
++              className="block rounded-2xl bg-primary p-4 text-white shadow-sm transition-colors hover:bg-primary-hover"
++            >
++              <span className="flex items-center gap-2 text-sm font-semibold">
++                <TrendingUp className="h-4 w-4" aria-hidden />
++                {t("progressTitle")}
++              </span>
++              <span className="mt-3 grid grid-cols-2 gap-2">
++                <span className="rounded-xl bg-white/10 px-3 py-2">
++                  <span className="block text-xl font-bold">{inProgress}</span>
++                  <span className="block text-xs text-white/80">
++                    {ta("inProgress")}
++                  </span>
++                </span>
++                <span className="rounded-xl bg-white/10 px-3 py-2">
++                  <span className="block text-xl font-bold">{completed}</span>
++                  <span className="block text-xs text-white/80">
++                    {ta("completed")}
++                  </span>
++                </span>
++              </span>
++            </Link>
++          </div>
++        </>
++      )}
++    </WorkspaceAside>
++  );
++}
+diff --git a/app/(app)/academy/academy-tabs.tsx b/app/(app)/academy/academy-tabs.tsx
+deleted file mode 100644
+index db01b9f..0000000
+--- a/app/(app)/academy/academy-tabs.tsx
++++ /dev/null
+@@ -1,31 +0,0 @@
+-import Link from "next/link";
+-import { getTranslations } from "next-intl/server";
+-import { cn } from "@/lib/utils";
+-
+-/** Top-of-page tab row switching between the library and the user's courses. */
+-export async function AcademyTabs({ active }: { active: "all" | "mine" }) {
+-  const t = await getTranslations("Academy");
+-  const items = [
+-    { href: "/academy", key: "all" as const, label: t("allCoursesTab") },
+-    { href: "/academy/my-courses", key: "mine" as const, label: t("myCourses") },
+-  ];
+-
+-  return (
+-    <nav className="flex gap-1 border-b border-slate-200 pb-2">
+-      {items.map((item) => (
+-        <Link
+-          key={item.href}
+-          href={item.href}
+-          className={cn(
+-            "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+-            active === item.key
+-              ? "bg-slate-100 text-slate-900"
+-              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+-          )}
+-        >
+-          {item.label}
+-        </Link>
+-      ))}
+-    </nav>
+-  );
+-}
+diff --git a/app/(app)/academy/course-card.tsx b/app/(app)/academy/course-card.tsx
+index 1270d48..f3371f8 100644
+--- a/app/(app)/academy/course-card.tsx
++++ b/app/(app)/academy/course-card.tsx
+@@ -46,19 +46,17 @@ export async function CourseCard({
+ 
+   return (
+     <Link href={`/academy/${course.id}`} className="group block">
+-      <Card className="flex h-full flex-col overflow-hidden transition-colors group-hover:border-slate-300">
++      <Card className="flex h-full flex-col overflow-hidden transition group-hover:-translate-y-0.5 group-hover:border-primary/40 group-hover:shadow-md">
+         <CourseThumb course={course} />
+-        <div className="flex flex-1 flex-col gap-2 p-4">
+-          <div className="flex items-start gap-2">
+-            <h3 className="flex-1 text-sm font-semibold text-primary">
+-              {course.title}
+-            </h3>
+-            {course.category && (
+-              <span className="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
+-                {course.category}
+-              </span>
+-            )}
+-          </div>
++        <div className="flex flex-1 flex-col gap-2 p-5">
++          {course.category && (
++            <span className="w-fit rounded-full border border-primary/20 bg-primary/5 px-2.5 py-0.5 text-xs font-medium text-primary">
++              {course.category}
++            </span>
++          )}
++          <h3 className="font-semibold leading-snug text-slate-900 group-hover:text-primary">
++            {course.title}
++          </h3>
+           {course.instructor && (
+             <p className="text-xs text-slate-500">{course.instructor}</p>
+           )}
+@@ -81,7 +79,7 @@ export async function CourseCard({
+                 </p>
+               </div>
+             ) : (
+-              <span className="inline-flex h-8 items-center justify-center rounded-md bg-primary px-3 text-sm font-medium text-white group-hover:bg-primary-hover">
++              <span className="inline-flex h-9 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-white group-hover:bg-primary-hover">
+                 {t("viewCourse")}
+               </span>
+             )}
+diff --git a/app/(app)/academy/layout.tsx b/app/(app)/academy/layout.tsx
+new file mode 100644
+index 0000000..3ffc18a
+--- /dev/null
++++ b/app/(app)/academy/layout.tsx
+@@ -0,0 +1,57 @@
++import { Suspense } from "react";
++import { requireUser } from "@/lib/auth/dal";
++import { canManageContent } from "@/lib/auth/roles";
++import { createClient } from "@/lib/supabase/server";
++import { WorkspaceContent } from "@/components/workspace-content";
++import { AcademyNav, type AcademyCategory } from "./academy-nav";
++
++/**
++ * TP Academy workspace shell: library/category sidebar + content. Course and
++ * lesson pages hide the sidebar (they have their own course outline).
++ */
++export default async function AcademyLayout({
++  children,
++}: {
++  children: React.ReactNode;
++}) {
++  const user = await requireUser();
++  const supabase = await createClient();
++
++  const [{ data: courseRows }, { data: enrollRows }] = await Promise.all([
++    supabase.from("courses").select("category").eq("status", "published"),
++    // Inner join drops enrollments whose course is gone or no longer visible,
++    // matching how getMyCourses counts them.
++    supabase
++      .from("course_enrollments")
++      .select("completed_at, courses!inner ( id )")
++      .eq("user_id", user.id),
++  ]);
++
++  const byCategory = new Map<string, number>();
++  for (const row of courseRows ?? []) {
++    if (row.category) {
++      byCategory.set(row.category, (byCategory.get(row.category) ?? 0) + 1);
++    }
++  }
++  const categories: AcademyCategory[] = [...byCategory.entries()]
++    .map(([name, count]) => ({ name, count }))
++    .sort((a, b) => a.name.localeCompare(b.name, "vi"));
++
++  const enrollments = (enrollRows ?? []) as { completed_at: string | null }[];
++  const completed = enrollments.filter((e) => e.completed_at).length;
++
++  return (
++    <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
++      <Suspense>
++        <AcademyNav
++          categories={categories}
++          totalCourses={courseRows?.length ?? 0}
++          inProgress={enrollments.length - completed}
++          completed={completed}
++          canManage={canManageContent(user.profile.role)}
++        />
++      </Suspense>
++      <WorkspaceContent>{children}</WorkspaceContent>
++    </div>
++  );
++}
+diff --git a/app/(app)/academy/my-courses/page.tsx b/app/(app)/academy/my-courses/page.tsx
+index f55aa09..a4c53e7 100644
+--- a/app/(app)/academy/my-courses/page.tsx
++++ b/app/(app)/academy/my-courses/page.tsx
+@@ -4,8 +4,8 @@ import { requireUser } from "@/lib/auth/dal";
+ import { createClient } from "@/lib/supabase/server";
+ import { Card, CardBody } from "@/components/ui/card";
+ import { getMyCourses, type MyCourseItem } from "@/lib/academy/queries";
+-import { AcademyTabs } from "../academy-tabs";
+ import { CourseCard } from "../course-card";
++import { ModuleEyebrow } from "@/components/page-title";
+ 
+ export default async function MyCoursesPage() {
+   const user = await requireUser();
+@@ -24,7 +24,10 @@ export default async function MyCoursesPage() {
+     withProgress?: boolean;
+   }) => (
+     <section className="space-y-3">
+-      <h2 className="text-base font-semibold text-slate-800">{title}</h2>
++      <h2 className="text-lg font-bold text-slate-900">
++        {title}{" "}
++        <span className="text-sm font-medium text-slate-400">{items.length}</span>
++      </h2>
+       {items.length === 0 ? (
+         <Card>
+           <CardBody>
+@@ -37,7 +40,7 @@ export default async function MyCoursesPage() {
+           </CardBody>
+         </Card>
+       ) : (
+-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
++        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+           {items.map((item) => (
+             <CourseCard
+               key={item.course.id}
+@@ -57,12 +60,11 @@ export default async function MyCoursesPage() {
+   return (
+     <div className="space-y-6">
+       <div>
+-        <h1 className="text-xl font-semibold text-primary">{t("myCourses")}</h1>
+-        <p className="text-sm text-slate-500">{t("myCoursesSubtitle")}</p>
++        <ModuleEyebrow id="academy" />
++        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{t("myCourses")}</h1>
++        <p className="mt-1.5 text-sm text-slate-500">{t("myCoursesSubtitle")}</p>
+       </div>
+ 
+-      <AcademyTabs active="mine" />
+-
+       <Section title={t("inProgress")} items={inProgress} withProgress />
+       <Section title={t("completed")} items={completed} />
+     </div>
+diff --git a/app/(app)/academy/page.tsx b/app/(app)/academy/page.tsx
+index 417ffee..28ceba6 100644
+--- a/app/(app)/academy/page.tsx
++++ b/app/(app)/academy/page.tsx
+@@ -1,19 +1,19 @@
++import Link from "next/link";
+ import { getTranslations } from "next-intl/server";
++import { GraduationCap, Search, X } from "lucide-react";
+ import { requireUser } from "@/lib/auth/dal";
+ import { canManageContent } from "@/lib/auth/roles";
+ import { createClient } from "@/lib/supabase/server";
+-import { Button } from "@/components/ui/button";
+-import { Input, Select } from "@/components/ui/input";
+-import { Card, CardBody } from "@/components/ui/card";
+-import {
+-  listPublishedCourses,
+-  listPublishedCategories,
+-} from "@/lib/academy/queries";
+-import { AddFolderTile } from "@/components/add-folder-tile";
++import { listPublishedCourses } from "@/lib/academy/queries";
++import { DialogButton } from "@/components/dialog-button";
+ import { CreateCourseForm } from "@/app/(app)/admin/academy/course-forms";
+-import { AcademyTabs } from "./academy-tabs";
++import { ModuleEyebrow, pageTitleClass } from "@/components/page-title";
+ import { CourseCard } from "./course-card";
+ 
++/**
++ * Course library. Categories are picked in the Academy sidebar (?category=);
++ * the title search lives here and keeps the selected category.
++ */
+ export default async function AcademyPage({
+   searchParams,
+ }: {
+@@ -24,74 +24,76 @@ export default async function AcademyPage({
+   const { category = "", q = "" } = await searchParams;
+   const supabase = await createClient();
+   const t = await getTranslations("Academy");
++  const tn = await getTranslations("AcademyNav");
+ 
+-  const [courses, categories] = await Promise.all([
+-    listPublishedCourses(supabase, { category, q }),
+-    listPublishedCategories(supabase),
+-  ]);
++  const courses = await listPublishedCourses(supabase, { category, q });
++
++  const clearHref = (drop: "category" | "q") => {
++    const sp = new URLSearchParams();
++    if (category && drop !== "category") sp.set("category", category);
++    if (q && drop !== "q") sp.set("q", q);
++    const qs = sp.toString();
++    return qs ? `/academy?${qs}` : "/academy";
++  };
+ 
+   return (
+     <div className="space-y-6">
+-      <div>
+-        <h1 className="text-xl font-semibold text-primary">{t("title")}</h1>
+-        <p className="text-sm text-slate-500">{t("subtitle")}</p>
+-      </div>
+-
+-      <AcademyTabs active="all" />
++      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
++        <div className="min-w-0">
++          <ModuleEyebrow id="academy" />
++          <h1 className={pageTitleClass}>{category || t("allCoursesTab")}</h1>
++          <p className="mt-1.5 text-sm text-slate-500">{t("subtitle")}</p>
++        </div>
+ 
+-      <Card>
+-        <CardBody>
+-          <form className="flex flex-wrap items-end gap-3" method="get">
+-            <div className="w-full sm:min-w-48 sm:flex-1">
+-              <label className="mb-1 block text-xs font-medium text-slate-500">
+-                {t("category")}
+-              </label>
+-              <Select name="category" defaultValue={category}>
+-                <option value="">{t("allCategories")}</option>
+-                {categories.map((c) => (
+-                  <option key={c} value={c}>
+-                    {c}
+-                  </option>
+-                ))}
+-              </Select>
+-            </div>
+-            <div className="w-full sm:min-w-48 sm:flex-1">
+-              <label className="mb-1 block text-xs font-medium text-slate-500">
+-                {t("search")}
+-              </label>
+-              <Input
+-                name="q"
+-                defaultValue={q}
+-                placeholder={t("searchPlaceholder")}
+-              />
+-            </div>
+-            <Button
+-              type="submit"
+-              variant="secondary"
+-              className="w-full sm:w-auto"
+-            >
+-              {t("filter")}
+-            </Button>
++        <div className="flex w-full flex-col gap-2 sm:flex-row md:w-auto">
++          <form method="get" className="relative w-full md:w-80">
++            {category && (
++              <input type="hidden" name="category" value={category} />
++            )}
++            <Search
++              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
++              aria-hidden
++            />
++            <input
++              name="q"
++              defaultValue={q}
++              placeholder={t("searchPlaceholder")}
++              aria-label={t("search")}
++              className="h-10 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:border-primary focus-visible:outline-none"
++            />
+           </form>
+-        </CardBody>
+-      </Card>
+-
+-      {courses.length === 0 && !canManage ? (
+-        <Card>
+-          <CardBody>
+-            <p className="text-sm text-slate-500">{t("empty")}</p>
+-          </CardBody>
+-        </Card>
+-      ) : (
+-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+           {canManage && (
+-            <AddFolderTile
+-              label={t("addCourse")}
+-              dialogTitle={t("addCourseTitle")}
+-            >
++            <DialogButton label={t("addCourse")} title={t("addCourseTitle")}>
+               <CreateCourseForm />
+-            </AddFolderTile>
++            </DialogButton>
++          )}
++        </div>
++      </div>
++
++      {(category || q) && (
++        <div className="flex flex-wrap items-center gap-2 text-sm">
++          <span className="text-slate-500">
++            {tn("resultCount", { count: courses.length })}
++          </span>
++          {category && (
++            <FilterChip
++              href={clearHref("category")}
++              label={`${t("category")}: ${category}`}
++            />
+           )}
++          {q && <FilterChip href={clearHref("q")} label={`“${q}”`} />}
++        </div>
++      )}
++
++      {courses.length === 0 ? (
++        <div className="flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-14 text-center shadow-sm">
++          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
++            <GraduationCap className="h-6 w-6" aria-hidden />
++          </span>
++          <p className="text-sm text-slate-500">{t("empty")}</p>
++        </div>
++      ) : (
++        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+           {courses.map((course) => (
+             <CourseCard key={course.id} course={course} />
+           ))}
+@@ -100,3 +102,15 @@ export default async function AcademyPage({
+     </div>
+   );
+ }
++
++function FilterChip({ href, label }: { href: string; label: string }) {
++  return (
++    <Link
++      href={href}
++      className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 font-medium text-primary hover:bg-primary/10"
++    >
++      {label}
++      <X className="h-3.5 w-3.5" aria-hidden />
++    </Link>
++  );
++}
+diff --git a/app/(app)/admin/academy/[id]/page.tsx b/app/(app)/admin/academy/[id]/page.tsx
+index 0cb7b38..b18fb54 100644
+--- a/app/(app)/admin/academy/[id]/page.tsx
++++ b/app/(app)/admin/academy/[id]/page.tsx
+@@ -24,6 +24,7 @@ import type {
+   LessonFile,
+   CourseFile,
+ } from "@/lib/db/types";
++import { ModuleEyebrow } from "@/components/page-title";
+ 
+ type FileRow = Pick<LessonFile, "id" | "lesson_id" | "file_name" | "file_size">;
+ type CourseDocRow = Pick<CourseFile, "id" | "file_name" | "file_size">;
+@@ -147,7 +148,8 @@ export default async function AdminCoursePage({
+         </Link>
+         <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+           <div className="flex items-center gap-3">
+-            <h1 className="text-xl font-semibold text-primary">{course.title}</h1>
++            <ModuleEyebrow id="admin" />
++            <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{course.title}</h1>
+             <span
+               className={
+                 published
+diff --git a/app/(app)/admin/academy/new/page.tsx b/app/(app)/admin/academy/new/page.tsx
+index 35378e4..ff9ecdd 100644
+--- a/app/(app)/admin/academy/new/page.tsx
++++ b/app/(app)/admin/academy/new/page.tsx
+@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
+ import { requireAdmin } from "@/lib/auth/dal";
+ import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
+ import { CreateCourseForm } from "../course-forms";
++import { ModuleEyebrow } from "@/components/page-title";
+ 
+ export default async function NewCoursePage() {
+   await requireAdmin();
+@@ -17,7 +18,8 @@ export default async function NewCoursePage() {
+         >
+           ← {t("backToCourses")}
+         </Link>
+-        <h1 className="mt-2 text-xl font-semibold text-primary">
++        <ModuleEyebrow id="admin" className="mt-2" />
++        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+           {t("newCourse")}
+         </h1>
+       </div>
+diff --git a/app/(app)/admin/academy/page.tsx b/app/(app)/admin/academy/page.tsx
+index b73f13d..a4a44b9 100644
+--- a/app/(app)/admin/academy/page.tsx
++++ b/app/(app)/admin/academy/page.tsx
+@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
+ import { Button } from "@/components/ui/button";
+ import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
+ import type { Course } from "@/lib/db/types";
++import { ModuleEyebrow } from "@/components/page-title";
+ 
+ export default async function AdminAcademyPage() {
+   await requireAdmin();
+@@ -23,8 +24,9 @@ export default async function AdminAcademyPage() {
+     <div className="space-y-6">
+       <div className="flex items-center justify-between">
+         <div>
+-          <h1 className="text-xl font-semibold text-primary">{t("title")}</h1>
+-          <p className="text-sm text-slate-500">{t("subtitle")}</p>
++          <ModuleEyebrow id="admin" />
++          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{t("title")}</h1>
++          <p className="mt-1.5 text-sm text-slate-500">{t("subtitle")}</p>
+         </div>
+         <Link href="/admin/academy/new">
+           <Button>{t("addCourse")}</Button>
+diff --git a/app/(app)/admin/activity/page.tsx b/app/(app)/admin/activity/page.tsx
+index f4084d3..a4da661 100644
+--- a/app/(app)/admin/activity/page.tsx
++++ b/app/(app)/admin/activity/page.tsx
+@@ -7,6 +7,7 @@ import { Select } from "@/components/ui/input";
+ import { Card, CardBody } from "@/components/ui/card";
+ import { formatDateTime } from "@/lib/format";
+ import { labelForAction, FILTERABLE_ACTIONS } from "@/lib/activity-labels";
++import { ModuleEyebrow } from "@/components/page-title";
+ 
+ const PAGE_SIZE = 50;
+ 
+@@ -67,10 +68,11 @@ export default async function AdminActivityPage({
+   return (
+     <div className="space-y-6">
+       <div>
+-        <h1 className="text-xl font-semibold text-primary">
++        <ModuleEyebrow id="admin" />
++        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+           {t("activityTitle")}
+         </h1>
+-        <p className="text-sm text-slate-500">{t("activitySubtitle")}</p>
++        <p className="mt-1.5 text-sm text-slate-500">{t("activitySubtitle")}</p>
+       </div>
+ 
+       <Card>
+diff --git a/app/(app)/admin/clients/[id]/page.tsx b/app/(app)/admin/clients/[id]/page.tsx
+index 61650c6..d8e1311 100644
+--- a/app/(app)/admin/clients/[id]/page.tsx
++++ b/app/(app)/admin/clients/[id]/page.tsx
+@@ -7,6 +7,7 @@ import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
+ import { EditClientForm, DeleteClientButton } from "../client-forms";
+ import { ClientProjectsManager, type ClientProject } from "./client-projects-manager";
+ import type { Client } from "@/lib/db/types";
++import { ModuleEyebrow } from "@/components/page-title";
+ 
+ export default async function ClientManagePage({
+   params,
+@@ -44,7 +45,8 @@ export default async function ClientManagePage({
+           >
+             ← {t("backClients")}
+           </Link>
+-          <h1 className="mt-1 text-xl font-semibold text-primary">
++          <ModuleEyebrow id="admin" className="mt-2" />
++          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+             {client.name}
+           </h1>
+         </div>
+diff --git a/app/(app)/admin/clients/page.tsx b/app/(app)/admin/clients/page.tsx
+index 815e49d..5a120fb 100644
+--- a/app/(app)/admin/clients/page.tsx
++++ b/app/(app)/admin/clients/page.tsx
+@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
+ import { Pagination } from "@/components/ui/pagination";
+ import { CreateClientForm } from "./client-forms";
+ import type { Client } from "@/lib/db/types";
++import { ModuleEyebrow } from "@/components/page-title";
++import { DialogButton } from "@/components/dialog-button";
+ 
+ const PAGE_SIZE = 50;
+ 
+@@ -47,21 +49,18 @@ export default async function AdminClientsPage({
+ 
+   return (
+     <div className="space-y-6">
+-      <div>
+-        <h1 className="text-xl font-semibold text-primary">
+-          {t("clientsTitle")}
+-        </h1>
+-        <p className="text-sm text-slate-500">{t("clientsSubtitle")}</p>
+-      </div>
+-
+-      <Card>
+-        <CardHeader>
+-          <CardTitle>{t("addClient")}</CardTitle>
+-        </CardHeader>
+-        <CardBody>
++      <div className="flex flex-wrap items-end justify-between gap-4">
++        <div>
++          <ModuleEyebrow id="admin" />
++          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
++            {t("clientsTitle")}
++          </h1>
++          <p className="mt-1.5 text-sm text-slate-500">{t("clientsSubtitle")}</p>
++        </div>
++        <DialogButton label={t("addClient")}>
+           <CreateClientForm />
+-        </CardBody>
+-      </Card>
++        </DialogButton>
++      </div>
+ 
+       <Card>
+         <CardBody>
+diff --git a/app/(app)/admin/docs/page.tsx b/app/(app)/admin/docs/page.tsx
+index 99f4028..3787cb4 100644
+--- a/app/(app)/admin/docs/page.tsx
++++ b/app/(app)/admin/docs/page.tsx
+@@ -1,6 +1,7 @@
+ import { getTranslations } from "next-intl/server";
+ import { requireAdmin } from "@/lib/auth/dal";
+ import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
++import { ModuleEyebrow } from "@/components/page-title";
+ 
+ type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
+ 
+@@ -149,8 +150,9 @@ export default async function ApiDocsPage() {
+   return (
+     <div className="space-y-6">
+       <div>
+-        <h1 className="text-xl font-semibold text-primary">{t("title")}</h1>
+-        <p className="text-sm text-slate-500">{t("subtitle")}</p>
++        <ModuleEyebrow id="admin" />
++        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{t("title")}</h1>
++        <p className="mt-1.5 text-sm text-slate-500">{t("subtitle")}</p>
+       </div>
+ 
+       <Card>
+diff --git a/app/(app)/admin/layout.tsx b/app/(app)/admin/layout.tsx
+index ce401c0..863e71f 100644
+--- a/app/(app)/admin/layout.tsx
++++ b/app/(app)/admin/layout.tsx
+@@ -1,5 +1,7 @@
++import { Suspense } from "react";
+ import { requireContentManager } from "@/lib/auth/dal";
+ import { AdminNav } from "@/components/admin-nav";
++import { WorkspaceContent } from "@/components/workspace-content";
+ 
+ export default async function AdminLayout({
+   children,
+@@ -11,9 +13,11 @@ export default async function AdminLayout({
+   // guard and are hidden from managers in AdminNav.
+   const user = await requireContentManager();
+   return (
+-    <div className="flex flex-col gap-4 md:flex-row md:gap-6">
+-      <AdminNav role={user.profile.role} />
+-      <div className="min-w-0 flex-1 space-y-6">{children}</div>
++    <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
++      <Suspense>
++        <AdminNav role={user.profile.role} />
++      </Suspense>
++      <WorkspaceContent>{children}</WorkspaceContent>
+     </div>
+   );
+ }
+diff --git a/app/(app)/admin/misa/customers/page.tsx b/app/(app)/admin/misa/customers/page.tsx
+index 6a0b738..125ae3e 100644
+--- a/app/(app)/admin/misa/customers/page.tsx
++++ b/app/(app)/admin/misa/customers/page.tsx
+@@ -9,6 +9,7 @@ import { Pagination } from "@/components/ui/pagination";
+ import { formatDateTime } from "@/lib/format";
+ import type { MisaCustomer } from "@/lib/db/types";
+ import { MisaTabs } from "../misa-tabs";
++import { ModuleEyebrow } from "@/components/page-title";
+ 
+ const PAGE_SIZE = 50;
+ 
+@@ -66,10 +67,11 @@ export default async function MisaCustomersPage({
+   return (
+     <div className="space-y-6">
+       <div>
+-        <h1 className="text-xl font-semibold text-primary">
++        <ModuleEyebrow id="admin" />
++        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+           {t("customersTitle")}
+         </h1>
+-        <p className="text-sm text-slate-500">{t("customersSubtitle")}</p>
++        <p className="mt-1.5 text-sm text-slate-500">{t("customersSubtitle")}</p>
+       </div>
+ 
+       <MisaTabs />
+diff --git a/app/(app)/admin/misa/inventory/page.tsx b/app/(app)/admin/misa/inventory/page.tsx
+index 366ca63..c569127 100644
+--- a/app/(app)/admin/misa/inventory/page.tsx
++++ b/app/(app)/admin/misa/inventory/page.tsx
+@@ -9,6 +9,7 @@ import { Pagination } from "@/components/ui/pagination";
+ import { formatVND } from "@/lib/format";
+ import type { MisaInventoryBalance } from "@/lib/db/types";
+ import { MisaTabs } from "../misa-tabs";
++import { ModuleEyebrow } from "@/components/page-title";
+ 
+ const PAGE_SIZE = 50;
+ 
+@@ -51,10 +52,11 @@ export default async function MisaInventoryPage({
+   return (
+     <div className="space-y-6">
+       <div>
+-        <h1 className="text-xl font-semibold text-primary">
++        <ModuleEyebrow id="admin" />
++        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+           {t("inventoryTitle")}
+         </h1>
+-        <p className="text-sm text-slate-500">{t("inventorySubtitle")}</p>
++        <p className="mt-1.5 text-sm text-slate-500">{t("inventorySubtitle")}</p>
+       </div>
+ 
+       <MisaTabs />
+diff --git a/app/(app)/admin/misa/misa-tabs.tsx b/app/(app)/admin/misa/misa-tabs.tsx
+index 29d1f3c..606e807 100644
+--- a/app/(app)/admin/misa/misa-tabs.tsx
++++ b/app/(app)/admin/misa/misa-tabs.tsx
+@@ -3,7 +3,7 @@
+ import Link from "next/link";
+ import { usePathname } from "next/navigation";
+ import { useTranslations } from "next-intl";
+-import { cn } from "@/lib/utils";
++import { segmentedTabClass, segmentedTabsClass } from "@/components/page-title";
+ 
+ const TABS = [
+   { href: "/admin/misa", key: "dashboard" },
+@@ -18,19 +18,15 @@ export function MisaTabs() {
+   const t = useTranslations("MisaData");
+ 
+   return (
+-    <nav className="flex flex-wrap gap-1 border-b border-slate-200">
++    <nav className={segmentedTabsClass}>
+       {TABS.map((tab) => {
+         const active = pathname === tab.href;
+         return (
+           <Link
+             key={tab.href}
+             href={tab.href}
+-            className={cn(
+-              "-mb-px border-b-2 px-3 py-2 text-sm font-medium",
+-              active
+-                ? "border-primary text-primary"
+-                : "border-transparent text-slate-500 hover:text-slate-900",
+-            )}
++            aria-current={active ? "page" : undefined}
++            className={segmentedTabClass(active)}
+           >
+             {t(`tabs.${tab.key}`)}
+           </Link>
+diff --git a/app/(app)/admin/misa/page.tsx b/app/(app)/admin/misa/page.tsx
+index c7b3829..035048c 100644
+--- a/app/(app)/admin/misa/page.tsx
++++ b/app/(app)/admin/misa/page.tsx
+@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
+ import { MISA_SYNC_TYPES } from "@/lib/misa/sync";
+ import { MisaSyncDashboard, type MisaSyncRow } from "./misa-sync-dashboard";
+ import { MisaTabs } from "./misa-tabs";
++import { ModuleEyebrow } from "@/components/page-title";
+ 
+ export default async function MisaSyncStatusPage() {
+   const user = await requireContentManager();
+@@ -49,8 +50,9 @@ export default async function MisaSyncStatusPage() {
+     <div className="space-y-6">
+       <div className="flex flex-wrap items-start justify-between gap-3">
+         <div>
+-          <h1 className="text-xl font-semibold text-primary">{t("title")}</h1>
+-          <p className="text-sm text-slate-500">{t("subtitle")}</p>
++          <ModuleEyebrow id="admin" />
++          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{t("title")}</h1>
++          <p className="mt-1.5 text-sm text-slate-500">{t("subtitle")}</p>
+         </div>
+         {user.profile.role === "admin" && (
+           <Link
+diff --git a/app/(app)/admin/misa/playground/page.tsx b/app/(app)/admin/misa/playground/page.tsx
+index 6510ad3..92dff8b 100644
+--- a/app/(app)/admin/misa/playground/page.tsx
++++ b/app/(app)/admin/misa/playground/page.tsx
+@@ -1,6 +1,7 @@
+ import { getTranslations } from "next-intl/server";
+ import { requireAdmin } from "@/lib/auth/dal";
+ import { MisaPlayground } from "./misa-playground";
++import { ModuleEyebrow } from "@/components/page-title";
+ 
+ export default async function MisaPlaygroundPage() {
+   await requireAdmin();
+@@ -9,8 +10,9 @@ export default async function MisaPlaygroundPage() {
+   return (
+     <div className="space-y-6">
+       <div>
+-        <h1 className="text-xl font-semibold text-primary">{t("title")}</h1>
+-        <p className="text-sm text-slate-500">{t("subtitle")}</p>
++        <ModuleEyebrow id="admin" />
++        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{t("title")}</h1>
++        <p className="mt-1.5 text-sm text-slate-500">{t("subtitle")}</p>
+       </div>
+       <MisaPlayground />
+     </div>
+diff --git a/app/(app)/admin/misa/products/page.tsx b/app/(app)/admin/misa/products/page.tsx
+index 2479e72..7374d97 100644
+--- a/app/(app)/admin/misa/products/page.tsx
++++ b/app/(app)/admin/misa/products/page.tsx
+@@ -9,6 +9,7 @@ import { Pagination } from "@/components/ui/pagination";
+ import { formatDateTime } from "@/lib/format";
+ import type { MisaProduct } from "@/lib/db/types";
+ import { MisaTabs } from "../misa-tabs";
++import { ModuleEyebrow } from "@/components/page-title";
+ 
+ const PAGE_SIZE = 50;
+ 
+@@ -50,10 +51,11 @@ export default async function MisaProductsPage({
+   return (
+     <div className="space-y-6">
+       <div>
+-        <h1 className="text-xl font-semibold text-primary">
++        <ModuleEyebrow id="admin" />
++        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+           {t("productsTitle")}
+         </h1>
+-        <p className="text-sm text-slate-500">{t("productsSubtitle")}</p>
++        <p className="mt-1.5 text-sm text-slate-500">{t("productsSubtitle")}</p>
+       </div>
+ 
+       <MisaTabs />
+diff --git a/app/(app)/admin/projects/[id]/page.tsx b/app/(app)/admin/projects/[id]/page.tsx
+index b4976f6..2cddc73 100644
+--- a/app/(app)/admin/projects/[id]/page.tsx
++++ b/app/(app)/admin/projects/[id]/page.tsx
+@@ -9,6 +9,7 @@ import { EditProjectForm } from "../project-forms";
+ import { AssignMemberForm, RemoveMemberButton } from "./member-forms";
+ import { DeleteDocumentButton } from "./delete-document-button";
+ import type { Project } from "@/lib/db/types";
++import { ModuleEyebrow } from "@/components/page-title";
+ 
+ interface MemberRow {
+   user_id: string;
+@@ -83,7 +84,8 @@ export default async function ProjectDetailPage({
+         >
+           ← {t("backProjects")}
+         </Link>
+-        <h1 className="mt-1 text-xl font-semibold text-primary">
++        <ModuleEyebrow id="admin" className="mt-2" />
++        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+           {(project as Project).name}
+         </h1>
+       </div>
+diff --git a/app/(app)/admin/projects/page.tsx b/app/(app)/admin/projects/page.tsx
+index d3f16eb..0cc23dd 100644
+--- a/app/(app)/admin/projects/page.tsx
++++ b/app/(app)/admin/projects/page.tsx
+@@ -6,6 +6,8 @@ import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
+ import { Pagination } from "@/components/ui/pagination";
+ import { CreateProjectForm } from "./project-forms";
+ import { DeleteProjectButton } from "./delete-project-button";
++import { ModuleEyebrow } from "@/components/page-title";
++import { DialogButton } from "@/components/dialog-button";
+ 
+ const PAGE_SIZE = 50;
+ 
+@@ -52,21 +54,18 @@ export default async function AdminProjectsPage({
+ 
+   return (
+     <div className="space-y-6">
+-      <div>
+-        <h1 className="text-xl font-semibold text-primary">
+-          {t("projectsTitle")}
+-        </h1>
+-        <p className="text-sm text-slate-500">{t("projectsSubtitle")}</p>
+-      </div>
+-
+-      <Card>
+-        <CardHeader>
+-          <CardTitle>{t("addProject")}</CardTitle>
+-        </CardHeader>
+-        <CardBody>
++      <div className="flex flex-wrap items-end justify-between gap-4">
++        <div>
++          <ModuleEyebrow id="admin" />
++          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
++            {t("projectsTitle")}
++          </h1>
++          <p className="mt-1.5 text-sm text-slate-500">{t("projectsSubtitle")}</p>
++        </div>
++        <DialogButton label={t("addProject")}>
+           <CreateProjectForm clients={clients} />
+-        </CardBody>
+-      </Card>
++        </DialogButton>
++      </div>
+ 
+       <Card>
+         <CardHeader>
+diff --git a/app/(app)/admin/users/page.tsx b/app/(app)/admin/users/page.tsx
+index a32970d..935194d 100644
+--- a/app/(app)/admin/users/page.tsx
++++ b/app/(app)/admin/users/page.tsx
+@@ -10,6 +10,8 @@ import { RoleSelect } from "./role-select";
+ import { EditUserButton } from "./edit-user-button";
+ import { DeleteUserButton } from "./delete-user-button";
+ import type { Profile } from "@/lib/db/types";
++import { ModuleEyebrow } from "@/components/page-title";
++import { DialogButton } from "@/components/dialog-button";
+ 
+ const PAGE_SIZE = 50;
+ 
+@@ -62,21 +64,18 @@ export default async function AdminUsersPage({
+ 
+   return (
+     <div className="space-y-6">
+-      <div>
+-        <h1 className="text-xl font-semibold text-primary">
+-          {t("usersTitle")}
+-        </h1>
+-        <p className="text-sm text-slate-500">{t("usersSubtitle")}</p>
+-      </div>
+-
+-      <Card>
+-        <CardHeader>
+-          <CardTitle>{t("addUser")}</CardTitle>
+-        </CardHeader>
+-        <CardBody>
++      <div className="flex flex-wrap items-end justify-between gap-4">
++        <div>
++          <ModuleEyebrow id="admin" />
++          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
++            {t("usersTitle")}
++          </h1>
++          <p className="mt-1.5 text-sm text-slate-500">{t("usersSubtitle")}</p>
++        </div>
++        <DialogButton label={t("addUser")}>
+           <CreateUserForm />
+-        </CardBody>
+-      </Card>
++        </DialogButton>
++      </div>
+ 
+       <Card>
+         <CardHeader>
+diff --git a/app/(app)/documents/[id]/page.tsx b/app/(app)/documents/[id]/page.tsx
+index 4ac62ea..dc8657a 100644
+--- a/app/(app)/documents/[id]/page.tsx
++++ b/app/(app)/documents/[id]/page.tsx
+@@ -11,6 +11,7 @@ import { env } from "@/lib/env";
+ import { labelForAction } from "@/lib/activity-labels";
+ import { ShareManager, type ShareLinkView } from "./share-manager";
+ import type { DocType } from "@/lib/db/types";
++import { ModuleEyebrow } from "@/components/page-title";
+ 
+ interface DocDetail {
+   id: string;
+@@ -93,7 +94,8 @@ export default async function DocumentDetailPage({
+           >
+             ← {t("title")}
+           </Link>
+-          <h1 className="mt-1 break-all text-xl font-semibold text-primary">
++          <ModuleEyebrow id="documents" className="mt-3" />
++          <h1 className="break-all text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+             {doc.canonical_name}
+           </h1>
+         </div>
+diff --git a/app/(app)/documents/client-sidebar.tsx b/app/(app)/documents/client-sidebar.tsx
+index 35a37f2..2b93242 100644
+--- a/app/(app)/documents/client-sidebar.tsx
++++ b/app/(app)/documents/client-sidebar.tsx
+@@ -1,12 +1,13 @@
+ "use client";
+ 
+-import { useEffect, useMemo, useState } from "react";
++import { useMemo, useState } from "react";
+ import Link from "next/link";
+ import { usePathname } from "next/navigation";
+ import { useTranslations } from "next-intl";
+-import { Building2, ChevronDown, Plus, Search, X } from "lucide-react";
++import { Building2, Plus, Search } from "lucide-react";
+ import { cn } from "@/lib/utils";
+ import { Dialog } from "@/components/ui/dialog";
++import { AsideHeading, WorkspaceAside } from "@/components/workspace-aside";
+ import { CreateClientForm } from "@/app/(app)/admin/clients/client-forms";
+ 
+ export interface SidebarClient {
+@@ -32,9 +33,8 @@ function activeClientId(pathname: string): string | undefined {
+ }
+ 
+ /**
+- * Customer list for the Documents workspace. Sticky full-height column on
+- * `lg`+; below that a bar showing the current customer that opens the same
+- * list in a slide-in drawer.
++ * Customer list for the Documents workspace, in the shared WorkspaceAside
++ * shell (sticky column on `lg`+, drawer below).
+  */
+ export function ClientSidebar({
+   clients,
+@@ -47,91 +47,25 @@ export function ClientSidebar({
+   const pathname = usePathname();
+   const activeId = activeClientId(pathname);
+   const active = clients.find((c) => c.id === activeId);
+-  const [drawerOpen, setDrawerOpen] = useState(false);
+   const [addOpen, setAddOpen] = useState(false);
+-  const [prevPathname, setPrevPathname] = useState(pathname);
+-
+-  // Close the drawer after navigating (state adjusted during render).
+-  if (pathname !== prevPathname) {
+-    setPrevPathname(pathname);
+-    setDrawerOpen(false);
+-  }
+-
+-  // While the drawer is open: Escape closes it and the page behind is locked.
+-  useEffect(() => {
+-    if (!drawerOpen) return;
+-    const onKeyDown = (e: KeyboardEvent) => {
+-      if (e.key === "Escape") setDrawerOpen(false);
+-    };
+-    document.addEventListener("keydown", onKeyDown);
+-    const prevOverflow = document.body.style.overflow;
+-    document.body.style.overflow = "hidden";
+-    return () => {
+-      document.removeEventListener("keydown", onKeyDown);
+-      document.body.style.overflow = prevOverflow;
+-    };
+-  }, [drawerOpen]);
+-
+-  const panel = (variant: "sidebar" | "drawer") => (
+-    <ClientList
+-      clients={clients}
+-      activeId={activeId}
+-      canManage={canManage}
+-      onAdd={() => setAddOpen(true)}
+-      onClose={variant === "drawer" ? () => setDrawerOpen(false) : undefined}
+-    />
+-  );
+ 
+   return (
+     <>
+-      {/* Desktop column */}
+-      <aside
+-        aria-label={t("customers")}
+-        className="sticky top-16 hidden h-[calc(100dvh-4rem)] w-80 shrink-0 flex-col border-r border-slate-200 bg-white lg:flex"
++      <WorkspaceAside
++        label={t("customers")}
++        current={active ? active.name : t("chooseCustomer")}
++        icon={<Building2 className="h-4 w-4" aria-hidden />}
++        widthClass="w-80"
+       >
+-        {panel("sidebar")}
+-      </aside>
+-
+-      {/* Mobile / tablet: current customer + drawer trigger */}
+-      <div className="border-b border-slate-200 bg-white px-4 py-3 sm:px-6 lg:hidden">
+-        <button
+-          type="button"
+-          onClick={() => setDrawerOpen(true)}
+-          aria-expanded={drawerOpen}
+-          className="flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 text-left shadow-sm hover:border-slate-300"
+-        >
+-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+-            <Building2 className="h-4 w-4" aria-hidden />
+-          </span>
+-          <span className="min-w-0 flex-1">
+-            <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+-              {t("customers")}
+-            </span>
+-            <span className="block truncate text-sm font-medium text-slate-900">
+-              {active ? active.name : t("chooseCustomer")}
+-            </span>
+-          </span>
+-          <ChevronDown className="h-4 w-4 shrink-0 text-slate-400" aria-hidden />
+-        </button>
+-      </div>
+-
+-      {drawerOpen && (
+-        <div
+-          className="fixed inset-0 z-50 bg-slate-900/40 lg:hidden"
+-          onClick={() => setDrawerOpen(false)}
+-          role="presentation"
+-        >
+-          <div
+-            role="dialog"
+-            aria-modal="true"
+-            aria-label={t("customers")}
+-            onClick={(e) => e.stopPropagation()}
+-            className="drawer-in flex h-full w-80 max-w-[85%] flex-col bg-white shadow-xl"
+-          >
+-            {panel("drawer")}
+-          </div>
+-        </div>
+-      )}
++        {() => (
++          <ClientList
++            clients={clients}
++            activeId={activeId}
++            canManage={canManage}
++            onAdd={() => setAddOpen(true)}
++          />
++        )}
++      </WorkspaceAside>
+ 
+       {canManage && (
+         <Dialog
+@@ -151,13 +85,11 @@ function ClientList({
+   activeId,
+   canManage,
+   onAdd,
+-  onClose,
+ }: {
+   clients: SidebarClient[];
+   activeId: string | undefined;
+   canManage: boolean;
+   onAdd: () => void;
+-  onClose?: () => void;
+ }) {
+   const t = useTranslations("DocWorkspace");
+   const [query, setQuery] = useState("");
+@@ -169,39 +101,23 @@ function ClientList({
+ 
+   return (
+     <>
+-      <div className="flex items-start justify-between gap-3 px-5 pb-3 pt-5">
+-        <div>
+-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+-            {t("customers")}
+-          </p>
+-          <p className="mt-0.5 text-sm text-slate-600">
+-            {t("customerCount", { count: clients.length })}
+-          </p>
+-        </div>
+-        <div className="flex items-center gap-1.5">
+-          {canManage && (
++      <AsideHeading
++        title={t("customers")}
++        subtitle={t("customerCount", { count: clients.length })}
++        action={
++          canManage && (
+             <button
+               type="button"
+               onClick={onAdd}
+               aria-label={t("addCustomer")}
+               title={t("addCustomer")}
+-              className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white shadow-sm transition-colors hover:bg-primary-hover"
++              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-white shadow-sm transition-colors hover:bg-primary-hover"
+             >
+               <Plus className="h-4 w-4" />
+             </button>
+-          )}
+-          {onClose && (
+-            <button
+-              type="button"
+-              onClick={onClose}
+-              aria-label={t("close")}
+-              className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100"
+-            >
+-              <X className="h-5 w-5" />
+-            </button>
+-          )}
+-        </div>
+-      </div>
++          )
++        }
++      />
+ 
+       <div className="px-5 pb-3">
+         <label className="relative block">
+diff --git a/app/(app)/documents/layout.tsx b/app/(app)/documents/layout.tsx
+index b294a00..68cd476 100644
+--- a/app/(app)/documents/layout.tsx
++++ b/app/(app)/documents/layout.tsx
+@@ -1,6 +1,8 @@
++import { Suspense } from "react";
+ import { requireUser } from "@/lib/auth/dal";
+ import { canManageContent } from "@/lib/auth/roles";
+ import { createClient } from "@/lib/supabase/server";
++import { WorkspaceContent } from "@/components/workspace-content";
+ import { ClientSidebar, type SidebarClient } from "./client-sidebar";
+ 
+ interface DocClientRow {
+@@ -49,10 +51,10 @@ export default async function DocumentsLayout({
+ 
+   return (
+     <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+-      <ClientSidebar clients={clients} canManage={canManage} />
+-      <div className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+-        {children}
+-      </div>
++      <Suspense>
++        <ClientSidebar clients={clients} canManage={canManage} />
++      </Suspense>
++      <WorkspaceContent>{children}</WorkspaceContent>
+     </div>
+   );
+ }
+diff --git a/app/(app)/documents/list/page.tsx b/app/(app)/documents/list/page.tsx
+index 1d1c7de..9dcb838 100644
+--- a/app/(app)/documents/list/page.tsx
++++ b/app/(app)/documents/list/page.tsx
+@@ -10,6 +10,7 @@ import { Pagination } from "@/components/ui/pagination";
+ import { DOC_TYPES } from "@/lib/documents/constants";
+ import { formatBytes, formatDateTime } from "@/lib/format";
+ import type { DocType } from "@/lib/db/types";
++import { ModuleEyebrow } from "@/components/page-title";
+ 
+ const PAGE_SIZE = 25;
+ 
+@@ -86,7 +87,8 @@ export default async function DocumentsListPage({
+             <ArrowLeft className="h-4 w-4" />
+             {t("backToFolders")}
+           </Link>
+-          <h1 className="mt-1 text-xl font-semibold text-primary">
++          <ModuleEyebrow id="documents" className="mt-3" />
++          <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+             {t("title")}
+           </h1>
+           <p className="text-sm text-slate-500">{t("subtitle")}</p>
+diff --git a/app/(app)/documents/upload/page.tsx b/app/(app)/documents/upload/page.tsx
+index a243249..de31b2b 100644
+--- a/app/(app)/documents/upload/page.tsx
++++ b/app/(app)/documents/upload/page.tsx
+@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
+ import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
+ import { Alert } from "@/components/ui/alert";
+ import { UploadForm, type UploadProject } from "./upload-form";
++import { ModuleEyebrow } from "@/components/page-title";
+ 
+ interface ProjectRow {
+   id: string;
+@@ -62,7 +63,8 @@ export default async function UploadPage({
+         >
+           ← {t("title")}
+         </Link>
+-        <h1 className="mt-1 text-xl font-semibold text-primary">
++        <ModuleEyebrow id="documents" className="mt-3" />
++        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+           {t("uploadTitle")}
+         </h1>
+       </div>
+diff --git a/app/(app)/page.tsx b/app/(app)/page.tsx
+index 9dc346e..84715aa 100644
+--- a/app/(app)/page.tsx
++++ b/app/(app)/page.tsx
+@@ -12,10 +12,10 @@ export default async function HomePage() {
+   return (
+     <div className="space-y-6">
+       <div>
+-        <h1 className="text-xl font-semibold text-primary">
++        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+           {t("welcome", { name: firstName })}
+         </h1>
+-        <p className="text-sm text-slate-500">{t("subtitle")}</p>
++        <p className="mt-1.5 text-sm text-slate-500">{t("subtitle")}</p>
+       </div>
+ 
+       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+diff --git a/app/(app)/profile/page.tsx b/app/(app)/profile/page.tsx
+index 3bf7cbc..c4bc77b 100644
+--- a/app/(app)/profile/page.tsx
++++ b/app/(app)/profile/page.tsx
+@@ -12,8 +12,8 @@ export default async function ProfilePage() {
+   return (
+     <div className="space-y-6">
+       <div>
+-        <h1 className="text-xl font-semibold text-primary">{t("title")}</h1>
+-        <p className="text-sm text-slate-500">{t("subtitle")}</p>
++        <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{t("title")}</h1>
++        <p className="mt-1.5 text-sm text-slate-500">{t("subtitle")}</p>
+       </div>
+ 
+       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+diff --git a/components/admin-nav.tsx b/components/admin-nav.tsx
+index da5c1c2..a47803d 100644
+--- a/components/admin-nav.tsx
++++ b/components/admin-nav.tsx
+@@ -1,201 +1,116 @@
+ "use client";
+ 
+-import type { ComponentType } from "react";
+-import { useEffect, useState, useSyncExternalStore } from "react";
+-import Link from "next/link";
+ import { usePathname } from "next/navigation";
+ import { useTranslations } from "next-intl";
+ import {
+-  Users,
++  Activity,
+   Briefcase,
++  FileCode,
+   FolderKanban,
+   GraduationCap,
+-  Activity,
+-  FileCode,
+   Receipt,
+-  PanelLeft,
+-  PanelLeftClose,
+-  Menu,
+-  X,
++  ShieldCheck,
++  Users,
+ } from "lucide-react";
+-import { cn } from "@/lib/utils";
+ import type { UserRole } from "@/lib/db/types";
++import { AsideHeading, WorkspaceAside } from "@/components/workspace-aside";
++import { SidebarNav, type SidebarNavSection } from "@/components/sidebar-nav";
+ 
+-type IconType = ComponentType<{ className?: string }>;
++type Key =
++  "clients" | "projects" | "misa" | "courses" | "users" | "activity" | "docs";
+ 
+-const items: {
+-  href: string;
+-  key: string;
+-  adminOnly: boolean;
+-  Icon: IconType;
++const SECTIONS: {
++  title: "sectionData" | "sectionTraining" | "sectionSystem";
++  items: { href: string; key: Key; adminOnly: boolean; Icon: typeof Users }[];
+ }[] = [
+-  { href: "/admin/users", key: "users", adminOnly: true, Icon: Users },
+-  { href: "/admin/clients", key: "clients", adminOnly: false, Icon: Briefcase },
+   {
+-    href: "/admin/projects",
+-    key: "projects",
+-    adminOnly: false,
+-    Icon: FolderKanban,
++    title: "sectionData",
++    items: [
++      {
++        href: "/admin/clients",
++        key: "clients",
++        adminOnly: false,
++        Icon: Briefcase,
++      },
++      {
++        href: "/admin/projects",
++        key: "projects",
++        adminOnly: false,
++        Icon: FolderKanban,
++      },
++      { href: "/admin/misa", key: "misa", adminOnly: false, Icon: Receipt },
++    ],
++  },
++  {
++    title: "sectionTraining",
++    items: [
++      {
++        href: "/admin/academy",
++        key: "courses",
++        adminOnly: false,
++        Icon: GraduationCap,
++      },
++    ],
+   },
+   {
+-    href: "/admin/academy",
+-    key: "academy",
+-    adminOnly: false,
+-    Icon: GraduationCap,
++    title: "sectionSystem",
++    items: [
++      { href: "/admin/users", key: "users", adminOnly: true, Icon: Users },
++      {
++        href: "/admin/activity",
++        key: "activity",
++        adminOnly: true,
++        Icon: Activity,
++      },
++      { href: "/admin/docs", key: "docs", adminOnly: true, Icon: FileCode },
++    ],
+   },
+-  { href: "/admin/activity", key: "activity", adminOnly: true, Icon: Activity },
+-  { href: "/admin/misa", key: "misa", adminOnly: false, Icon: Receipt },
+-  { href: "/admin/docs", key: "docs", adminOnly: true, Icon: FileCode },
+ ];
+ 
+-const STORAGE_KEY = "admin-nav-collapsed";
+-const CHANGE_EVENT = "admin-nav-collapsed-change";
+-
+-// localStorage-backed store read via useSyncExternalStore: this keeps the
+-// persisted state in sync without a setState-in-effect and lets React reconcile
+-// the server snapshot (always expanded) with the client value on hydration.
+-function subscribe(callback: () => void) {
+-  window.addEventListener(CHANGE_EVENT, callback);
+-  window.addEventListener("storage", callback);
+-  return () => {
+-    window.removeEventListener(CHANGE_EVENT, callback);
+-    window.removeEventListener("storage", callback);
+-  };
+-}
+-
+-function getCollapsedSnapshot() {
+-  return window.localStorage.getItem(STORAGE_KEY) === "1";
+-}
+-
+ /**
+- * Admin section navigation. On `md`+ it's a collapsible sticky left sidebar
+- * (icon + label per tab, or a slim icon rail); the open/closed state is
+- * remembered in localStorage. Below `md` the sidebar is hidden and replaced by
+- * a hamburger button that opens a slide-in drawer with the same links.
++ * Admin Panel sidebar, in the shared WorkspaceAside shell. Admin-only
++ * sections are hidden from managers here; the pages and actions enforce it
++ * server-side (requireAdmin).
+  */
+ export function AdminNav({ role }: { role: UserRole }) {
+   const pathname = usePathname();
+   const t = useTranslations("AdminNav");
+-  const collapsed = useSyncExternalStore(
+-    subscribe,
+-    getCollapsedSnapshot,
+-    () => false, // server + first hydration render: expanded
+-  );
+-  const [drawerOpen, setDrawerOpen] = useState(false);
+-
+-  const toggle = () => {
+-    window.localStorage.setItem(STORAGE_KEY, collapsed ? "0" : "1");
+-    window.dispatchEvent(new Event(CHANGE_EVENT));
+-  };
++  const tn = useTranslations("Nav");
++  const tm = useTranslations("AppModules");
+ 
+-  // While the drawer is open, close on Escape and lock body scroll.
+-  useEffect(() => {
+-    if (!drawerOpen) return;
+-    const onKeyDown = (e: KeyboardEvent) => {
+-      if (e.key === "Escape") setDrawerOpen(false);
+-    };
+-    document.addEventListener("keydown", onKeyDown);
+-    const prevOverflow = document.body.style.overflow;
+-    document.body.style.overflow = "hidden";
+-    return () => {
+-      document.removeEventListener("keydown", onKeyDown);
+-      document.body.style.overflow = prevOverflow;
+-    };
+-  }, [drawerOpen]);
++  const sections: SidebarNavSection[] = SECTIONS.map((section) => ({
++    title: t(section.title),
++    items: section.items
++      .filter((item) => role === "admin" || !item.adminOnly)
++      .map(({ href, key, Icon }) => ({
++        href,
++        label: t(key),
++        icon: <Icon aria-hidden />,
++        active: pathname === href || pathname.startsWith(href + "/"),
++      })),
++  })).filter((section) => section.items.length > 0);
+ 
+-  const visible = items.filter((item) => role === "admin" || !item.adminOnly);
+-
+-  const renderLink = (
+-    item: (typeof items)[number],
+-    variant: "sidebar" | "drawer",
+-  ) => {
+-    const active = pathname.startsWith(item.href);
+-    const { Icon } = item;
+-    const sidebarCollapsed = variant === "sidebar" && collapsed;
+-    return (
+-      <Link
+-        key={item.href}
+-        href={item.href}
+-        title={sidebarCollapsed ? t(item.key) : undefined}
+-        onClick={variant === "drawer" ? () => setDrawerOpen(false) : undefined}
+-        className={cn(
+-          "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+-          sidebarCollapsed && "justify-center px-0",
+-          active
+-            ? "bg-slate-100 text-slate-900"
+-            : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+-        )}
+-      >
+-        <Icon className="h-5 w-5 shrink-0" />
+-        {!sidebarCollapsed && <span className="truncate">{t(item.key)}</span>}
+-      </Link>
+-    );
+-  };
++  const current =
++    sections.flatMap((s) => s.items).find((i) => i.active)?.label ??
++    tm("admin.name");
+ 
+   return (
+-    <>
+-      {/* Desktop: sticky collapsible sidebar (md and up). */}
+-      <nav
+-        aria-label={t("menu")}
+-        className={cn(
+-          "sticky top-24 hidden h-fit shrink-0 flex-col gap-1 self-start border-r border-slate-200 pr-3 transition-[width] duration-200 md:flex",
+-          collapsed ? "w-14" : "w-52",
+-        )}
+-      >
+-        <button
+-          type="button"
+-          onClick={toggle}
+-          aria-label={collapsed ? t("expand") : t("collapse")}
+-          title={collapsed ? t("expand") : t("collapse")}
+-          className="mb-1 flex h-9 w-9 items-center justify-center self-end rounded-md text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+-        >
+-          {collapsed ? (
+-            <PanelLeft className="h-5 w-5" />
+-          ) : (
+-            <PanelLeftClose className="h-5 w-5" />
+-          )}
+-        </button>
+-
+-        {visible.map((item) => renderLink(item, "sidebar"))}
+-      </nav>
+-
+-      {/* Mobile: hamburger button that opens a slide-in drawer (below md). */}
+-      <div className="md:hidden">
+-        <button
+-          type="button"
+-          onClick={() => setDrawerOpen(true)}
+-          aria-label={t("menu")}
+-          aria-expanded={drawerOpen}
+-          className="flex items-center gap-2 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+-        >
+-          <Menu className="h-5 w-5" />
+-          {t("menu")}
+-        </button>
+-
+-        {drawerOpen && (
+-          <div
+-            className="fixed inset-0 z-50 bg-slate-900/40"
+-            onClick={() => setDrawerOpen(false)}
+-            role="presentation"
+-          >
+-            <nav
+-              aria-label={t("menu")}
+-              onClick={(e) => e.stopPropagation()}
+-              className="flex h-full w-64 max-w-[80%] flex-col gap-1 overflow-y-auto border-r border-slate-200 bg-white p-3 shadow-xl"
+-            >
+-              <button
+-                type="button"
+-                onClick={() => setDrawerOpen(false)}
+-                aria-label={t("collapse")}
+-                className="mb-1 flex h-9 w-9 items-center justify-center self-end rounded-md text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+-              >
+-                <X className="h-5 w-5" />
+-              </button>
+-              {visible.map((item) => renderLink(item, "drawer"))}
+-            </nav>
+-          </div>
+-        )}
+-      </div>
+-    </>
++    <WorkspaceAside
++      label={tm("admin.name")}
++      current={current}
++      icon={<ShieldCheck className="h-4 w-4" aria-hidden />}
++    >
++      {() => (
++        <>
++          <AsideHeading
++            title={tm("admin.name")}
++            subtitle={t("signedInAs", {
++              role: role === "admin" ? tn("admin") : tn("manager"),
++            })}
++          />
++          <SidebarNav label={t("menu")} sections={sections} />
++        </>
++      )}
++    </WorkspaceAside>
+   );
+ }
+diff --git a/components/app-main.tsx b/components/app-main.tsx
+index f095a43..e2e2bb8 100644
+--- a/components/app-main.tsx
++++ b/components/app-main.tsx
+@@ -3,15 +3,19 @@
+ import { usePathname } from "next/navigation";
+ import { PageHeader } from "@/components/page-header";
+ 
++/** Modules that render their own workspace shell (sidebar + content). */
++const WORKSPACES = ["/documents", "/academy", "/admin"];
++
+ /**
+- * Main content frame below the header. The Documents module is a full-bleed
+- * workspace (its own sidebar, no breadcrumb), so it gets the whole width; every
+- * other module keeps the centred container with the breadcrumb bar.
++ * Main content frame below the header. Module workspaces are full-bleed (their
++ * layout adds the sidebar and content column, no breadcrumb); pages outside a
++ * module (/, /profile) keep the centred container with the breadcrumb bar.
+  */
+ export function AppMain({ children }: { children: React.ReactNode }) {
+   const pathname = usePathname();
+-  const fullBleed =
+-    pathname === "/documents" || pathname.startsWith("/documents/");
++  const fullBleed = WORKSPACES.some(
++    (w) => pathname === w || pathname.startsWith(w + "/"),
++  );
+ 
+   if (fullBleed) {
+     return <main className="flex min-w-0 flex-1 flex-col">{children}</main>;
+diff --git a/components/dialog-button.tsx b/components/dialog-button.tsx
+new file mode 100644
+index 0000000..8cb94d8
+--- /dev/null
++++ b/components/dialog-button.tsx
+@@ -0,0 +1,38 @@
++"use client";
++
++import { useState } from "react";
++import { Plus } from "lucide-react";
++import { Dialog } from "@/components/ui/dialog";
++
++/**
++ * Primary header action ("+ Thêm …") that opens its form in a modal, so list
++ * pages lead with the list instead of an always-open create form.
++ */
++export function DialogButton({
++  label,
++  title,
++  children,
++}: {
++  label: string;
++  /** Dialog heading; defaults to the button label. */
++  title?: string;
++  children: React.ReactNode;
++}) {
++  const [open, setOpen] = useState(false);
++
++  return (
++    <>
++      <button
++        type="button"
++        onClick={() => setOpen(true)}
++        className="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-hover"
++      >
++        <Plus className="h-4 w-4" aria-hidden />
++        {label}
++      </button>
++      <Dialog open={open} onClose={() => setOpen(false)} title={title ?? label}>
++        {children}
++      </Dialog>
++    </>
++  );
++}
+diff --git a/components/page-title.tsx b/components/page-title.tsx
+new file mode 100644
+index 0000000..a5be48a
+--- /dev/null
++++ b/components/page-title.tsx
+@@ -0,0 +1,41 @@
++import { getTranslations } from "next-intl/server";
++import { cn } from "@/lib/utils";
++import type { AppModuleId } from "@/lib/app-modules";
++
++/** Page heading style shared by every workspace page. */
++export const pageTitleClass =
++  "text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl";
++
++/** Small uppercase module caption above a page title ("ADMIN PANEL"). */
++export async function ModuleEyebrow({
++  id,
++  className,
++}: {
++  id: AppModuleId;
++  className?: string;
++}) {
++  const t = await getTranslations("AppModules");
++  return (
++    <p
++      className={cn(
++        "mb-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-primary",
++        className,
++      )}
++    >
++      {t(`${id}.name`)}
++    </p>
++  );
++}
++
++/** Segmented tab row (Documents' "Hồ sơ dữ liệu / Chia sẻ" style). */
++export const segmentedTabsClass =
++  "inline-flex w-fit max-w-full overflow-x-auto rounded-xl bg-slate-200/60 p-1";
++
++export function segmentedTabClass(active: boolean) {
++  return cn(
++    "flex items-center gap-2 whitespace-nowrap rounded-lg px-3.5 py-2 text-sm font-medium transition-colors",
++    active
++      ? "bg-white text-slate-900 shadow-sm"
++      : "text-slate-500 hover:text-slate-900",
++  );
++}
+diff --git a/components/sidebar-nav.tsx b/components/sidebar-nav.tsx
+new file mode 100644
+index 0000000..5616f5d
+--- /dev/null
++++ b/components/sidebar-nav.tsx
+@@ -0,0 +1,85 @@
++"use client";
++
++import Link from "next/link";
++import { cn } from "@/lib/utils";
++
++export interface SidebarNavItem {
++  href: string;
++  label: string;
++  icon: React.ReactNode;
++  active: boolean;
++  /** Small secondary line or trailing count. */
++  meta?: string;
++}
++
++export interface SidebarNavSection {
++  title?: string;
++  items: SidebarNavItem[];
++}
++
++/**
++ * Navigation list styled like the Documents customer list: icon tile + label,
++ * active item tinted primary. Used by the Academy and Admin sidebars.
++ */
++export function SidebarNav({
++  label,
++  sections,
++  onNavigate,
++}: {
++  label: string;
++  sections: SidebarNavSection[];
++  onNavigate?: () => void;
++}) {
++  return (
++    <nav
++      aria-label={label}
++      className="min-h-0 flex-1 space-y-5 overflow-y-auto px-3 pb-5 pt-1"
++    >
++      {sections.map((section, i) => (
++        <div key={section.title ?? i} className="space-y-1">
++          {section.title && (
++            <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
++              {section.title}
++            </p>
++          )}
++          {section.items.map((item) => (
++            <Link
++              key={item.href}
++              href={item.href}
++              onClick={onNavigate}
++              aria-current={item.active ? "page" : undefined}
++              className={cn(
++                "flex items-center gap-3 rounded-xl border px-3 py-2.5 text-sm transition-colors",
++                item.active
++                  ? "border-primary/30 bg-primary/5 font-semibold text-primary"
++                  : "border-transparent font-medium text-slate-700 hover:border-slate-200 hover:bg-slate-50",
++              )}
++            >
++              <span
++                className={cn(
++                  "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg [&>svg]:h-[18px] [&>svg]:w-[18px]",
++                  item.active
++                    ? "bg-primary text-white"
++                    : "bg-slate-100 text-slate-500",
++                )}
++              >
++                {item.icon}
++              </span>
++              <span className="min-w-0 flex-1 truncate">{item.label}</span>
++              {item.meta && (
++                <span
++                  className={cn(
++                    "shrink-0 text-xs tabular-nums",
++                    item.active ? "text-primary" : "text-slate-400",
++                  )}
++                >
++                  {item.meta}
++                </span>
++              )}
++            </Link>
++          ))}
++        </div>
++      ))}
++    </nav>
++  );
++}
+diff --git a/components/ui/card.tsx b/components/ui/card.tsx
+index 0c6e275..76c4e3b 100644
+--- a/components/ui/card.tsx
++++ b/components/ui/card.tsx
+@@ -8,7 +8,7 @@ export function Card({
+   return (
+     <div
+       className={cn(
+-        "rounded-lg border border-slate-200 bg-white shadow-sm",
++        "rounded-2xl border border-slate-200 bg-white shadow-sm",
+         className,
+       )}
+       {...props}
+@@ -34,7 +34,7 @@ export function CardTitle({
+ }: React.HTMLAttributes<HTMLHeadingElement>) {
+   return (
+     <h2
+-      className={cn("text-base font-semibold text-primary", className)}
++      className={cn("text-base font-bold text-slate-900", className)}
+       {...props}
+     />
+   );
+diff --git a/components/ui/dialog.tsx b/components/ui/dialog.tsx
+index d07bbb4..36fec20 100644
+--- a/components/ui/dialog.tsx
++++ b/components/ui/dialog.tsx
+@@ -49,12 +49,12 @@ export function Dialog({
+         aria-label={title}
+         onClick={(e) => e.stopPropagation()}
+         className={cn(
+-          "my-8 w-full max-w-lg rounded-lg border border-slate-200 bg-white shadow-xl",
++          "my-8 w-full max-w-lg rounded-2xl border border-slate-200 bg-white shadow-xl",
+           className,
+         )}
+       >
+         <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+-          <h2 className="text-base font-semibold text-primary">{title}</h2>
++          <h2 className="text-base font-bold text-slate-900">{title}</h2>
+           <button
+             type="button"
+             onClick={onClose}
+diff --git a/components/ui/page-skeleton.tsx b/components/ui/page-skeleton.tsx
+index 9efa1a6..ed248b5 100644
+--- a/components/ui/page-skeleton.tsx
++++ b/components/ui/page-skeleton.tsx
+@@ -15,7 +15,7 @@ export function PageSkeleton() {
+         {Array.from({ length: 6 }).map((_, i) => (
+           <div
+             key={i}
+-            className="h-32 animate-pulse rounded-lg border border-slate-200 bg-white"
++            className="h-32 animate-pulse rounded-2xl border border-slate-200 bg-white"
+           />
+         ))}
+       </div>
+diff --git a/components/workspace-aside.tsx b/components/workspace-aside.tsx
+new file mode 100644
+index 0000000..1c4afb3
+--- /dev/null
++++ b/components/workspace-aside.tsx
+@@ -0,0 +1,152 @@
++"use client";
++
++import { useEffect, useState } from "react";
++import { usePathname, useSearchParams } from "next/navigation";
++import { useTranslations } from "next-intl";
++import { ChevronDown, X } from "lucide-react";
++import { cn } from "@/lib/utils";
++
++/**
++ * Left column shared by every module workspace (Documents, Academy, Admin):
++ * a sticky full-height sidebar on `lg`+, and below that a bar showing where
++ * the user is that opens the same content in a slide-in drawer.
++ *
++ * `children` renders the panel content; `close` dismisses the drawer (no-op
++ * on desktop) and should be passed to links whose target only differs by
++ * query string, since those don't change the pathname.
++ */
++export function WorkspaceAside({
++  label,
++  current,
++  icon,
++  widthClass = "w-72",
++  children,
++}: {
++  /** Accessible name + small caption on the mobile bar. */
++  label: string;
++  /** What the mobile bar shows as the current location. */
++  current: string;
++  icon: React.ReactNode;
++  widthClass?: string;
++  children: (ctx: { close: () => void; inDrawer: boolean }) => React.ReactNode;
++}) {
++  const t = useTranslations("DocWorkspace");
++  const pathname = usePathname();
++  const searchParams = useSearchParams();
++  const location = `${pathname}?${searchParams.toString()}`;
++  const [open, setOpen] = useState(false);
++  const [prevLocation, setPrevLocation] = useState(location);
++
++  // Close the drawer after navigating (state adjusted during render).
++  if (location !== prevLocation) {
++    setPrevLocation(location);
++    setOpen(false);
++  }
++
++  // While the drawer is open: Escape closes it and the page behind is locked.
++  useEffect(() => {
++    if (!open) return;
++    const onKeyDown = (e: KeyboardEvent) => {
++      if (e.key === "Escape") setOpen(false);
++    };
++    document.addEventListener("keydown", onKeyDown);
++    const prevOverflow = document.body.style.overflow;
++    document.body.style.overflow = "hidden";
++    return () => {
++      document.removeEventListener("keydown", onKeyDown);
++      document.body.style.overflow = prevOverflow;
++    };
++  }, [open]);
++
++  const noop = () => {};
++
++  return (
++    <>
++      <aside
++        aria-label={label}
++        className={cn(
++          "sticky top-16 hidden h-[calc(100dvh-4rem)] shrink-0 flex-col border-r border-slate-200 bg-white lg:flex",
++          widthClass,
++        )}
++      >
++        {children({ close: noop, inDrawer: false })}
++      </aside>
++
++      <div className="border-b border-slate-200 bg-white px-4 py-3 sm:px-6 lg:hidden">
++        <button
++          type="button"
++          onClick={() => setOpen(true)}
++          aria-expanded={open}
++          className="flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 text-left shadow-sm hover:border-slate-300"
++        >
++          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
++            {icon}
++          </span>
++          <span className="min-w-0 flex-1">
++            <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">
++              {label}
++            </span>
++            <span className="block truncate text-sm font-medium text-slate-900">
++              {current}
++            </span>
++          </span>
++          <ChevronDown
++            className="h-4 w-4 shrink-0 text-slate-400"
++            aria-hidden
++          />
++        </button>
++      </div>
++
++      {open && (
++        <div
++          className="fixed inset-0 z-50 bg-slate-900/40 lg:hidden"
++          onClick={() => setOpen(false)}
++          role="presentation"
++        >
++          <div
++            role="dialog"
++            aria-modal="true"
++            aria-label={label}
++            onClick={(e) => e.stopPropagation()}
++            className="drawer-in relative flex h-full w-80 max-w-[85%] flex-col bg-white shadow-xl"
++          >
++            <button
++              type="button"
++              onClick={() => setOpen(false)}
++              aria-label={t("close")}
++              className="absolute right-3 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100"
++            >
++              <X className="h-5 w-5" />
++            </button>
++            {children({ close: () => setOpen(false), inDrawer: true })}
++          </div>
++        </div>
++      )}
++    </>
++  );
++}
++
++/** Caption block at the top of a workspace sidebar ("KHÁCH HÀNG / 4 khách hàng"). */
++export function AsideHeading({
++  title,
++  subtitle,
++  action,
++}: {
++  title: string;
++  subtitle?: React.ReactNode;
++  action?: React.ReactNode;
++}) {
++  return (
++    <div className="flex items-start justify-between gap-3 px-5 pb-3 pt-5 pr-14 lg:pr-5">
++      <div className="min-w-0">
++        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
++          {title}
++        </p>
++        {subtitle && (
++          <p className="mt-0.5 truncate text-sm text-slate-600">{subtitle}</p>
++        )}
++      </div>
++      {action}
++    </div>
++  );
++}
+diff --git a/components/workspace-content.tsx b/components/workspace-content.tsx
+new file mode 100644
+index 0000000..f524359
+--- /dev/null
++++ b/components/workspace-content.tsx
+@@ -0,0 +1,8 @@
++/** Right-hand content column of a module workspace (next to its sidebar). */
++export function WorkspaceContent({ children }: { children: React.ReactNode }) {
++  return (
++    <div className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
++      <div className="mx-auto max-w-[1400px] space-y-6">{children}</div>
++    </div>
++  );
++}
+diff --git a/messages/en.json b/messages/en.json
+index 350f592..c0c13b8 100644
+--- a/messages/en.json
++++ b/messages/en.json
+@@ -63,7 +63,12 @@
+     "docs": "API docs",
+     "menu": "Admin menu",
+     "collapse": "Collapse menu",
+-    "expand": "Expand menu"
++    "expand": "Expand menu",
++    "sectionData": "Data",
++    "sectionTraining": "Training",
++    "sectionSystem": "System",
++    "signedInAs": "Role: {role}",
++    "courses": "Courses"
+   },
+   "MisaTest": {
+     "title": "MISA API tester",
+@@ -699,5 +704,13 @@
+     "colActions": "Actions",
+     "download": "Download",
+     "downloadFile": "Download {name}"
++  },
++  "AcademyNav": {
++    "library": "Library",
++    "manage": "Manage",
++    "manageCourses": "Manage courses",
++    "courseCount": "{count, plural, one {# course} other {# courses}}",
++    "progressTitle": "Your progress",
++    "resultCount": "{count, plural, one {# result} other {# results}}"
+   }
+ }
+diff --git a/messages/vi.json b/messages/vi.json
+index 217600e..b32bb2b 100644
+--- a/messages/vi.json
++++ b/messages/vi.json
+@@ -63,7 +63,12 @@
+     "docs": "Tài liệu API",
+     "menu": "Menu quản trị",
+     "collapse": "Thu gọn menu",
+-    "expand": "Mở rộng menu"
++    "expand": "Mở rộng menu",
++    "sectionData": "Dữ liệu",
++    "sectionTraining": "Đào tạo",
++    "sectionSystem": "Hệ thống",
++    "signedInAs": "Quyền: {role}",
++    "courses": "Khóa học"
+   },
+   "MisaTest": {
+     "title": "Test API MISA",
+@@ -699,5 +704,13 @@
+     "colActions": "Thao tác",
+     "download": "Tải xuống",
+     "downloadFile": "Tải xuống {name}"
++  },
++  "AcademyNav": {
++    "library": "Thư viện",
++    "manage": "Quản lý",
++    "manageCourses": "Quản lý khóa học",
++    "courseCount": "{count, plural, other {# khóa học}}",
++    "progressTitle": "Tiến độ của bạn",
++    "resultCount": "{count, plural, other {# kết quả}}"
+   }
+ }

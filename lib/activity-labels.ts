@@ -38,6 +38,19 @@ export const ACTION_LABEL: Record<string, string> = {
   "lesson.deleted": "Deleted a lesson",
   "lesson_file.uploaded": "Uploaded a lesson PDF",
   "lesson_file.deleted": "Deleted a lesson PDF",
+  "billing.upload_created": "Uploaded a MISA file",
+  "billing.upload_deleted": "Deleted a MISA file",
+  "billing.calculated": "Calculated equipment rent",
+  "billing.confirmed": "Confirmed a rent calculation",
+  "billing.voided": "Voided a rent calculation",
+  "billing.draft_deleted": "Deleted a draft calculation",
+  "billing.exported": "Downloaded a rent calculation",
+  "billing.contract_created": "Created a billing contract",
+  "billing.contract_updated": "Updated a billing contract",
+  "billing.contract_config_saved": "Updated contract prices",
+  "billing.contract_deleted": "Deleted a billing contract",
+  "billing.range_created": "Added a non-billable period",
+  "billing.range_deleted": "Removed a non-billable period",
 };
 
 /** Minimal shape of a next-intl translator (from useTranslations/getTranslations). */

@@ -1,5 +1,5 @@
 import type { UserRole } from "@/lib/db/types";
-import { canManageContent } from "@/lib/auth/roles";
+import { canManageContent, canUseBilling } from "@/lib/auth/roles";
 
 /**
  * The apps ("modules") inside this project, shown in the header's module
@@ -10,7 +10,7 @@ import { canManageContent } from "@/lib/auth/roles";
  * module's guards (e.g. requireContentManager in app/(app)/admin/layout.tsx,
  * requireAdmin in admin-only actions) and by RLS.
  */
-export type AppModuleId = "documents" | "academy" | "admin";
+export type AppModuleId = "documents" | "academy" | "billing" | "admin";
 
 export interface AppModuleLink {
   id: AppModuleId;
@@ -21,6 +21,7 @@ export interface AppModuleLink {
 const MODULE_PREFIX: Record<AppModuleId, string> = {
   documents: "/documents",
   academy: "/academy",
+  billing: "/billing",
   admin: "/admin",
 };
 
@@ -33,6 +34,9 @@ export function getModulesForRole(role: UserRole): AppModuleLink[] {
     { id: "documents", href: "/documents" },
     { id: "academy", href: "/academy" },
   ];
+  if (canUseBilling(role)) {
+    modules.push({ id: "billing", href: "/billing" });
+  }
   if (canManageContent(role)) {
     // There is no /admin index page. Managers can't open /admin/users, so they
     // land on a section they can use (same targets the old user menu used).

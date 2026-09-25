@@ -8,3 +8,12 @@ import type { UserRole } from "@/lib/db/types";
 export function canManageContent(role: UserRole): boolean {
   return role === "admin" || role === "manager";
 }
+
+/**
+ * Whether a role may open the billing app ("Tính hóa đơn tự động"): upload
+ * MISA files, calculate rent, manage billing contracts. Admins and
+ * accountants only; managers are NOT included.
+ */
+export function canUseBilling(role: UserRole): boolean {
+  return role === "admin" || role === "accountant";
+}

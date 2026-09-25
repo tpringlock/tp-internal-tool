@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
+  Calculator,
   Check,
   ChevronDown,
   FolderOpen,
@@ -23,6 +24,7 @@ import { DropdownMenu, menuItemClass } from "@/components/ui/dropdown-menu";
 const ICONS: Record<AppModuleId, LucideIcon> = {
   documents: FolderOpen,
   academy: GraduationCap,
+  billing: Calculator,
   admin: ShieldCheck,
 };
 

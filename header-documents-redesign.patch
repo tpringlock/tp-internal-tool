@@ -1,0 +1,2601 @@
+diff --git a/app/(app)/academy/[courseId]/[lessonId]/page.tsx b/app/(app)/academy/[courseId]/[lessonId]/page.tsx
+index 295e877..cbb0588 100644
+--- a/app/(app)/academy/[courseId]/[lessonId]/page.tsx
++++ b/app/(app)/academy/[courseId]/[lessonId]/page.tsx
+@@ -285,7 +285,7 @@ export default async function LessonPage({
+         </div>
+ 
+         {/* Right column: course content / documents toggle */}
+-        <aside className="lg:sticky lg:top-6">
++        <aside className="lg:sticky lg:top-24">
+           <CourseContentPanel
+             documents={courseFiles}
+             contentMeta={t("lessonsDone", { done: doneCount, total })}
+diff --git a/app/(app)/academy/[courseId]/page.tsx b/app/(app)/academy/[courseId]/page.tsx
+index 010cb0e..4be1152 100644
+--- a/app/(app)/academy/[courseId]/page.tsx
++++ b/app/(app)/academy/[courseId]/page.tsx
+@@ -194,7 +194,7 @@ export default async function CoursePage({
+         </div>
+ 
+         {/* Sticky aside */}
+-        <aside className="space-y-4 lg:sticky lg:top-6">
++        <aside className="space-y-4 lg:sticky lg:top-24">
+           <Card className="overflow-hidden">
+             <CourseThumb course={course} />
+             <CardBody className="space-y-4">
+diff --git a/app/(app)/admin/projects/[id]/delete-document-button.tsx b/app/(app)/admin/projects/[id]/delete-document-button.tsx
+index 5e80580..807fede 100644
+--- a/app/(app)/admin/projects/[id]/delete-document-button.tsx
++++ b/app/(app)/admin/projects/[id]/delete-document-button.tsx
+@@ -2,7 +2,7 @@
+ 
+ import { useActionState, useEffect, useState } from "react";
+ import { useTranslations } from "next-intl";
+-import { X } from "lucide-react";
++import { Trash2, X } from "lucide-react";
+ import { deleteDocument } from "@/app/actions/documents";
+ import type { FormState } from "@/app/actions/auth";
+ import { Button } from "@/components/ui/button";
+@@ -18,9 +18,12 @@ import { useToast, useFormStateToast } from "@/components/ui/toast";
+ export function DeleteDocumentButton({
+   documentId,
+   documentName,
++  variant = "outline",
+ }: {
+   documentId: string;
+   documentName: string;
++  /** "outline": bordered X (admin tables); "ghost": red trash icon (workspace). */
++  variant?: "outline" | "ghost";
+ }) {
+   const t = useTranslations("Admin");
+   const { toast } = useToast();
+@@ -45,9 +48,17 @@ export function DeleteDocumentButton({
+         onClick={() => setOpen(true)}
+         aria-label={t("deleteDocument")}
+         title={t("deleteDocument")}
+-        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-500 hover:border-red-300 hover:bg-red-50 hover:text-red-600"
++        className={
++          variant === "ghost"
++            ? "inline-flex h-9 w-9 items-center justify-center rounded-lg text-red-500 transition-colors hover:bg-red-50 hover:text-red-600"
++            : "inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-500 hover:border-red-300 hover:bg-red-50 hover:text-red-600"
++        }
+       >
+-        <X className="h-4 w-4" />
++        {variant === "ghost" ? (
++          <Trash2 className="h-[18px] w-[18px]" />
++        ) : (
++          <X className="h-4 w-4" />
++        )}
+       </button>
+ 
+       <Dialog
+diff --git a/app/(app)/documents/[id]/page.tsx b/app/(app)/documents/[id]/page.tsx
+index a577a7c..4ac62ea 100644
+--- a/app/(app)/documents/[id]/page.tsx
++++ b/app/(app)/documents/[id]/page.tsx
+@@ -84,7 +84,7 @@ export default async function DocumentDetailPage({
+   }));
+ 
+   return (
+-    <div className="space-y-6">
++    <div className="mx-auto max-w-6xl space-y-6">
+       <div className="flex flex-wrap items-start justify-between gap-3">
+         <div>
+           <Link
+diff --git a/app/(app)/documents/client-sidebar.tsx b/app/(app)/documents/client-sidebar.tsx
+new file mode 100644
+index 0000000..35a37f2
+--- /dev/null
++++ b/app/(app)/documents/client-sidebar.tsx
+@@ -0,0 +1,275 @@
++"use client";
++
++import { useEffect, useMemo, useState } from "react";
++import Link from "next/link";
++import { usePathname } from "next/navigation";
++import { useTranslations } from "next-intl";
++import { Building2, ChevronDown, Plus, Search, X } from "lucide-react";
++import { cn } from "@/lib/utils";
++import { Dialog } from "@/components/ui/dialog";
++import { CreateClientForm } from "@/app/(app)/admin/clients/client-forms";
++
++export interface SidebarClient {
++  id: string;
++  name: string;
++  count: number;
++}
++
++/** Lower-case and strip Vietnamese diacritics so "ha noi" finds "Hà Nội". */
++function fold(s: string): string {
++  return s
++    .normalize("NFD")
++    .replace(/[̀-ͯ]/g, "")
++    .replace(/đ/g, "d")
++    .replace(/Đ/g, "d")
++    .toLowerCase();
++}
++
++/** Customer id from /documents/clients/<id>[/...], if any. */
++function activeClientId(pathname: string): string | undefined {
++  const m = pathname.match(/^\/documents\/clients\/([^/]+)/);
++  return m?.[1];
++}
++
++/**
++ * Customer list for the Documents workspace. Sticky full-height column on
++ * `lg`+; below that a bar showing the current customer that opens the same
++ * list in a slide-in drawer.
++ */
++export function ClientSidebar({
++  clients,
++  canManage,
++}: {
++  clients: SidebarClient[];
++  canManage: boolean;
++}) {
++  const t = useTranslations("DocWorkspace");
++  const pathname = usePathname();
++  const activeId = activeClientId(pathname);
++  const active = clients.find((c) => c.id === activeId);
++  const [drawerOpen, setDrawerOpen] = useState(false);
++  const [addOpen, setAddOpen] = useState(false);
++  const [prevPathname, setPrevPathname] = useState(pathname);
++
++  // Close the drawer after navigating (state adjusted during render).
++  if (pathname !== prevPathname) {
++    setPrevPathname(pathname);
++    setDrawerOpen(false);
++  }
++
++  // While the drawer is open: Escape closes it and the page behind is locked.
++  useEffect(() => {
++    if (!drawerOpen) return;
++    const onKeyDown = (e: KeyboardEvent) => {
++      if (e.key === "Escape") setDrawerOpen(false);
++    };
++    document.addEventListener("keydown", onKeyDown);
++    const prevOverflow = document.body.style.overflow;
++    document.body.style.overflow = "hidden";
++    return () => {
++      document.removeEventListener("keydown", onKeyDown);
++      document.body.style.overflow = prevOverflow;
++    };
++  }, [drawerOpen]);
++
++  const panel = (variant: "sidebar" | "drawer") => (
++    <ClientList
++      clients={clients}
++      activeId={activeId}
++      canManage={canManage}
++      onAdd={() => setAddOpen(true)}
++      onClose={variant === "drawer" ? () => setDrawerOpen(false) : undefined}
++    />
++  );
++
++  return (
++    <>
++      {/* Desktop column */}
++      <aside
++        aria-label={t("customers")}
++        className="sticky top-16 hidden h-[calc(100dvh-4rem)] w-80 shrink-0 flex-col border-r border-slate-200 bg-white lg:flex"
++      >
++        {panel("sidebar")}
++      </aside>
++
++      {/* Mobile / tablet: current customer + drawer trigger */}
++      <div className="border-b border-slate-200 bg-white px-4 py-3 sm:px-6 lg:hidden">
++        <button
++          type="button"
++          onClick={() => setDrawerOpen(true)}
++          aria-expanded={drawerOpen}
++          className="flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 text-left shadow-sm hover:border-slate-300"
++        >
++          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
++            <Building2 className="h-4 w-4" aria-hidden />
++          </span>
++          <span className="min-w-0 flex-1">
++            <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">
++              {t("customers")}
++            </span>
++            <span className="block truncate text-sm font-medium text-slate-900">
++              {active ? active.name : t("chooseCustomer")}
++            </span>
++          </span>
++          <ChevronDown className="h-4 w-4 shrink-0 text-slate-400" aria-hidden />
++        </button>
++      </div>
++
++      {drawerOpen && (
++        <div
++          className="fixed inset-0 z-50 bg-slate-900/40 lg:hidden"
++          onClick={() => setDrawerOpen(false)}
++          role="presentation"
++        >
++          <div
++            role="dialog"
++            aria-modal="true"
++            aria-label={t("customers")}
++            onClick={(e) => e.stopPropagation()}
++            className="drawer-in flex h-full w-80 max-w-[85%] flex-col bg-white shadow-xl"
++          >
++            {panel("drawer")}
++          </div>
++        </div>
++      )}
++
++      {canManage && (
++        <Dialog
++          open={addOpen}
++          onClose={() => setAddOpen(false)}
++          title={t("addCustomer")}
++        >
++          <CreateClientForm />
++        </Dialog>
++      )}
++    </>
++  );
++}
++
++function ClientList({
++  clients,
++  activeId,
++  canManage,
++  onAdd,
++  onClose,
++}: {
++  clients: SidebarClient[];
++  activeId: string | undefined;
++  canManage: boolean;
++  onAdd: () => void;
++  onClose?: () => void;
++}) {
++  const t = useTranslations("DocWorkspace");
++  const [query, setQuery] = useState("");
++
++  const visible = useMemo(() => {
++    const q = fold(query.trim());
++    return q ? clients.filter((c) => fold(c.name).includes(q)) : clients;
++  }, [clients, query]);
++
++  return (
++    <>
++      <div className="flex items-start justify-between gap-3 px-5 pb-3 pt-5">
++        <div>
++          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
++            {t("customers")}
++          </p>
++          <p className="mt-0.5 text-sm text-slate-600">
++            {t("customerCount", { count: clients.length })}
++          </p>
++        </div>
++        <div className="flex items-center gap-1.5">
++          {canManage && (
++            <button
++              type="button"
++              onClick={onAdd}
++              aria-label={t("addCustomer")}
++              title={t("addCustomer")}
++              className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white shadow-sm transition-colors hover:bg-primary-hover"
++            >
++              <Plus className="h-4 w-4" />
++            </button>
++          )}
++          {onClose && (
++            <button
++              type="button"
++              onClick={onClose}
++              aria-label={t("close")}
++              className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100"
++            >
++              <X className="h-5 w-5" />
++            </button>
++          )}
++        </div>
++      </div>
++
++      <div className="px-5 pb-3">
++        <label className="relative block">
++          <span className="sr-only">{t("filterCustomers")}</span>
++          <Search
++            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
++            aria-hidden
++          />
++          <input
++            value={query}
++            onChange={(e) => setQuery(e.target.value)}
++            placeholder={t("filterCustomers")}
++            className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:border-primary focus-visible:bg-white focus-visible:outline-none"
++          />
++        </label>
++      </div>
++
++      <nav
++        aria-label={t("customers")}
++        className="min-h-0 flex-1 space-y-2 overflow-y-auto px-3 pb-5"
++      >
++        {visible.length === 0 ? (
++          <p className="px-2 py-6 text-center text-sm text-slate-400">
++            {clients.length === 0 ? t("noCustomers") : t("noCustomerMatches")}
++          </p>
++        ) : (
++          visible.map((c) => {
++            const isActive = c.id === activeId;
++            return (
++              <Link
++                key={c.id}
++                href={`/documents/clients/${c.id}`}
++                aria-current={isActive ? "page" : undefined}
++                className={cn(
++                  "flex items-center gap-3 rounded-xl border px-3 py-3 transition-colors",
++                  isActive
++                    ? "border-primary/30 bg-primary/5"
++                    : "border-transparent hover:border-slate-200 hover:bg-slate-50",
++                )}
++              >
++                <span
++                  className={cn(
++                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
++                    isActive
++                      ? "bg-primary text-white"
++                      : "bg-slate-100 text-slate-500",
++                  )}
++                >
++                  <Building2 className="h-[18px] w-[18px]" aria-hidden />
++                </span>
++                <span className="min-w-0 flex-1">
++                  <span
++                    className={cn(
++                      "line-clamp-2 text-sm font-semibold leading-snug",
++                      isActive ? "text-primary" : "text-slate-800",
++                    )}
++                  >
++                    {c.name}
++                  </span>
++                  <span className="mt-0.5 block text-xs text-slate-500">
++                    {t("fileCount", { count: c.count })}
++                  </span>
++                </span>
++              </Link>
++            );
++          })
++        )}
++      </nav>
++    </>
++  );
++}
+diff --git a/app/(app)/documents/clients/[clientId]/add-project-button.tsx b/app/(app)/documents/clients/[clientId]/add-project-button.tsx
+new file mode 100644
+index 0000000..59cde7a
+--- /dev/null
++++ b/app/(app)/documents/clients/[clientId]/add-project-button.tsx
+@@ -0,0 +1,34 @@
++"use client";
++
++import { useState } from "react";
++import { Plus } from "lucide-react";
++import { Dialog } from "@/components/ui/dialog";
++import { CreateProjectForm } from "@/app/(app)/admin/projects/project-forms";
++
++/** Round "+" button that opens the create-project form for this customer. */
++export function AddProjectButton({
++  client,
++  label,
++}: {
++  client: { id: string; name: string };
++  label: string;
++}) {
++  const [open, setOpen] = useState(false);
++
++  return (
++    <>
++      <button
++        type="button"
++        onClick={() => setOpen(true)}
++        aria-label={label}
++        title={label}
++        className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-300 text-slate-600 transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary"
++      >
++        <Plus className="h-4 w-4" />
++      </button>
++      <Dialog open={open} onClose={() => setOpen(false)} title={label}>
++        <CreateProjectForm clients={[client]} />
++      </Dialog>
++    </>
++  );
++}
+diff --git a/app/(app)/documents/clients/[clientId]/page.tsx b/app/(app)/documents/clients/[clientId]/page.tsx
+index 53be6dd..b3191f0 100644
+--- a/app/(app)/documents/clients/[clientId]/page.tsx
++++ b/app/(app)/documents/clients/[clientId]/page.tsx
+@@ -1,30 +1,45 @@
+ import Link from "next/link";
+ import { notFound } from "next/navigation";
+ import {
+-  ArrowLeft,
+-  Download,
++  Archive,
++  CloudUpload,
+   FileText,
++  Folder,
+   FolderOpen,
+-  Upload,
++  Link2,
++  Settings2,
+ } from "lucide-react";
+ import { getTranslations } from "next-intl/server";
+ import { requireUser } from "@/lib/auth/dal";
+ import { canManageContent } from "@/lib/auth/roles";
+ import { createClient } from "@/lib/supabase/server";
+-import { Button } from "@/components/ui/button";
+-import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
++import { cn } from "@/lib/utils";
+ import { Pagination } from "@/components/ui/pagination";
+-import { AddFolderTile } from "@/components/add-folder-tile";
+-import { CreateProjectForm } from "@/app/(app)/admin/projects/project-forms";
+ import { formatBytes } from "@/lib/format";
+ import { env } from "@/lib/env";
++import { DocumentSearch } from "../../document-search";
++import { DocumentTable, type DocumentTableRow } from "../../document-table";
+ import {
+   FolderShareManager,
+   type FolderShareLinkView,
+ } from "./folder-share-manager";
+ import { ScrollToHighlight } from "./scroll-to-highlight";
++import { AddProjectButton } from "./add-project-button";
+ import type { DocType } from "@/lib/db/types";
+ 
++interface ClientRow {
++  id: string;
++  name: string;
++  code: string;
++  tax_code: string | null;
++}
++
++interface ProjectRow {
++  id: string;
++  name: string;
++  status: "active" | "archived";
++}
++
+ interface DocRow {
+   id: string;
+   canonical_name: string;
+@@ -34,44 +49,86 @@ interface DocRow {
+   projects: { id: string; name: string; client_id: string } | null;
+ }
+ 
+-interface ProjectGroup {
+-  id: string;
+-  name: string;
+-  documents: DocRow[];
+-}
+-
+ const PAGE_SIZE = 25;
+ 
+-export default async function ClientFolderPage({
++type Tab = "files" | "share";
++
++export default async function ClientWorkspacePage({
+   params,
+   searchParams,
+ }: {
+   params: Promise<{ clientId: string }>;
+-  searchParams: Promise<{ highlight?: string; page?: string }>;
++  searchParams: Promise<{
++    highlight?: string;
++    page?: string;
++    project?: string;
++    tab?: string;
++  }>;
+ }) {
+   const { clientId } = await params;
+-  const { highlight = "", page = "" } = await searchParams;
++  const sp = await searchParams;
++  const highlight = sp.highlight ?? "";
++  const tab: Tab = sp.tab === "share" ? "share" : "files";
+   const user = await requireUser();
+   const canManage = canManageContent(user.profile.role);
++  const isAdmin = user.profile.role === "admin";
+   const supabase = await createClient();
+-  const t = await getTranslations("Documents");
+-  const dt = await getTranslations("DocTypes");
++  const t = await getTranslations("DocWorkspace");
+   const ts = await getTranslations("Shares");
+ 
+   const { data: client } = await supabase
+     .from("clients")
+-    .select("id, name")
++    .select("id, name, code, tax_code")
+     .eq("id", clientId)
+-    .single<{ id: string; name: string }>();
+-
++    .single<ClientRow>();
+   if (!client) notFound();
+ 
+-  let pageNum = Math.max(1, Number(page) || 1);
++  // Projects ("thư mục") the user may see — RLS: all for admins/managers,
++  // assigned ones for employees — plus per-project counts and total size from
++  // the documents the user can see.
++  const [{ data: projectData }, { data: statData }] = await Promise.all([
++    supabase
++      .from("projects")
++      .select("id, name, status")
++      .eq("client_id", clientId)
++      .order("status")
++      .order("name"),
++    supabase
++      .from("documents")
++      .select("project_id, file_size, projects!inner ( client_id )")
++      .eq("projects.client_id", clientId),
++  ]);
++
++  const countByProject = new Map<string, number>();
++  let totalBytes = 0;
++  let totalFiles = 0;
++  for (const row of (statData ?? []) as {
++    project_id: string;
++    file_size: number;
++  }[]) {
++    countByProject.set(
++      row.project_id,
++      (countByProject.get(row.project_id) ?? 0) + 1,
++    );
++    totalBytes += row.file_size;
++    totalFiles += 1;
++  }
++
++  // Employees only see projects they belong to; for them hide assigned-but-
++  // empty archived projects to keep the list short.
++  const projects = ((projectData ?? []) as ProjectRow[]).filter(
++    (p) =>
++      canManage || p.status === "active" || (countByProject.get(p.id) ?? 0) > 0,
++  );
++  const selected = projects.find((p) => p.id === sp.project);
++  const projectId = selected?.id ?? "";
++
++  // ---- Documents (files tab) -------------------------------------------
++  let pageNum = Math.max(1, Number(sp.page) || 1);
+ 
+   // Search results deep-link with ?highlight=<docId> but no page; locate the
+-  // page containing that document (created_at desc order) so the scroll-to
+-  // target is actually rendered.
+-  if (highlight && !page) {
++  // page containing that document (created_at desc) so it is rendered.
++  if (tab === "files" && highlight && !sp.page && !projectId) {
+     const { data: hlDoc } = await supabase
+       .from("documents")
+       .select("created_at, projects!inner ( client_id )")
+@@ -91,171 +148,351 @@ export default async function ClientFolderPage({
+     }
+   }
+ 
+-  const from = (pageNum - 1) * PAGE_SIZE;
+-  const { data: docData, count } = await supabase
+-    .from("documents")
+-    .select(
+-      `id, canonical_name, doc_type, file_size, created_at,
+-       projects!inner ( id, name, client_id )`,
+-      { count: "exact" },
+-    )
+-    .eq("projects.client_id", clientId)
+-    .order("created_at", { ascending: false })
+-    .range(from, from + PAGE_SIZE - 1);
+-
+-  const documents = (docData ?? []) as unknown as DocRow[];
+-  const total = count ?? 0;
++  let documents: DocumentTableRow[] = [];
++  let total = 0;
++  if (tab === "files") {
++    const from = (pageNum - 1) * PAGE_SIZE;
++    let query = supabase
++      .from("documents")
++      .select(
++        `id, canonical_name, doc_type, file_size, created_at,
++         projects!inner ( id, name, client_id )`,
++        { count: "exact" },
++      )
++      .eq("projects.client_id", clientId)
++      .order("created_at", { ascending: false })
++      .range(from, from + PAGE_SIZE - 1);
++    if (projectId) query = query.eq("project_id", projectId);
++    const { data, count } = await query;
++    documents = ((data ?? []) as unknown as DocRow[]).map((d) => ({
++      id: d.id,
++      canonical_name: d.canonical_name,
++      doc_type: d.doc_type,
++      file_size: d.file_size,
++      created_at: d.created_at,
++      // Name the project only when the list spans several of them.
++      context: projectId ? null : d.projects?.name,
++    }));
++    total = count ?? 0;
++  }
+   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+ 
+-  // Group by project (alphabetical by project name).
+-  const byProject = new Map<string, ProjectGroup>();
+-  for (const d of documents) {
+-    if (!d.projects) continue;
+-    const p = d.projects;
+-    let group = byProject.get(p.id);
+-    if (!group) {
+-      group = { id: p.id, name: p.name, documents: [] };
+-      byProject.set(p.id, group);
+-    }
+-    group.documents.push(d);
++  // ---- Share links (share tab) -----------------------------------------
++  let shareLinks: FolderShareLinkView[] = [];
++  if (tab === "share") {
++    const { data: shareData } = await supabase
++      .from("folder_share_links")
++      .select("id, token, expires_at, revoked_at, created_at")
++      .eq("client_id", clientId)
++      .order("created_at", { ascending: false });
++    shareLinks = (shareData ?? []).map((l) => ({
++      id: l.id,
++      url: `${env.siteUrl()}/share/folder/${l.token}`,
++      expires_at: l.expires_at,
++      revoked_at: l.revoked_at,
++      created_at: l.created_at,
++    }));
+   }
+-  const groups = [...byProject.values()].sort((a, b) =>
+-    a.name.localeCompare(b.name),
+-  );
+ 
+-  const { data: shareData } = await supabase
+-    .from("folder_share_links")
+-    .select("id, token, expires_at, revoked_at, created_at")
+-    .eq("client_id", clientId)
+-    .order("created_at", { ascending: false });
++  const base = `/documents/clients/${clientId}`;
++  const projectHref = (id?: string) => (id ? `${base}?project=${id}` : base);
++  const uploadHref = `/documents/upload?client=${clientId}`;
+ 
+-  const shareLinks: FolderShareLinkView[] = (shareData ?? []).map((l) => ({
+-    id: l.id,
+-    url: `${env.siteUrl()}/share/folder/${l.token}`,
+-    expires_at: l.expires_at,
+-    revoked_at: l.revoked_at,
+-    created_at: l.created_at,
+-  }));
++  const stats = [
++    { label: t("statFiles"), value: String(totalFiles) },
++    { label: t("statStorage"), value: formatBytes(totalBytes) },
++    { label: t("statProjects"), value: String(projects.length) },
++  ];
+ 
+   return (
+-    <div className="space-y-6">
++    <div className="mx-auto max-w-[1400px] space-y-6">
+       {highlight && <ScrollToHighlight targetId={`file-${highlight}`} />}
+ 
+-      <div className="flex flex-wrap items-start justify-between gap-3">
++      {/* Heading + stats */}
++      <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+         <div className="min-w-0">
+-          <Link
+-            href="/documents"
+-            className="inline-flex items-center gap-1 text-sm text-slate-500 underline-offset-2 hover:text-slate-900 hover:underline"
+-          >
+-            <ArrowLeft className="h-4 w-4" />
+-            {t("backToFolders")}
+-          </Link>
+-          <h1 className="mt-1 flex min-w-0 items-center gap-2 text-xl font-semibold text-primary">
+-            <FolderOpen className="h-6 w-6 shrink-0" />
+-            <span className="min-w-0 break-words">{client.name}</span>
++          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
++            {t("eyebrow")}
++          </p>
++          <h1 className="mt-1.5 break-words text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
++            {client.name}
+           </h1>
++          <p className="mt-1.5 text-sm text-slate-500">
++            {t("customerCode")}:{" "}
++            <span className="font-mono text-slate-700">{client.code}</span>
++            <span className="mx-2 text-slate-300">·</span>
++            {client.tax_code ? (
++              <>
++                {t("taxCode")}:{" "}
++                <span className="font-mono text-slate-700">
++                  {client.tax_code}
++                </span>
++              </>
++            ) : (
++              t("noTaxCode")
++            )}
++          </p>
+         </div>
+-        <Link href={`/documents/upload?client=${clientId}`}>
+-          <Button>
+-            <Upload className="h-4 w-4" />
+-            {t("uploadToFolder")}
+-          </Button>
+-        </Link>
+-      </div>
+ 
+-      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-3">
+-        <div className="min-w-0 space-y-6 lg:col-span-2">
+-          {canManage && (
+-            <div className="w-fit max-w-full">
+-              <AddFolderTile
+-                label={t("addProject")}
+-                dialogTitle={t("addProjectTitle")}
+-              >
+-                <CreateProjectForm
+-                  clients={[{ id: clientId, name: client.name }]}
+-                />
+-              </AddFolderTile>
++        <dl className="grid shrink-0 grid-cols-3 gap-2 sm:gap-3">
++          {stats.map((s) => (
++            <div
++              key={s.label}
++              className="min-w-0 rounded-2xl border border-slate-200 bg-white px-3 py-2.5 shadow-sm sm:min-w-28 sm:px-4 sm:py-3"
++            >
++              <dt className="truncate text-xs text-slate-500 sm:text-sm">
++                {s.label}
++              </dt>
++              <dd className="mt-0.5 truncate text-base font-bold text-slate-900 sm:text-xl">
++                {s.value}
++              </dd>
+             </div>
+-          )}
+-
+-          {groups.length === 0 ? (
+-            <Card>
+-              <CardBody>
+-                <p className="text-sm text-slate-500">{t("noDocuments")}</p>
+-              </CardBody>
+-            </Card>
+-          ) : (
+-            groups.map((group) => (
+-              <Card key={group.id}>
+-                <CardHeader>
+-                  <CardTitle>{group.name}</CardTitle>
+-                </CardHeader>
++          ))}
++        </dl>
++      </div>
+ 
+-                <CardBody className="p-0">
+-                  <ul className="divide-y divide-slate-100">
+-                    {group.documents.map((d) => (
+-                      <li
+-                        key={d.id}
+-                        id={`file-${d.id}`}
+-                        className={`flex items-center gap-3 px-5 py-3 transition-colors ${
+-                          d.id === highlight
+-                            ? "bg-primary/10 ring-1 ring-inset ring-primary"
+-                            : ""
+-                        }`}
+-                      >
+-                        <FileText className="h-5 w-5 shrink-0 text-slate-400" />
++      {/* Tabs + search */}
++      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
++        <nav
++          aria-label={t("tabsLabel")}
++          className="inline-flex w-fit rounded-xl bg-slate-200/60 p-1"
++        >
++          {(
++            [
++              { id: "files", href: projectHref(projectId), Icon: FolderOpen, label: t("tabFiles") },
++              { id: "share", href: `${base}?tab=share`, Icon: Link2, label: t("tabShare") },
++            ] as const
++          ).map((item) => (
++            <Link
++              key={item.id}
++              href={item.href}
++              aria-current={tab === item.id ? "page" : undefined}
++              className={cn(
++                "flex items-center gap-2 whitespace-nowrap rounded-lg px-3.5 py-2 text-sm font-medium transition-colors",
++                tab === item.id
++                  ? "bg-white text-slate-900 shadow-sm"
++                  : "text-slate-500 hover:text-slate-900",
++              )}
++            >
++              <item.Icon className="h-4 w-4" aria-hidden />
++              {item.label}
++            </Link>
++          ))}
++        </nav>
++        <DocumentSearch />
++      </div>
+ 
+-                        <div className="min-w-0 flex-1">
+-                          <Link
+-                            href={`/documents/${d.id}`}
+-                            className="block truncate font-medium text-slate-900 underline-offset-2 hover:underline"
+-                          >
+-                            {d.canonical_name}
+-                          </Link>
++      {tab === "share" ? (
++        <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
++          <header className="border-b border-slate-100 px-5 py-4">
++            <h2 className="text-base font-semibold text-slate-900">
++              {ts("folderShareTitle")}
++            </h2>
++          </header>
++          <div className="min-w-0 overflow-hidden px-5 py-4">
++            <FolderShareManager clientId={clientId} links={shareLinks} />
++          </div>
++        </section>
++      ) : (
++        <div className="grid gap-5 xl:grid-cols-[17rem_minmax(0,1fr)]">
++          {/* Projects ("thư mục") — card on xl, chip row below */}
++          <section
++            aria-label={t("projects")}
++            className="hidden self-start rounded-2xl border border-slate-200 bg-white shadow-sm xl:block"
++          >
++            <header className="flex items-center justify-between px-5 pb-2 pt-4">
++              <h2 className="font-semibold text-slate-900">{t("projects")}</h2>
++              {canManage && (
++                <AddProjectButton
++                  client={{ id: client.id, name: client.name }}
++                  label={t("addProject")}
++                />
++              )}
++            </header>
++            <ul className="space-y-0.5 px-3 pb-3">
++              <li>
++                <ProjectLink
++                  href={projectHref()}
++                  active={!projectId}
++                  label={t("allFiles")}
++                  count={totalFiles}
++                  all
++                />
++              </li>
++              {projects.map((p) => (
++                <li key={p.id}>
++                  <ProjectLink
++                    href={projectHref(p.id)}
++                    active={p.id === projectId}
++                    label={p.name}
++                    count={countByProject.get(p.id) ?? 0}
++                    archived={p.status === "archived"}
++                    archivedLabel={t("archived")}
++                  />
++                </li>
++              ))}
++              {projects.length === 0 && (
++                <li className="px-3 py-4 text-sm text-slate-400">
++                  {t("noProjects")}
++                </li>
++              )}
++            </ul>
++            {canManage && selected && (
++              <footer className="border-t border-slate-100 px-5 py-3">
++                <Link
++                  href={`/admin/projects/${selected.id}`}
++                  className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-primary"
++                >
++                  <Settings2 className="h-4 w-4" aria-hidden />
++                  {t("manageProject")}
++                </Link>
++              </footer>
++            )}
++          </section>
+ 
+-                          <div className="text-xs text-slate-400">
+-                            {dt(d.doc_type)} · {formatBytes(d.file_size)}
+-                          </div>
+-                        </div>
++          <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6 xl:hidden">
++            <Chip href={projectHref()} active={!projectId}>
++              {t("allFiles")} · {totalFiles}
++            </Chip>
++            {projects.map((p) => (
++              <Chip key={p.id} href={projectHref(p.id)} active={p.id === projectId}>
++                {p.name} · {countByProject.get(p.id) ?? 0}
++              </Chip>
++            ))}
++            {canManage && (
++              <AddProjectButton
++                client={{ id: client.id, name: client.name }}
++                label={t("addProject")}
++              />
++            )}
++          </div>
+ 
+-                        <a
+-                          href={`/api/documents/${d.id}?dl=1`}
+-                          className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-slate-700 underline-offset-2 hover:text-slate-900 hover:underline"
+-                        >
+-                          <Download className="h-4 w-4 shrink-0" />
++          {/* Files */}
++          <section className="min-w-0 rounded-2xl border border-slate-200 bg-white shadow-sm">
++            <header className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
++              <div className="min-w-0">
++                <h2 className="truncate text-lg font-bold text-slate-900">
++                  {selected ? selected.name : t("allFiles")}
++                </h2>
++                <p className="text-sm text-slate-500">
++                  {t("fileCount", { count: total })} · {t("uploadLimit")}
++                </p>
++              </div>
++              <Link
++                href={uploadHref}
++                className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-hover"
++              >
++                <CloudUpload className="h-4 w-4" aria-hidden />
++                {t("upload")}
++              </Link>
++            </header>
+ 
+-                          <span className="hidden sm:inline">
+-                            {t("download")}
+-                          </span>
+-                        </a>
+-                      </li>
+-                    ))}
+-                  </ul>
+-                </CardBody>
+-              </Card>
+-            ))
+-          )}
++            {documents.length === 0 ? (
++              <div className="flex flex-col items-center gap-2 px-5 py-14 text-center">
++                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
++                  <FileText className="h-6 w-6" aria-hidden />
++                </span>
++                <p className="text-sm text-slate-500">{t("noFiles")}</p>
++              </div>
++            ) : (
++              <DocumentTable
++                documents={documents}
++                highlightId={highlight}
++                canDelete={isAdmin}
++              />
++            )}
+ 
+-          <Pagination
+-            page={pageNum}
+-            totalPages={totalPages}
+-            total={total}
+-            hrefForPage={(p) => `/documents/clients/${clientId}?page=${p}`}
+-          />
++            {totalPages > 1 && (
++              <div className="border-t border-slate-100 px-5 py-3">
++                <Pagination
++                  page={pageNum}
++                  totalPages={totalPages}
++                  total={total}
++                  hrefForPage={(p) =>
++                    projectId
++                      ? `${base}?project=${projectId}&page=${p}`
++                      : `${base}?page=${p}`
++                  }
++                />
++              </div>
++            )}
++          </section>
+         </div>
++      )}
++    </div>
++  );
++}
+ 
+-        <div className="min-w-0 w-full">
+-          <Card className="w-full">
+-            <CardHeader>
+-              <CardTitle>{ts("folderShareTitle")}</CardTitle>
+-            </CardHeader>
++function ProjectLink({
++  href,
++  active,
++  label,
++  count,
++  all = false,
++  archived = false,
++  archivedLabel,
++}: {
++  href: string;
++  active: boolean;
++  label: string;
++  count: number;
++  all?: boolean;
++  archived?: boolean;
++  archivedLabel?: string;
++}) {
++  const Icon = archived ? Archive : active ? FolderOpen : Folder;
++  return (
++    <Link
++      href={href}
++      aria-current={active ? "page" : undefined}
++      className={cn(
++        "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
++        active
++          ? "bg-primary/10 font-semibold text-primary"
++          : "text-slate-700 hover:bg-slate-50",
++        archived && !active && "text-slate-400",
++      )}
++    >
++      <Icon className="h-[18px] w-[18px] shrink-0" aria-hidden />
++      <span className={cn("min-w-0 flex-1 truncate", all && "font-medium")}>
++        {label}
++      </span>
++      {archived && (
++        <span className="sr-only">({archivedLabel})</span>
++      )}
++      <span
++        className={cn(
++          "shrink-0 text-xs tabular-nums",
++          active ? "text-primary" : "text-slate-400",
++        )}
++      >
++        {count}
++      </span>
++    </Link>
++  );
++}
+ 
+-            <CardBody className="min-w-0 overflow-hidden">
+-              <FolderShareManager clientId={clientId} links={shareLinks} />
+-            </CardBody>
+-          </Card>
+-        </div>
+-      </div>
+-    </div>
++function Chip({
++  href,
++  active,
++  children,
++}: {
++  href: string;
++  active: boolean;
++  children: React.ReactNode;
++}) {
++  return (
++    <Link
++      href={href}
++      aria-current={active ? "page" : undefined}
++      className={cn(
++        "shrink-0 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-sm transition-colors",
++        active
++          ? "border-primary bg-primary text-white"
++          : "border-slate-200 bg-white text-slate-700 hover:border-slate-300",
++      )}
++    >
++      {children}
++    </Link>
+   );
+ }
+diff --git a/app/(app)/documents/document-table.tsx b/app/(app)/documents/document-table.tsx
+new file mode 100644
+index 0000000..f00456a
+--- /dev/null
++++ b/app/(app)/documents/document-table.tsx
+@@ -0,0 +1,129 @@
++import Link from "next/link";
++import { Download, FileText } from "lucide-react";
++import { getTranslations } from "next-intl/server";
++import { cn } from "@/lib/utils";
++import { formatBytes, formatDate } from "@/lib/format";
++import type { DocType } from "@/lib/db/types";
++import { DeleteDocumentButton } from "@/app/(app)/admin/projects/[id]/delete-document-button";
++
++export interface DocumentTableRow {
++  id: string;
++  canonical_name: string;
++  doc_type: DocType;
++  file_size: number;
++  created_at: string;
++  /** Shown under the name when the table spans several projects/customers. */
++  context?: string | null;
++}
++
++const TYPE_TONE: Record<DocType, string> = {
++  contract: "border-emerald-200 bg-emerald-50 text-emerald-700",
++  addendum: "border-teal-200 bg-teal-50 text-teal-700",
++  payment_record: "border-sky-200 bg-sky-50 text-sky-700",
++  invoice: "border-indigo-200 bg-indigo-50 text-indigo-700",
++  debt_reconciliation: "border-amber-200 bg-amber-50 text-amber-700",
++  handover_minutes: "border-violet-200 bg-violet-50 text-violet-700",
++  correspondence: "border-slate-200 bg-slate-50 text-slate-700",
++  meeting_minutes: "border-rose-200 bg-rose-50 text-rose-700",
++};
++
++/**
++ * Document rows for the Documents workspace: name + meta, type, date and row
++ * actions. Uses the global `.responsive-table` styles so rows collapse into
++ * cards below `md`. Delete is rendered for admins only; RLS and the
++ * requireAdmin guard in deleteDocument enforce it regardless.
++ */
++export async function DocumentTable({
++  documents,
++  highlightId,
++  canDelete,
++}: {
++  documents: DocumentTableRow[];
++  highlightId?: string;
++  canDelete: boolean;
++}) {
++  const t = await getTranslations("DocWorkspace");
++  const dt = await getTranslations("DocTypes");
++
++  return (
++    <table className="responsive-table w-full text-sm md:table-fixed">
++      <thead>
++        <tr className="border-b border-slate-200 text-left text-slate-600">
++          <th className="px-5 py-3 font-medium">{t("colFile")}</th>
++          <th className="px-3 py-3 font-medium md:w-48">{t("colType")}</th>
++          <th className="px-3 py-3 font-medium md:w-28">{t("colDate")}</th>
++          <th className="px-5 py-3 text-right font-medium md:w-28">
++            {t("colActions")}
++          </th>
++        </tr>
++      </thead>
++      <tbody>
++        {documents.map((d) => (
++          <tr
++            key={d.id}
++            id={`file-${d.id}`}
++            className={cn(
++              "border-b border-slate-100 transition-colors last:border-b-0 hover:bg-slate-50/70",
++              d.id === highlightId && "bg-primary/10 ring-1 ring-inset ring-primary",
++            )}
++          >
++            <td data-label={t("colFile")} className="px-5 py-3.5">
++              <div className="flex items-center gap-3">
++                <span className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 sm:flex">
++                  <FileText className="h-[18px] w-[18px]" aria-hidden />
++                </span>
++                <div className="min-w-0">
++                  <Link
++                    href={`/documents/${d.id}`}
++                    className="line-clamp-2 font-semibold text-slate-900 underline-offset-2 [overflow-wrap:anywhere] hover:text-primary hover:underline"
++                  >
++                    {d.canonical_name}
++                  </Link>
++                  <p className="mt-0.5 text-xs text-slate-500 md:truncate">
++                    {d.context ? `${d.context} · ` : ""}
++                    {formatBytes(d.file_size)}
++                  </p>
++                </div>
++              </div>
++            </td>
++            <td data-label={t("colType")} className="px-3 py-3.5">
++              <span
++                className={cn(
++                  "inline-flex whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-medium",
++                  TYPE_TONE[d.doc_type],
++                )}
++              >
++                {dt(d.doc_type)}
++              </span>
++            </td>
++            <td
++              data-label={t("colDate")}
++              className="whitespace-nowrap px-3 py-3.5 text-slate-600"
++            >
++              {formatDate(d.created_at)}
++            </td>
++            <td className="px-5 py-3.5">
++              <div className="flex items-center justify-end gap-1">
++                <a
++                  href={`/api/documents/${d.id}?dl=1`}
++                  aria-label={t("downloadFile", { name: d.canonical_name })}
++                  title={t("download")}
++                  className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
++                >
++                  <Download className="h-[18px] w-[18px]" aria-hidden />
++                </a>
++                {canDelete && (
++                  <DeleteDocumentButton
++                    documentId={d.id}
++                    documentName={d.canonical_name}
++                    variant="ghost"
++                  />
++                )}
++              </div>
++            </td>
++          </tr>
++        ))}
++      </tbody>
++    </table>
++  );
++}
+diff --git a/app/(app)/documents/layout.tsx b/app/(app)/documents/layout.tsx
+new file mode 100644
+index 0000000..b294a00
+--- /dev/null
++++ b/app/(app)/documents/layout.tsx
+@@ -0,0 +1,58 @@
++import { requireUser } from "@/lib/auth/dal";
++import { canManageContent } from "@/lib/auth/roles";
++import { createClient } from "@/lib/supabase/server";
++import { ClientSidebar, type SidebarClient } from "./client-sidebar";
++
++interface DocClientRow {
++  projects: { clients: { id: string; name: string } | null } | null;
++}
++
++/**
++ * Documents workspace shell: the customer ("công ty") sidebar on the left and
++ * the page on the right. Customers are derived from the documents the user can
++ * see (documents RLS applies), so employees only get customers with files they
++ * were given access to, and counts match what they can open. Content managers
++ * also see customers without documents yet so they can start filing.
++ */
++export default async function DocumentsLayout({
++  children,
++}: {
++  children: React.ReactNode;
++}) {
++  const user = await requireUser();
++  const canManage = canManageContent(user.profile.role);
++  const supabase = await createClient();
++
++  const [{ data: docRows }, clientRes] = await Promise.all([
++    supabase
++      .from("documents")
++      .select("projects!inner ( clients!inner ( id, name ) )"),
++    canManage
++      ? supabase.from("clients").select("id, name")
++      : Promise.resolve({ data: [] as { id: string; name: string }[] }),
++  ]);
++
++  const byClient = new Map<string, SidebarClient>();
++  for (const c of clientRes.data ?? []) {
++    byClient.set(c.id, { id: c.id, name: c.name, count: 0 });
++  }
++  for (const row of (docRows ?? []) as unknown as DocClientRow[]) {
++    const c = row.projects?.clients;
++    if (!c) continue;
++    const existing = byClient.get(c.id);
++    if (existing) existing.count += 1;
++    else byClient.set(c.id, { id: c.id, name: c.name, count: 1 });
++  }
++  const clients = [...byClient.values()].sort((a, b) =>
++    a.name.localeCompare(b.name, "vi"),
++  );
++
++  return (
++    <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
++      <ClientSidebar clients={clients} canManage={canManage} />
++      <div className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
++        {children}
++      </div>
++    </div>
++  );
++}
+diff --git a/app/(app)/documents/list/page.tsx b/app/(app)/documents/list/page.tsx
+index da2993d..1d1c7de 100644
+--- a/app/(app)/documents/list/page.tsx
++++ b/app/(app)/documents/list/page.tsx
+@@ -76,7 +76,7 @@ export default async function DocumentsListPage({
+   };
+ 
+   return (
+-    <div className="space-y-6">
++    <div className="mx-auto max-w-6xl space-y-6">
+       <div className="flex items-center justify-between">
+         <div>
+           <Link
+diff --git a/app/(app)/documents/page.tsx b/app/(app)/documents/page.tsx
+index e11b3ba..08865e2 100644
+--- a/app/(app)/documents/page.tsx
++++ b/app/(app)/documents/page.tsx
+@@ -1,150 +1,114 @@
+ import Link from "next/link";
+-import { Folder, List, Upload } from "lucide-react";
++import { Building2, CloudUpload, FileText, List } from "lucide-react";
+ import { getTranslations } from "next-intl/server";
+ import { requireUser } from "@/lib/auth/dal";
+-import { canManageContent } from "@/lib/auth/roles";
+ import { createClient } from "@/lib/supabase/server";
+-import { Button } from "@/components/ui/button";
+-import { Card, CardBody } from "@/components/ui/card";
+-import { Pagination } from "@/components/ui/pagination";
+-import { AddFolderTile } from "@/components/add-folder-tile";
+-import { CreateClientForm } from "@/app/(app)/admin/clients/client-forms";
+ import { DocumentSearch } from "./document-search";
++import { DocumentTable, type DocumentTableRow } from "./document-table";
++import type { DocType } from "@/lib/db/types";
+ 
+-interface DocClientRow {
+-  projects: { clients: { id: string; name: string } | null } | null;
+-}
+-
+-interface ClientFolder {
++interface RecentRow {
+   id: string;
+-  name: string;
+-  count: number;
++  canonical_name: string;
++  doc_type: DocType;
++  file_size: number;
++  created_at: string;
++  projects: { name: string; clients: { name: string } | null } | null;
+ }
+ 
+-// Folder tiles per page; divisible by the 2- and 3-column grid layouts.
+-const PAGE_SIZE = 24;
++const RECENT_LIMIT = 10;
+ 
+-export default async function DocumentsPage({
+-  searchParams,
+-}: {
+-  searchParams: Promise<{ page?: string }>;
+-}) {
+-  const { page = "1" } = await searchParams;
+-  const pageNum = Math.max(1, Number(page) || 1);
++/**
++ * Documents landing page: search, shortcuts and the latest uploads the user
++ * can see. Customers are picked from the sidebar (drawer on small screens).
++ */
++export default async function DocumentsPage() {
+   const user = await requireUser();
+-  const canManage = canManageContent(user.profile.role);
+   const supabase = await createClient();
+-  const t = await getTranslations("Documents");
++  const t = await getTranslations("DocWorkspace");
+ 
+-  // Derive folders from documents the user can actually see (documents RLS
+-  // applies), so employees only get folders for clients with visible files and
+-  // the counts are accurate.
+   const { data } = await supabase
+     .from("documents")
+-    .select("projects!inner ( clients!inner ( id, name ) )");
++    .select(
++      `id, canonical_name, doc_type, file_size, created_at,
++       projects ( name, clients ( name ) )`,
++    )
++    .order("created_at", { ascending: false })
++    .limit(RECENT_LIMIT);
+ 
+-  const rows = (data ?? []) as unknown as DocClientRow[];
+-  const byClient = new Map<string, ClientFolder>();
+-  // Content managers see every client as a folder, including ones without any
+-  // projects or documents yet, so they can start filing from here.
+-  if (canManage) {
+-    const { data: clientRows } = await supabase
+-      .from("clients")
+-      .select("id, name");
+-    for (const c of clientRows ?? []) {
+-      byClient.set(c.id, { id: c.id, name: c.name, count: 0 });
+-    }
+-  }
+-  for (const row of rows) {
+-    const c = row.projects?.clients;
+-    if (!c) continue;
+-    const existing = byClient.get(c.id);
+-    if (existing) existing.count += 1;
+-    else byClient.set(c.id, { id: c.id, name: c.name, count: 1 });
+-  }
+-  const allFolders = [...byClient.values()].sort((a, b) =>
+-    a.name.localeCompare(b.name),
+-  );
+-  const total = allFolders.length;
+-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+-  const folders = allFolders.slice(
+-    (pageNum - 1) * PAGE_SIZE,
+-    pageNum * PAGE_SIZE,
++  const recent: DocumentTableRow[] = ((data ?? []) as unknown as RecentRow[]).map(
++    (d) => ({
++      id: d.id,
++      canonical_name: d.canonical_name,
++      doc_type: d.doc_type,
++      file_size: d.file_size,
++      created_at: d.created_at,
++      context: [d.projects?.clients?.name, d.projects?.name]
++        .filter(Boolean)
++        .join(" / "),
++    }),
+   );
+ 
+   return (
+-    <div className="space-y-6">
+-      <div className="flex flex-wrap items-center justify-between gap-3">
++    <div className="mx-auto max-w-[1400px] space-y-6">
++      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+         <div>
+-          <h1 className="text-xl font-semibold text-primary">{t("title")}</h1>
+-          <p className="text-sm text-slate-500">{t("subtitle")}</p>
++          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">
++            {t("moduleName")}
++          </p>
++          <h1 className="mt-1.5 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
++            {t("overviewTitle")}
++          </h1>
++          <p className="mt-1.5 text-sm text-slate-500">
++            {t("overviewSubtitle")}
++          </p>
+         </div>
+-        <div className="flex gap-2">
+-          <Link href="/documents/list">
+-            <Button variant="secondary">
+-              <List className="mr-1.5 h-4 w-4" />
+-              {t("viewAsList")}
+-            </Button>
++        <div className="flex flex-wrap gap-2">
++          <Link
++            href="/documents/list"
++            className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
++          >
++            <List className="h-4 w-4" aria-hidden />
++            {t("viewAsList")}
+           </Link>
+-          <Link href="/documents/upload">
+-            <Button>
+-              <Upload className="mr-1.5 h-4 w-4" />
+-              {t("uploadDocument")}
+-            </Button>
++          <Link
++            href="/documents/upload"
++            className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-hover"
++          >
++            <CloudUpload className="h-4 w-4" aria-hidden />
++            {t("upload")}
+           </Link>
+         </div>
+       </div>
+ 
+       <DocumentSearch />
+ 
+-      {total === 0 && !canManage ? (
+-        <Card>
+-          <CardBody>
+-            <p className="text-sm text-slate-500">{t("noDocuments")}</p>
+-          </CardBody>
+-        </Card>
+-      ) : (
+-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+-          {canManage && (
+-            <AddFolderTile
+-              label={t("addCustomer")}
+-              dialogTitle={t("addCustomerTitle")}
+-            >
+-              <CreateClientForm />
+-            </AddFolderTile>
+-          )}
+-          {folders.map((f) => (
+-            <Link
+-              key={f.id}
+-              href={`/documents/clients/${f.id}`}
+-              className="group"
+-            >
+-              <Card className="h-full transition group-hover:border-primary group-hover:shadow-md">
+-                <CardBody className="flex items-center gap-3">
+-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+-                    <Folder className="h-6 w-6" />
+-                  </span>
+-                  <div className="min-w-0">
+-                    <p className="truncate font-medium text-slate-900">
+-                      {f.name}
+-                    </p>
+-                    <p className="text-xs text-slate-400">
+-                      {t("filesCount", { count: f.count })}
+-                    </p>
+-                  </div>
+-                </CardBody>
+-              </Card>
+-            </Link>
+-          ))}
+-        </div>
+-      )}
++      <div className="hidden items-center gap-3 rounded-2xl border border-dashed border-slate-300 bg-white/60 px-5 py-4 text-sm text-slate-600 lg:flex">
++        <Building2 className="h-5 w-5 shrink-0 text-primary" aria-hidden />
++        {t("pickCustomerHint")}
++      </div>
+ 
+-      <Pagination
+-        page={pageNum}
+-        totalPages={totalPages}
+-        total={total}
+-        hrefForPage={(p) => `/documents?page=${p}`}
+-      />
++      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
++        <header className="border-b border-slate-100 px-5 py-4">
++          <h2 className="text-lg font-bold text-slate-900">{t("recentTitle")}</h2>
++          <p className="text-sm text-slate-500">
++            {t("recentSubtitle")}
++          </p>
++        </header>
++        {recent.length === 0 ? (
++          <div className="flex flex-col items-center gap-2 px-5 py-14 text-center">
++            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
++              <FileText className="h-6 w-6" aria-hidden />
++            </span>
++            <p className="text-sm text-slate-500">{t("noFiles")}</p>
++          </div>
++        ) : (
++          <DocumentTable
++            documents={recent}
++            canDelete={user.profile.role === "admin"}
++          />
++        )}
++      </section>
+     </div>
+   );
+ }
+diff --git a/app/(app)/documents/upload/page.tsx b/app/(app)/documents/upload/page.tsx
+index 3b5e355..a243249 100644
+--- a/app/(app)/documents/upload/page.tsx
++++ b/app/(app)/documents/upload/page.tsx
+@@ -54,7 +54,7 @@ export default async function UploadPage({
+   }
+ 
+   return (
+-    <div className="space-y-6">
++    <div className="mx-auto max-w-6xl space-y-6">
+       <div>
+         <Link
+           href="/documents"
+diff --git a/app/(app)/layout.tsx b/app/(app)/layout.tsx
+index a1ffc4b..845fecc 100644
+--- a/app/(app)/layout.tsx
++++ b/app/(app)/layout.tsx
+@@ -1,7 +1,6 @@
+-import Image from "next/image";
+ import { requireUser } from "@/lib/auth/dal";
+ import { TopNav } from "@/components/top-nav";
+-import { PageHeader } from "@/components/page-header";
++import { AppMain } from "@/components/app-main";
+ 
+ export default async function AppLayout({
+   children,
+@@ -11,22 +10,13 @@ export default async function AppLayout({
+   const user = await requireUser();
+ 
+   return (
+-    <div className="relative flex min-h-dvh flex-col">
+-      <Image
+-        src="/app-bg.jpg"
+-        alt=""
+-        fill
+-        priority
+-        sizes="100vw"
+-        className="-z-10 object-cover"
++    <div className="flex min-h-dvh flex-col bg-background">
++      <TopNav
++        fullName={user.profile.full_name}
++        email={user.email}
++        role={user.profile.role}
+       />
+-      {/* Light scrim so cards/text stay legible over the photo. */}
+-      <div className="pointer-events-none absolute inset-0 -z-10 bg-white/60" />
+-      <TopNav fullName={user.profile.full_name} role={user.profile.role} />
+-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
+-        <PageHeader />
+-        {children}
+-      </main>
++      <AppMain>{children}</AppMain>
+     </div>
+   );
+ }
+diff --git a/app/actions/clients.ts b/app/actions/clients.ts
+index 6635762..85d930a 100644
+--- a/app/actions/clients.ts
++++ b/app/actions/clients.ts
+@@ -54,6 +54,8 @@ export async function addClient(
+     metadata: { code: parsed.data.code },
+   });
+   revalidatePath("/admin/clients");
++  // Refresh the Documents workspace (client sidebar + counts live in its layout).
++  revalidatePath("/documents", "layout");
+   return { success: t("clientCreated", { name: parsed.data.name }) };
+ }
+ 
+@@ -96,6 +98,8 @@ export async function editClient(
+   });
+   revalidatePath("/admin/clients");
+   revalidatePath(`/admin/clients/${id}`);
++  // Refresh the Documents workspace (client sidebar + counts live in its layout).
++  revalidatePath("/documents", "layout");
+   return { success: t("clientUpdated") };
+ }
+ 
+@@ -140,6 +144,7 @@ export async function deleteClient(
+     metadata: { name },
+   });
+   revalidatePath("/admin/clients");
++  revalidatePath("/documents", "layout");
+ 
+   // Redirect server-side: the manage page we're on belongs to the deleted
+   // client, so re-rendering it (which the action response otherwise does)
+diff --git a/app/actions/documents.ts b/app/actions/documents.ts
+index c491353..e6da2f2 100644
+--- a/app/actions/documents.ts
++++ b/app/actions/documents.ts
+@@ -175,6 +175,7 @@ export async function uploadDocument(
+     metadata: { project_id: projectId, doc_type: docType, canonical_name: canonicalName },
+   });
+ 
++  revalidatePath("/documents", "layout");
+   redirect(`/documents/${inserted.id}`);
+ }
+ 
+@@ -214,6 +215,6 @@ export async function deleteDocument(
+     metadata: { project_id: doc.project_id, canonical_name: doc.canonical_name },
+   });
+   revalidatePath(`/admin/projects/${doc.project_id}`);
+-  revalidatePath("/documents");
++  revalidatePath("/documents", "layout");
+   return { success: t("documentDeleted", { name: doc.canonical_name }) };
+ }
+diff --git a/app/actions/projects.ts b/app/actions/projects.ts
+index 6207a90..5527874 100644
+--- a/app/actions/projects.ts
++++ b/app/actions/projects.ts
+@@ -55,6 +55,8 @@ export async function addProject(
+     metadata: { code: parsed.data.code },
+   });
+   revalidatePath("/admin/projects");
++  // Refresh the Documents workspace (client sidebar + counts live in its layout).
++  revalidatePath("/documents", "layout");
+   return { success: t("projectCreated", { name: parsed.data.name }) };
+ }
+ 
+@@ -97,6 +99,8 @@ export async function editProject(
+   });
+   revalidatePath("/admin/projects");
+   revalidatePath(`/admin/projects/${id}`);
++  // Refresh the Documents workspace (client sidebar + counts live in its layout).
++  revalidatePath("/documents", "layout");
+   return { success: t("projectUpdated") };
+ }
+ 
+@@ -143,6 +147,8 @@ export async function deleteProject(
+   });
+   revalidatePath("/admin/projects");
+   revalidatePath(`/admin/clients/${deleted.client_id}`);
++  // Refresh the Documents workspace (client sidebar + counts live in its layout).
++  revalidatePath("/documents", "layout");
+   return { success: t("projectDeleted", { name }) };
+ }
+ 
+diff --git a/app/globals.css b/app/globals.css
+index a5864f3..4449318 100644
+--- a/app/globals.css
++++ b/app/globals.css
+@@ -16,6 +16,39 @@
+   --font-mono: var(--font-geist-mono);
+ }
+ 
++/* Dropdown menus (components/ui/dropdown-menu.tsx) and drawers. */
++@keyframes menu-pop {
++  from {
++    opacity: 0;
++    transform: translateY(-4px) scale(0.98);
++  }
++  to {
++    opacity: 1;
++    transform: none;
++  }
++}
++@keyframes drawer-in {
++  from {
++    transform: translateX(-100%);
++  }
++  to {
++    transform: none;
++  }
++}
++.menu-pop {
++  animation: menu-pop 120ms ease-out;
++  transform-origin: top;
++}
++.drawer-in {
++  animation: drawer-in 180ms ease-out;
++}
++@media (prefers-reduced-motion: reduce) {
++  .menu-pop,
++  .drawer-in {
++    animation: none;
++  }
++}
++
+ body {
+   background: var(--background);
+   color: var(--foreground);
+diff --git a/components/admin-nav.tsx b/components/admin-nav.tsx
+index d69d2b6..da5c1c2 100644
+--- a/components/admin-nav.tsx
++++ b/components/admin-nav.tsx
+@@ -138,7 +138,7 @@ export function AdminNav({ role }: { role: UserRole }) {
+       <nav
+         aria-label={t("menu")}
+         className={cn(
+-          "sticky top-8 hidden h-fit shrink-0 flex-col gap-1 self-start border-r border-slate-200 pr-3 transition-[width] duration-200 md:flex",
++          "sticky top-24 hidden h-fit shrink-0 flex-col gap-1 self-start border-r border-slate-200 pr-3 transition-[width] duration-200 md:flex",
+           collapsed ? "w-14" : "w-52",
+         )}
+       >
+diff --git a/components/app-main.tsx b/components/app-main.tsx
+new file mode 100644
+index 0000000..f095a43
+--- /dev/null
++++ b/components/app-main.tsx
+@@ -0,0 +1,26 @@
++"use client";
++
++import { usePathname } from "next/navigation";
++import { PageHeader } from "@/components/page-header";
++
++/**
++ * Main content frame below the header. The Documents module is a full-bleed
++ * workspace (its own sidebar, no breadcrumb), so it gets the whole width; every
++ * other module keeps the centred container with the breadcrumb bar.
++ */
++export function AppMain({ children }: { children: React.ReactNode }) {
++  const pathname = usePathname();
++  const fullBleed =
++    pathname === "/documents" || pathname.startsWith("/documents/");
++
++  if (fullBleed) {
++    return <main className="flex min-w-0 flex-1 flex-col">{children}</main>;
++  }
++
++  return (
++    <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
++      <PageHeader />
++      {children}
++    </main>
++  );
++}
+diff --git a/components/module-switcher.tsx b/components/module-switcher.tsx
+new file mode 100644
+index 0000000..93cf6d5
+--- /dev/null
++++ b/components/module-switcher.tsx
+@@ -0,0 +1,130 @@
++"use client";
++
++import Link from "next/link";
++import { usePathname } from "next/navigation";
++import { useTranslations } from "next-intl";
++import {
++  Check,
++  ChevronDown,
++  FolderOpen,
++  GraduationCap,
++  LayoutGrid,
++  ShieldCheck,
++  type LucideIcon,
++} from "lucide-react";
++import { cn } from "@/lib/utils";
++import {
++  getActiveModuleId,
++  type AppModuleId,
++  type AppModuleLink,
++} from "@/lib/app-modules";
++import { DropdownMenu, menuItemClass } from "@/components/ui/dropdown-menu";
++
++const ICONS: Record<AppModuleId, LucideIcon> = {
++  documents: FolderOpen,
++  academy: GraduationCap,
++  admin: ShieldCheck,
++};
++
++/**
++ * Header control for moving between the apps in this project. The list comes
++ * from the server (getModulesForRole), so it only ever contains modules the
++ * user may open; the active one is derived from the pathname.
++ */
++export function ModuleSwitcher({ modules }: { modules: AppModuleLink[] }) {
++  const pathname = usePathname();
++  const t = useTranslations("AppModules");
++  const activeId = getActiveModuleId(pathname);
++  const active = modules.find((m) => m.id === activeId);
++  const ActiveIcon = active ? ICONS[active.id] : LayoutGrid;
++  const activeLabel = active ? t(`${active.id}.name`) : t("apps");
++
++  // A single module needs no menu: show where the user is and stop there.
++  if (modules.length <= 1) {
++    return (
++      <span className="flex items-center gap-2 px-2 text-sm font-medium text-slate-700">
++        <ActiveIcon className="h-4 w-4 text-primary" aria-hidden />
++        <span className="hidden sm:inline">{activeLabel}</span>
++      </span>
++    );
++  }
++
++  return (
++    <DropdownMenu
++      label={t("switch")}
++      triggerClassName="flex h-9 items-center gap-2 rounded-lg px-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 aria-expanded:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:px-2.5"
++      menuClassName="w-80 max-sm:fixed max-sm:inset-x-4 max-sm:top-[4.5rem] max-sm:mt-0 max-sm:w-auto"
++      trigger={(open) => (
++        <>
++          <ActiveIcon className="h-4 w-4 shrink-0 text-primary" aria-hidden />
++          <span className="hidden max-w-[12rem] truncate sm:inline">
++            {activeLabel}
++          </span>
++          <ChevronDown
++            className={cn(
++              "h-4 w-4 shrink-0 text-slate-400 transition-transform",
++              open && "rotate-180",
++            )}
++            aria-hidden
++          />
++        </>
++      )}
++    >
++      {(close) => (
++        <>
++          <p className="px-3 pb-1 pt-1.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
++            {t("apps")}
++          </p>
++          {modules.map((m) => {
++            const Icon = ICONS[m.id];
++            const isActive = m.id === activeId;
++            return (
++              <Link
++                key={m.id}
++                href={m.href}
++                role="menuitem"
++                aria-current={isActive ? "page" : undefined}
++                onClick={close}
++                className={cn(
++                  menuItemClass,
++                  "items-start py-2.5",
++                  isActive && "bg-primary/5 hover:bg-primary/10",
++                )}
++              >
++                <span
++                  className={cn(
++                    "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
++                    isActive
++                      ? "bg-primary text-white"
++                      : "bg-slate-100 text-slate-500",
++                  )}
++                >
++                  <Icon className="h-4 w-4" aria-hidden />
++                </span>
++                <span className="min-w-0 flex-1">
++                  <span
++                    className={cn(
++                      "block font-medium",
++                      isActive ? "text-primary" : "text-slate-900",
++                    )}
++                  >
++                    {t(`${m.id}.name`)}
++                  </span>
++                  <span className="block truncate text-xs text-slate-500">
++                    {t(`${m.id}.description`)}
++                  </span>
++                </span>
++                {isActive && (
++                  <Check
++                    className="mt-1.5 h-4 w-4 shrink-0 text-primary"
++                    aria-hidden
++                  />
++                )}
++              </Link>
++            );
++          })}
++        </>
++      )}
++    </DropdownMenu>
++  );
++}
+diff --git a/components/top-nav.tsx b/components/top-nav.tsx
+index 35740b0..3b77c2c 100644
+--- a/components/top-nav.tsx
++++ b/components/top-nav.tsx
+@@ -1,63 +1,55 @@
+ import Link from "next/link";
+ import { useTranslations } from "next-intl";
+-import { logout } from "@/app/actions/auth";
+ import { UserMenu } from "@/components/user-menu";
++import { ModuleSwitcher } from "@/components/module-switcher";
++import { getModulesForRole, HOME_HREF } from "@/lib/app-modules";
+ import type { UserRole } from "@/lib/db/types";
+ 
++/**
++ * App-wide header shared by every module: brand (logo + project name) and the
++ * module switcher on the left, the account menu on the right. Full width so it
++ * lines up with the full-bleed Documents workspace.
++ */
+ export function TopNav({
+   fullName,
++  email,
+   role,
+ }: {
+   fullName: string;
++  email: string | null;
+   role: UserRole;
+ }) {
+-  const t = useTranslations("Nav");
+   const tc = useTranslations("Common");
++  const modules = getModulesForRole(role);
+ 
+   return (
+-    <header className="border-b border-slate-200 bg-white">
+-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:gap-6">
+-        <Link href="/" className="flex min-w-0 items-center gap-2">
++    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
++      <div className="flex h-16 items-center gap-2 px-4 sm:gap-3 lg:px-6">
++        <Link
++          href={HOME_HREF}
++          className="flex min-w-0 shrink-0 items-center gap-2.5 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
++        >
+           {/* Brand logo. next/image is skipped here since it routes SVG/PNG
+               logos through the optimizer; a plain img keeps it simple. */}
+           {/* eslint-disable-next-line @next/next/no-img-element */}
+           <img
+             src="/logo-tp.png"
+-            alt=""
+-            width={28}
+-            height={28}
+-            className="h-7 w-7 shrink-0"
++            alt={tc("title")}
++            width={36}
++            height={36}
++            className="h-9 w-9 shrink-0 object-contain"
+           />
+-          <span className="truncate font-semibold text-primary">
++          <span className="hidden truncate text-[15px] font-bold tracking-tight text-slate-900 sm:inline">
+             {tc("title")}
+           </span>
+         </Link>
+ 
+-        <div className="ml-auto flex items-center gap-3">
+-          <UserMenu fullName={fullName} role={role} />
+-          <form action={logout}>
+-            <button
+-              type="submit"
+-              aria-label={t("signOut")}
+-              title={t("signOut")}
+-              className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+-            >
+-              <svg
+-                viewBox="0 0 24 24"
+-                fill="none"
+-                stroke="currentColor"
+-                strokeWidth="1.75"
+-                strokeLinecap="round"
+-                strokeLinejoin="round"
+-                aria-hidden="true"
+-                className="h-5 w-5"
+-              >
+-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+-                <path d="m16 17 5-5-5-5" />
+-                <path d="M21 12H9" />
+-              </svg>
+-            </button>
+-          </form>
++        <span aria-hidden className="mx-1 h-6 w-px bg-slate-200 sm:mx-2" />
++
++        <ModuleSwitcher modules={modules} />
++
++        <div className="ml-auto flex items-center">
++          <UserMenu fullName={fullName} email={email} role={role} />
+         </div>
+       </div>
+     </header>
+diff --git a/components/ui/dropdown-menu.tsx b/components/ui/dropdown-menu.tsx
+new file mode 100644
+index 0000000..5dcf520
+--- /dev/null
++++ b/components/ui/dropdown-menu.tsx
+@@ -0,0 +1,150 @@
++"use client";
++
++import * as React from "react";
++import { usePathname } from "next/navigation";
++import { cn } from "@/lib/utils";
++
++/**
++ * Minimal accessible dropdown menu (no Radix dependency), shared by the module
++ * switcher and the user menu.
++ *
++ * - Closes on outside click, Escape (focus returns to the trigger), choosing an
++ *   item (call `close` from `children`) and route changes.
++ * - Arrow Up/Down, Home and End move focus between `[role="menuitem"]`
++ *   elements; opening with the keyboard focuses the first item.
++ *
++ * Menu items are ordinary links/buttons rendered by the caller with
++ * `role="menuitem"`; use `menuItemClass` for consistent styling.
++ */
++export function DropdownMenu({
++  label,
++  trigger,
++  children,
++  align = "start",
++  triggerClassName,
++  menuClassName,
++}: {
++  /** Accessible name of the trigger button. */
++  label: string;
++  trigger: React.ReactNode | ((open: boolean) => React.ReactNode);
++  children: (close: () => void) => React.ReactNode;
++  align?: "start" | "end";
++  triggerClassName?: string;
++  menuClassName?: string;
++}) {
++  const pathname = usePathname();
++  const [open, setOpen] = React.useState(false);
++  const [focusFirst, setFocusFirst] = React.useState(false);
++  const [prevPathname, setPrevPathname] = React.useState(pathname);
++  const containerRef = React.useRef<HTMLDivElement>(null);
++  const triggerRef = React.useRef<HTMLButtonElement>(null);
++  const menuRef = React.useRef<HTMLDivElement>(null);
++  const menuId = React.useId();
++
++  // Close when the route changes (adjusting state during render instead of in
++  // an effect, per React's "you might not need an effect" guidance).
++  if (pathname !== prevPathname) {
++    setPrevPathname(pathname);
++    setOpen(false);
++  }
++
++  const close = React.useCallback(() => setOpen(false), []);
++
++  const items = () =>
++    Array.from(
++      menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ??
++        [],
++    );
++
++  // Outside click + Escape while open.
++  React.useEffect(() => {
++    if (!open) return;
++    const onPointerDown = (e: PointerEvent) => {
++      if (!containerRef.current?.contains(e.target as Node)) setOpen(false);
++    };
++    const onKeyDown = (e: KeyboardEvent) => {
++      if (e.key === "Escape") {
++        setOpen(false);
++        triggerRef.current?.focus();
++      }
++    };
++    document.addEventListener("pointerdown", onPointerDown);
++    document.addEventListener("keydown", onKeyDown);
++    return () => {
++      document.removeEventListener("pointerdown", onPointerDown);
++      document.removeEventListener("keydown", onKeyDown);
++    };
++  }, [open]);
++
++  // Keyboard-opened menus move focus to the first item once rendered.
++  React.useEffect(() => {
++    if (open && focusFirst) items()[0]?.focus();
++  }, [open, focusFirst]);
++
++  const onTriggerKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
++    if (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ") {
++      e.preventDefault();
++      setFocusFirst(true);
++      setOpen(true);
++    }
++  };
++
++  const onMenuKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
++    const list = items();
++    if (list.length === 0) return;
++    const index = list.indexOf(document.activeElement as HTMLElement);
++    let next: number | null = null;
++    if (e.key === "ArrowDown") next = (index + 1) % list.length;
++    else if (e.key === "ArrowUp")
++      next = (index - 1 + list.length) % list.length;
++    else if (e.key === "Home") next = 0;
++    else if (e.key === "End") next = list.length - 1;
++    else if (e.key === "Tab") setOpen(false);
++    if (next !== null) {
++      e.preventDefault();
++      list[next].focus();
++    }
++  };
++
++  return (
++    <div ref={containerRef} className="relative">
++      <button
++        ref={triggerRef}
++        type="button"
++        aria-label={label}
++        aria-haspopup="menu"
++        aria-expanded={open}
++        aria-controls={open ? menuId : undefined}
++        onClick={() => {
++          setFocusFirst(false);
++          setOpen((v) => !v);
++        }}
++        onKeyDown={onTriggerKeyDown}
++        className={triggerClassName}
++      >
++        {typeof trigger === "function" ? trigger(open) : trigger}
++      </button>
++
++      {open && (
++        <div
++          ref={menuRef}
++          id={menuId}
++          role="menu"
++          aria-label={label}
++          onKeyDown={onMenuKeyDown}
++          className={cn(
++            "absolute top-full z-40 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 menu-pop",
++            align === "end" ? "right-0" : "left-0",
++            menuClassName,
++          )}
++        >
++          {children(close)}
++        </div>
++      )}
++    </div>
++  );
++}
++
++/** Base styling for a `role="menuitem"` row. */
++export const menuItemClass =
++  "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-slate-700 outline-none transition-colors hover:bg-slate-50 hover:text-slate-900 focus-visible:bg-slate-100";
+diff --git a/components/user-menu.tsx b/components/user-menu.tsx
+index ac1a72f..a433a80 100644
+--- a/components/user-menu.tsx
++++ b/components/user-menu.tsx
+@@ -1,112 +1,125 @@
+ "use client";
+ 
+ import Link from "next/link";
+-import { useEffect, useRef, useState } from "react";
+ import { useTranslations } from "next-intl";
++import { ChevronDown, LogOut, UserRound } from "lucide-react";
++import { logout } from "@/app/actions/auth";
+ import { cn } from "@/lib/utils";
+ import type { UserRole } from "@/lib/db/types";
+-import { canManageContent } from "@/lib/auth/roles";
++import { DropdownMenu, menuItemClass } from "@/components/ui/dropdown-menu";
+ 
+-interface MenuItem {
+-  href: string;
+-  label: string;
++/**
++ * Letter shown in the avatar. Vietnamese names put the given name last
++ * ("Bùi Viết Quyền" -> "Q"), so use the first letter of the last word.
++ */
++export function avatarInitial(fullName: string): string {
++  const words = fullName.trim().split(/\s+/).filter(Boolean);
++  const word = words[words.length - 1] ?? "";
++  return (word.charAt(0) || "?").toLocaleUpperCase("vi");
+ }
+ 
++/**
++ * Header account control: name + email + letter avatar as the trigger (avatar
++ * only on small screens); the menu holds the profile link and sign-out.
++ */
+ export function UserMenu({
+   fullName,
++  email,
+   role,
+ }: {
+   fullName: string;
++  email: string | null;
+   role: UserRole;
+ }) {
+   const t = useTranslations("Nav");
+-  const [open, setOpen] = useState(false);
+-  const containerRef = useRef<HTMLDivElement>(null);
+-
+-  const items: MenuItem[] = [{ href: "/profile", label: t("profile") }];
+-  if (canManageContent(role)) {
+-    // Managers can't reach /admin/users; send them to a section they can use.
+-    items.push({
+-      href: role === "admin" ? "/admin/users" : "/admin/clients",
+-      label: t("admin"),
+-    });
+-  }
+-
+-  // Close on outside click and Escape.
+-  useEffect(() => {
+-    if (!open) return;
+-
+-    const onPointerDown = (event: PointerEvent) => {
+-      if (!containerRef.current?.contains(event.target as Node)) {
+-        setOpen(false);
+-      }
+-    };
+-    const onKeyDown = (event: KeyboardEvent) => {
+-      if (event.key === "Escape") setOpen(false);
+-    };
+-
+-    document.addEventListener("pointerdown", onPointerDown);
+-    document.addEventListener("keydown", onKeyDown);
+-    return () => {
+-      document.removeEventListener("pointerdown", onPointerDown);
+-      document.removeEventListener("keydown", onKeyDown);
+-    };
+-  }, [open]);
++  const roleLabel =
++    role === "admin" ? t("admin") : role === "manager" ? t("manager") : null;
+ 
+   return (
+-    <div ref={containerRef} className="relative">
+-      <button
+-        type="button"
+-        onClick={() => setOpen((value) => !value)}
+-        aria-haspopup="menu"
+-        aria-expanded={open}
+-        aria-label={t("openUserMenu")}
+-        className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+-      >
+-        <span className="hidden sm:inline">{fullName}</span>
+-        {role !== "employee" && (
+-          <span className="rounded bg-primary px-1.5 py-0.5 text-xs text-white">
+-            {role === "admin" ? t("admin") : t("manager")}
++    <DropdownMenu
++      label={t("openUserMenu")}
++      align="end"
++      triggerClassName="flex items-center gap-3 rounded-xl p-1 text-left transition-colors hover:bg-slate-100 aria-expanded:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:pl-3"
++      menuClassName="w-64"
++      trigger={(open) => (
++        <>
++          <span className="hidden min-w-0 text-right sm:block">
++            <span className="block max-w-[14rem] truncate text-sm font-semibold text-slate-900">
++              {fullName}
++            </span>
++            {email && (
++              <span className="block max-w-[14rem] truncate text-xs text-slate-500">
++                {email}
++              </span>
++            )}
++          </span>
++          <span
++            aria-hidden
++            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary"
++          >
++            {avatarInitial(fullName)}
+           </span>
+-        )}
+-        <svg
+-          viewBox="0 0 20 20"
+-          fill="currentColor"
+-          aria-hidden="true"
+-          className={cn(
+-            "h-4 w-4 text-slate-400 transition-transform",
+-            open && "rotate-180",
+-          )}
+-        >
+-          <path
+-            fillRule="evenodd"
+-            d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.06l3.71-3.83a.75.75 0 1 1 1.08 1.04l-4.25 4.39a.75.75 0 0 1-1.08 0L5.21 8.27a.75.75 0 0 1 .02-1.06Z"
+-            clipRule="evenodd"
++          <ChevronDown
++            aria-hidden
++            className={cn(
++              "hidden h-4 w-4 shrink-0 text-slate-400 transition-transform sm:block",
++              open && "rotate-180",
++            )}
+           />
+-        </svg>
+-      </button>
+-
+-      {open && (
+-        <div
+-          role="menu"
+-          className="absolute right-0 z-20 mt-1 w-44 overflow-hidden rounded-md border border-slate-200 bg-white py-1 shadow-lg"
+-        >
+-          <div className="border-b border-slate-100 px-3 py-2 text-sm font-medium text-slate-900 sm:hidden">
+-            {fullName}
++        </>
++      )}
++    >
++      {(close) => (
++        <>
++          <div className="flex items-center gap-3 px-3 py-2.5">
++            <span
++              aria-hidden
++              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white"
++            >
++              {avatarInitial(fullName)}
++            </span>
++            <div className="min-w-0">
++              <p className="truncate text-sm font-semibold text-slate-900">
++                {fullName}
++              </p>
++              {email && (
++                <p className="truncate text-xs text-slate-500">{email}</p>
++              )}
++              {roleLabel && (
++                <span className="mt-1 inline-block rounded bg-primary/10 px-1.5 py-0.5 text-[11px] font-medium text-primary">
++                  {roleLabel}
++                </span>
++              )}
++            </div>
+           </div>
+-          {items.map((item) => (
+-            <Link
+-              key={item.href}
+-              href={item.href}
++
++          <div className="my-1 h-px bg-slate-100" role="separator" />
++
++          <Link
++            href="/profile"
++            role="menuitem"
++            onClick={close}
++            className={menuItemClass}
++          >
++            <UserRound className="h-4 w-4 text-slate-400" aria-hidden />
++            {t("profile")}
++          </Link>
++
++          <form action={logout}>
++            <button
++              type="submit"
+               role="menuitem"
+-              onClick={() => setOpen(false)}
+-              className="block px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900"
++              className={cn(
++                menuItemClass,
++                "text-red-600 hover:bg-red-50 hover:text-red-700 focus-visible:bg-red-50",
++              )}
+             >
+-              {item.label}
+-            </Link>
+-          ))}
+-        </div>
++              <LogOut className="h-4 w-4" aria-hidden />
++              {t("signOut")}
++            </button>
++          </form>
++        </>
+       )}
+-    </div>
++    </DropdownMenu>
+   );
+ }
+diff --git a/lib/app-modules.test.ts b/lib/app-modules.test.ts
+new file mode 100644
+index 0000000..6143604
+--- /dev/null
++++ b/lib/app-modules.test.ts
+@@ -0,0 +1,37 @@
++import { describe, expect, it } from "vitest";
++import { getActiveModuleId, getModulesForRole } from "./app-modules";
++
++describe("getActiveModuleId", () => {
++  it("matches on the first segment only", () => {
++    expect(getActiveModuleId("/documents")).toBe("documents");
++    expect(getActiveModuleId("/documents/clients/abc")).toBe("documents");
++    expect(getActiveModuleId("/academy/my-courses")).toBe("academy");
++    expect(getActiveModuleId("/admin/academy/new")).toBe("admin");
++    expect(getActiveModuleId("/admin/docs")).toBe("admin");
++  });
++
++  it("returns undefined outside any module", () => {
++    expect(getActiveModuleId("/")).toBeUndefined();
++    expect(getActiveModuleId("/profile")).toBeUndefined();
++    expect(getActiveModuleId("/documentsX")).toBeUndefined();
++  });
++});
++
++describe("getModulesForRole", () => {
++  it("hides Admin Panel from employees", () => {
++    expect(getModulesForRole("employee").map((m) => m.id)).toEqual([
++      "documents",
++      "academy",
++    ]);
++  });
++
++  it("sends managers to a section they can open", () => {
++    const admin = getModulesForRole("manager").find((m) => m.id === "admin");
++    expect(admin?.href).toBe("/admin/clients");
++  });
++
++  it("sends admins to user management", () => {
++    const admin = getModulesForRole("admin").find((m) => m.id === "admin");
++    expect(admin?.href).toBe("/admin/users");
++  });
++});
+diff --git a/lib/app-modules.ts b/lib/app-modules.ts
+new file mode 100644
+index 0000000..55e8e90
+--- /dev/null
++++ b/lib/app-modules.ts
+@@ -0,0 +1,57 @@
++import type { UserRole } from "@/lib/db/types";
++import { canManageContent } from "@/lib/auth/roles";
++
++/**
++ * The apps ("modules") inside this project, shown in the header's module
++ * switcher. Pure and client-safe: the server decides which modules a user may
++ * see and passes the ids down; the client only maps ids to icons and labels.
++ *
++ * Hiding a module here is UI only. Access is enforced server-side by each
++ * module's guards (e.g. requireContentManager in app/(app)/admin/layout.tsx,
++ * requireAdmin in admin-only actions) and by RLS.
++ */
++export type AppModuleId = "documents" | "academy" | "admin";
++
++export interface AppModuleLink {
++  id: AppModuleId;
++  href: string;
++}
++
++/** The route prefix that marks each module as active. */
++const MODULE_PREFIX: Record<AppModuleId, string> = {
++  documents: "/documents",
++  academy: "/academy",
++  admin: "/admin",
++};
++
++/** Where the logo points: the document workspace. */
++export const HOME_HREF = "/documents";
++
++/** Modules the given role may open, in switcher order. */
++export function getModulesForRole(role: UserRole): AppModuleLink[] {
++  const modules: AppModuleLink[] = [
++    { id: "documents", href: "/documents" },
++    { id: "academy", href: "/academy" },
++  ];
++  if (canManageContent(role)) {
++    // There is no /admin index page. Managers can't open /admin/users, so they
++    // land on a section they can use (same targets the old user menu used).
++    modules.push({
++      id: "admin",
++      href: role === "admin" ? "/admin/users" : "/admin/clients",
++    });
++  }
++  return modules;
++}
++
++/**
++ * The module the pathname belongs to, matched on the FIRST segment only, so
++ * /admin/academy and /admin/docs stay under Admin instead of matching Academy
++ * or Documents. Returns undefined for pages outside any module (/, /profile).
++ */
++export function getActiveModuleId(pathname: string): AppModuleId | undefined {
++  const first = "/" + (pathname.split("/").filter(Boolean)[0] ?? "");
++  return (Object.keys(MODULE_PREFIX) as AppModuleId[]).find(
++    (id) => MODULE_PREFIX[id] === first,
++  );
++}
+diff --git a/lib/format.ts b/lib/format.ts
+index 260bbe6..40bd831 100644
+--- a/lib/format.ts
++++ b/lib/format.ts
+@@ -44,3 +44,13 @@ export function formatDateTime(iso: string): string {
+     timeZone: DISPLAY_TIME_ZONE,
+   });
+ }
++
++/** Deterministic date for tables, e.g. 23/09/2026 (ICT). */
++export function formatDate(iso: string): string {
++  return new Date(iso).toLocaleDateString(DISPLAY_LOCALE, {
++    day: "2-digit",
++    month: "2-digit",
++    year: "numeric",
++    timeZone: DISPLAY_TIME_ZONE,
++  });
++}
+diff --git a/messages/en.json b/messages/en.json
+index ca4cee8..350f592 100644
+--- a/messages/en.json
++++ b/messages/en.json
+@@ -640,5 +640,64 @@
+     "activity": "Activity",
+     "profile": "Profile",
+     "new": "New"
++  },
++  "AppModules": {
++    "apps": "Apps",
++    "switch": "Switch app",
++    "documents": {
++      "name": "Documents",
++      "description": "Files and records by customer"
++    },
++    "academy": {
++      "name": "TP Academy",
++      "description": "Internal courses and training"
++    },
++    "admin": {
++      "name": "Admin Panel",
++      "description": "Customers, projects, users, MISA"
++    }
++  },
++  "DocWorkspace": {
++    "moduleName": "Documents",
++    "overviewTitle": "Documents overview",
++    "overviewSubtitle": "Search for a file or pick a customer to browse by project.",
++    "pickCustomerHint": "Pick a customer on the left to browse their files by project.",
++    "recentTitle": "Recently uploaded",
++    "recentSubtitle": "The latest files you have access to.",
++    "viewAsList": "View as list",
++    "customers": "Customers",
++    "customerCount": "{count, plural, one {# customer} other {# customers}}",
++    "chooseCustomer": "Choose a customer…",
++    "addCustomer": "Add customer",
++    "filterCustomers": "Filter customers…",
++    "noCustomers": "No customers yet.",
++    "noCustomerMatches": "No matching customers.",
++    "close": "Close",
++    "fileCount": "{count, plural, one {# file} other {# files}}",
++    "eyebrow": "Customer workspace",
++    "customerCode": "Code",
++    "taxCode": "Tax ID",
++    "noTaxCode": "No tax ID yet",
++    "statFiles": "Files",
++    "statStorage": "Storage",
++    "statProjects": "Projects",
++    "tabsLabel": "View",
++    "tabFiles": "Files",
++    "tabShare": "Folder sharing",
++    "projects": "Projects",
++    "addProject": "Add project",
++    "allFiles": "All files",
++    "archived": "Archived",
++    "noProjects": "No projects yet.",
++    "manageProject": "Manage project",
++    "uploadLimit": "PDF, up to 25 MB per file",
++    "upload": "Upload",
++    "noFiles": "No files yet.",
++    "colFile": "File",
++    "colType": "Type",
++    "colDate": "Date",
++    "colActions": "Actions",
++    "download": "Download",
++    "downloadFile": "Download {name}"
+   }
+ }
+diff --git a/messages/vi.json b/messages/vi.json
+index 90c82ec..217600e 100644
+--- a/messages/vi.json
++++ b/messages/vi.json
+@@ -640,5 +640,64 @@
+     "activity": "Hoạt động",
+     "profile": "Hồ sơ",
+     "new": "Mới"
++  },
++  "AppModules": {
++    "apps": "Ứng dụng",
++    "switch": "Chuyển ứng dụng",
++    "documents": {
++      "name": "Quản lí tài liệu",
++      "description": "Hồ sơ và chứng từ theo khách hàng"
++    },
++    "academy": {
++      "name": "TP Academy",
++      "description": "Khóa học và đào tạo nội bộ"
++    },
++    "admin": {
++      "name": "Admin Panel",
++      "description": "Khách hàng, dự án, người dùng, MISA"
++    }
++  },
++  "DocWorkspace": {
++    "moduleName": "Quản lí tài liệu",
++    "overviewTitle": "Tổng quan tài liệu",
++    "overviewSubtitle": "Tìm nhanh hồ sơ hoặc chọn một khách hàng để xem theo dự án.",
++    "pickCustomerHint": "Chọn một khách hàng ở cột bên trái để xem hồ sơ theo từng dự án.",
++    "recentTitle": "Mới tải lên",
++    "recentSubtitle": "Các hồ sơ gần đây nhất mà bạn có quyền xem.",
++    "viewAsList": "Xem dạng danh sách",
++    "customers": "Khách hàng",
++    "customerCount": "{count, plural, other {# khách hàng}}",
++    "chooseCustomer": "Chọn khách hàng…",
++    "addCustomer": "Thêm khách hàng",
++    "filterCustomers": "Lọc khách hàng…",
++    "noCustomers": "Chưa có khách hàng nào.",
++    "noCustomerMatches": "Không có khách hàng phù hợp.",
++    "close": "Đóng",
++    "fileCount": "{count, plural, other {# hồ sơ}}",
++    "eyebrow": "Không gian khách hàng",
++    "customerCode": "Mã KH",
++    "taxCode": "MST",
++    "noTaxCode": "Chưa nhập mã số thuế",
++    "statFiles": "Hồ sơ",
++    "statStorage": "Dung lượng",
++    "statProjects": "Dự án",
++    "tabsLabel": "Chế độ xem",
++    "tabFiles": "Hồ sơ dữ liệu",
++    "tabShare": "Chia sẻ thư mục",
++    "projects": "Dự án",
++    "addProject": "Thêm dự án",
++    "allFiles": "Tất cả hồ sơ",
++    "archived": "Đã lưu trữ",
++    "noProjects": "Chưa có dự án.",
++    "manageProject": "Quản lý dự án",
++    "uploadLimit": "PDF, tối đa 25 MB/tệp",
++    "upload": "Tải tệp lên",
++    "noFiles": "Chưa có hồ sơ nào.",
++    "colFile": "Hồ sơ",
++    "colType": "Loại",
++    "colDate": "Ngày",
++    "colActions": "Thao tác",
++    "download": "Tải xuống",
++    "downloadFile": "Tải xuống {name}"
+   }
+ }

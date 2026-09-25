@@ -1,0 +1,5410 @@
+{
+ "description": "Golden test data: HSTT thật của Việt Panel – dự án Senci (kho MISA VIETPANEL-01). Engine tính bill phải tái tạo đúng từng đồng.",
+ "customer": "CÔNG TY TNHH XÂY DỰNG VIỆT PANEL",
+ "project": "Senci – KCN Phúc Điền, Hải Dương",
+ "misa_kho": "VIETPANEL-01",
+ "contract": "0412/HĐKT2025/TP-VIETPANEL ký 04/12/2025",
+ "item_mapping": {
+  "VT0021": "Giáo ringlock 1.0m Kẽm",
+  "VT0020": "Giáo ringlock 1.5m Kẽm",
+  "VT0023": "Giáo ringlock 2.0m Kẽm",
+  "VT0022": "Giáo ringlock 2.5m Kẽm",
+  "VT0090": "Giáo ringlock 2.5m Kẽm",
+  "VT0008": "Giằng ngang ringlock 0.6m",
+  "VT0069": "Giằng ngang ringlock 0.9m",
+  "VT0064": "Giằng ngang ringlock 1.2m",
+  "VT0091": "Giằng ngang ringlock 1.2m",
+  "VT0053": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+  "VT0067": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+  "VT0048": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+  "VT0068": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+  "CCDC272": "Khóa giáo xoay D48"
+ },
+ "excluded_ma_hang": [
+  "PALLET",
+  "VT0094"
+ ],
+ "unit_prices": {
+  "Giáo ringlock 1.0m Kẽm": 85,
+  "Giáo ringlock 1.5m Kẽm": 125,
+  "Giáo ringlock 2.0m Kẽm": 159,
+  "Giáo ringlock 2.5m Kẽm": 185,
+  "Giằng ngang ringlock 0.6m": 43,
+  "Giằng ngang ringlock 0.9m": 55,
+  "Giằng ngang ringlock 1.2m": 71,
+  "Kích U Ø38*(3,0ly - 4,5ly), L=600mm": 70,
+  "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm": 70,
+  "Khóa giáo xoay D48": 45
+ },
+ "transport_prices": {
+  "Vận chuyển xe sơ mi 30 tấn": 5000000,
+  "Vận chuyển xe thùng 15 tấn": 4500000
+ },
+ "periods": [
+  {
+   "label": "12/2025",
+   "to": "2025-12-25",
+   "excluded_days_per_line": 0,
+   "lines": [
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-24",
+     "is_opening": false,
+     "qty": 1300,
+     "days": 2,
+     "unit_price": 85,
+     "amount": 221000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-25",
+     "is_opening": false,
+     "qty": 1600,
+     "days": 1,
+     "unit_price": 85,
+     "amount": 136000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-25",
+     "is_opening": false,
+     "qty": 1600,
+     "days": 1,
+     "unit_price": 85,
+     "amount": 136000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-20",
+     "is_opening": false,
+     "qty": 700,
+     "days": 6,
+     "unit_price": 125,
+     "amount": 525000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-25",
+     "is_opening": false,
+     "qty": 1600,
+     "days": 1,
+     "unit_price": 125,
+     "amount": 200000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-25",
+     "is_opening": false,
+     "qty": 1600,
+     "days": 1,
+     "unit_price": 125,
+     "amount": 200000
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-20",
+     "is_opening": false,
+     "qty": 700,
+     "days": 6,
+     "unit_price": 159,
+     "amount": 667800
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-24",
+     "is_opening": false,
+     "qty": 400,
+     "days": 2,
+     "unit_price": 159,
+     "amount": 127200
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-21",
+     "is_opening": false,
+     "qty": 1000,
+     "days": 5,
+     "unit_price": 185,
+     "amount": 925000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-22",
+     "is_opening": false,
+     "qty": 2200,
+     "days": 4,
+     "unit_price": 185,
+     "amount": 1628000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-22",
+     "is_opening": false,
+     "qty": 1100,
+     "days": 4,
+     "unit_price": 185,
+     "amount": 814000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-22",
+     "is_opening": false,
+     "qty": 2200,
+     "days": 4,
+     "unit_price": 185,
+     "amount": 1628000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-23",
+     "is_opening": false,
+     "qty": 1400,
+     "days": 3,
+     "unit_price": 185,
+     "amount": 777000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-24",
+     "is_opening": false,
+     "qty": 1000,
+     "days": 2,
+     "unit_price": 185,
+     "amount": 370000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-24",
+     "is_opening": false,
+     "qty": 1200,
+     "days": 2,
+     "unit_price": 185,
+     "amount": 444000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-24",
+     "is_opening": false,
+     "qty": 500,
+     "days": 2,
+     "unit_price": 185,
+     "amount": 185000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-25",
+     "is_opening": false,
+     "qty": 1800,
+     "days": 1,
+     "unit_price": 185,
+     "amount": 333000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-25",
+     "is_opening": false,
+     "qty": 1200,
+     "days": 1,
+     "unit_price": 185,
+     "amount": 222000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-25",
+     "is_opening": false,
+     "qty": 2576,
+     "days": 1,
+     "unit_price": 185,
+     "amount": 476560
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2025-12-20",
+     "is_opening": false,
+     "qty": 500,
+     "days": 6,
+     "unit_price": 43,
+     "amount": 129000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2025-12-21",
+     "is_opening": false,
+     "qty": 3000,
+     "days": 5,
+     "unit_price": 43,
+     "amount": 645000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2025-12-22",
+     "is_opening": false,
+     "qty": 3000,
+     "days": 4,
+     "unit_price": 43,
+     "amount": 516000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2025-12-24",
+     "is_opening": false,
+     "qty": 6000,
+     "days": 2,
+     "unit_price": 43,
+     "amount": 516000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2025-12-25",
+     "is_opening": false,
+     "qty": 2000,
+     "days": 1,
+     "unit_price": 43,
+     "amount": 86000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2025-12-25",
+     "is_opening": false,
+     "qty": 2000,
+     "days": 1,
+     "unit_price": 43,
+     "amount": 86000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2025-12-20",
+     "is_opening": false,
+     "qty": 400,
+     "days": 6,
+     "unit_price": 55,
+     "amount": 132000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2025-12-21",
+     "is_opening": false,
+     "qty": 1200,
+     "days": 5,
+     "unit_price": 55,
+     "amount": 330000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2025-12-22",
+     "is_opening": false,
+     "qty": 800,
+     "days": 4,
+     "unit_price": 55,
+     "amount": 176000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2025-12-24",
+     "is_opening": false,
+     "qty": 4800,
+     "days": 2,
+     "unit_price": 55,
+     "amount": 528000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2025-12-24",
+     "is_opening": false,
+     "qty": 3600,
+     "days": 2,
+     "unit_price": 55,
+     "amount": 396000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2025-12-25",
+     "is_opening": false,
+     "qty": 360,
+     "days": 1,
+     "unit_price": 55,
+     "amount": 19800
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-20",
+     "is_opening": false,
+     "qty": 4620,
+     "days": 6,
+     "unit_price": 71,
+     "amount": 1968120
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-21",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 5,
+     "unit_price": 71,
+     "amount": 1312080
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-22",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 4,
+     "unit_price": 71,
+     "amount": 1049664
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-22",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 4,
+     "unit_price": 71,
+     "amount": 1049664
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-22",
+     "is_opening": false,
+     "qty": 3695,
+     "days": 4,
+     "unit_price": 71,
+     "amount": 1049380
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-23",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 3,
+     "unit_price": 71,
+     "amount": 787248
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-24",
+     "is_opening": false,
+     "qty": 4000,
+     "days": 2,
+     "unit_price": 71,
+     "amount": 568000
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-24",
+     "is_opening": false,
+     "qty": 6600,
+     "days": 2,
+     "unit_price": 71,
+     "amount": 937200
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-24",
+     "is_opening": false,
+     "qty": 4620,
+     "days": 2,
+     "unit_price": 71,
+     "amount": 656040
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-24",
+     "is_opening": false,
+     "qty": 4620,
+     "days": 2,
+     "unit_price": 71,
+     "amount": 656040
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-24",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 2,
+     "unit_price": 71,
+     "amount": 524832
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-24",
+     "is_opening": false,
+     "qty": 924,
+     "days": 2,
+     "unit_price": 71,
+     "amount": 131208
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-25",
+     "is_opening": false,
+     "qty": 1764,
+     "days": 1,
+     "unit_price": 71,
+     "amount": 125244
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-25",
+     "is_opening": false,
+     "qty": 4000,
+     "days": 1,
+     "unit_price": 71,
+     "amount": 284000
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-25",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 1,
+     "unit_price": 71,
+     "amount": 262416
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-25",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 1,
+     "unit_price": 71,
+     "amount": 262416
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2025-12-21",
+     "is_opening": false,
+     "qty": 750,
+     "days": 5,
+     "unit_price": 70,
+     "amount": 262500
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2025-12-22",
+     "is_opening": false,
+     "qty": 750,
+     "days": 4,
+     "unit_price": 70,
+     "amount": 210000
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2025-12-23",
+     "is_opening": false,
+     "qty": 1500,
+     "days": 3,
+     "unit_price": 70,
+     "amount": 315000
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2025-12-24",
+     "is_opening": false,
+     "qty": 1500,
+     "days": 2,
+     "unit_price": 70,
+     "amount": 210000
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2025-12-24",
+     "is_opening": false,
+     "qty": 750,
+     "days": 2,
+     "unit_price": 70,
+     "amount": 105000
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2025-12-24",
+     "is_opening": false,
+     "qty": 1650,
+     "days": 2,
+     "unit_price": 70,
+     "amount": 231000
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2025-12-25",
+     "is_opening": false,
+     "qty": 1500,
+     "days": 1,
+     "unit_price": 70,
+     "amount": 105000
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2025-12-21",
+     "is_opening": false,
+     "qty": 750,
+     "days": 5,
+     "unit_price": 70,
+     "amount": 262500
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2025-12-22",
+     "is_opening": false,
+     "qty": 750,
+     "days": 4,
+     "unit_price": 70,
+     "amount": 210000
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2025-12-23",
+     "is_opening": false,
+     "qty": 1500,
+     "days": 3,
+     "unit_price": 70,
+     "amount": 315000
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2025-12-24",
+     "is_opening": false,
+     "qty": 1500,
+     "days": 2,
+     "unit_price": 70,
+     "amount": 210000
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2025-12-24",
+     "is_opening": false,
+     "qty": 3000,
+     "days": 2,
+     "unit_price": 70,
+     "amount": 420000
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2025-12-24",
+     "is_opening": false,
+     "qty": 2350,
+     "days": 2,
+     "unit_price": 70,
+     "amount": 329000
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2025-12-25",
+     "is_opening": false,
+     "qty": 1500,
+     "days": 1,
+     "unit_price": 70,
+     "amount": 105000
+    }
+   ],
+   "transport": [
+    {
+     "name": "Vận chuyển xe sơ mi 30 tấn",
+     "trips": 0,
+     "unit_price": 5000000,
+     "amount": 0,
+     "note": "Tính cuối kỳ"
+    },
+    {
+     "name": "Vận chuyển xe thùng 15 tấn",
+     "trips": 0,
+     "unit_price": 4500000,
+     "amount": 0,
+     "note": null
+    }
+   ],
+   "subtotal": 28488912,
+   "vat_rate": 0.08,
+   "vat": 2279113,
+   "deductions_after_vat": [],
+   "total": 30768025,
+   "from": "2025-12-20"
+  },
+  {
+   "label": "01/2026",
+   "to": "2026-01-25",
+   "excluded_days_per_line": 0,
+   "lines": [
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-26",
+     "is_opening": true,
+     "qty": 4500,
+     "days": 31,
+     "unit_price": 85,
+     "amount": 11857500
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-27",
+     "is_opening": false,
+     "qty": 1600,
+     "days": 30,
+     "unit_price": 85,
+     "amount": 4080000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-26",
+     "is_opening": false,
+     "qty": 1600,
+     "days": 31,
+     "unit_price": 85,
+     "amount": 4216000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-28",
+     "is_opening": false,
+     "qty": 1600,
+     "days": 29,
+     "unit_price": 85,
+     "amount": 3944000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-28",
+     "is_opening": false,
+     "qty": 1600,
+     "days": 29,
+     "unit_price": 85,
+     "amount": 3944000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-30",
+     "is_opening": false,
+     "qty": 1600,
+     "days": 27,
+     "unit_price": 85,
+     "amount": 3672000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-31",
+     "is_opening": false,
+     "qty": 1600,
+     "days": 26,
+     "unit_price": 85,
+     "amount": 3536000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-02",
+     "is_opening": false,
+     "qty": 400,
+     "days": 24,
+     "unit_price": 85,
+     "amount": 816000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-07",
+     "is_opening": false,
+     "qty": 1600,
+     "days": 19,
+     "unit_price": 85,
+     "amount": 2584000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-07",
+     "is_opening": false,
+     "qty": 800,
+     "days": 19,
+     "unit_price": 85,
+     "amount": 1292000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-10",
+     "is_opening": false,
+     "qty": 600,
+     "days": 16,
+     "unit_price": 85,
+     "amount": 816000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-11",
+     "is_opening": false,
+     "qty": 1600,
+     "days": 15,
+     "unit_price": 85,
+     "amount": 2040000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-12",
+     "is_opening": false,
+     "qty": 200,
+     "days": 14,
+     "unit_price": 85,
+     "amount": 238000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-12",
+     "is_opening": false,
+     "qty": 1600,
+     "days": 14,
+     "unit_price": 85,
+     "amount": 1904000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-13",
+     "is_opening": false,
+     "qty": 500,
+     "days": 13,
+     "unit_price": 85,
+     "amount": 552500
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-26",
+     "is_opening": true,
+     "qty": 3900,
+     "days": 31,
+     "unit_price": 125,
+     "amount": 15112500
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-27",
+     "is_opening": false,
+     "qty": 1700,
+     "days": 30,
+     "unit_price": 125,
+     "amount": 6375000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-26",
+     "is_opening": false,
+     "qty": 1600,
+     "days": 31,
+     "unit_price": 125,
+     "amount": 6200000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-28",
+     "is_opening": false,
+     "qty": 1600,
+     "days": 29,
+     "unit_price": 125,
+     "amount": 5800000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-28",
+     "is_opening": false,
+     "qty": 1600,
+     "days": 29,
+     "unit_price": 125,
+     "amount": 5800000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-30",
+     "is_opening": false,
+     "qty": 1600,
+     "days": 27,
+     "unit_price": 125,
+     "amount": 5400000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-31",
+     "is_opening": false,
+     "qty": 1600,
+     "days": 26,
+     "unit_price": 125,
+     "amount": 5200000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-02",
+     "is_opening": false,
+     "qty": 400,
+     "days": 24,
+     "unit_price": 125,
+     "amount": 1200000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-07",
+     "is_opening": false,
+     "qty": 1600,
+     "days": 19,
+     "unit_price": 125,
+     "amount": 3800000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-07",
+     "is_opening": false,
+     "qty": 800,
+     "days": 19,
+     "unit_price": 125,
+     "amount": 1900000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-10",
+     "is_opening": false,
+     "qty": 600,
+     "days": 16,
+     "unit_price": 125,
+     "amount": 1200000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-11",
+     "is_opening": false,
+     "qty": 1600,
+     "days": 15,
+     "unit_price": 125,
+     "amount": 3000000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-12",
+     "is_opening": false,
+     "qty": 500,
+     "days": 14,
+     "unit_price": 125,
+     "amount": 875000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-12",
+     "is_opening": false,
+     "qty": 1700,
+     "days": 14,
+     "unit_price": 125,
+     "amount": 2975000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-20",
+     "is_opening": false,
+     "qty": 800,
+     "days": 6,
+     "unit_price": 125,
+     "amount": 600000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-21",
+     "is_opening": false,
+     "qty": 800,
+     "days": 5,
+     "unit_price": 125,
+     "amount": 500000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-23",
+     "is_opening": false,
+     "qty": 800,
+     "days": 3,
+     "unit_price": 125,
+     "amount": 300000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-23",
+     "is_opening": false,
+     "qty": 800,
+     "days": 3,
+     "unit_price": 125,
+     "amount": 300000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-25",
+     "is_opening": false,
+     "qty": 800,
+     "days": 1,
+     "unit_price": 125,
+     "amount": 100000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-25",
+     "is_opening": false,
+     "qty": 1200,
+     "days": 1,
+     "unit_price": 125,
+     "amount": 150000
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-26",
+     "is_opening": true,
+     "qty": 1100,
+     "days": 31,
+     "unit_price": 159,
+     "amount": 5421900
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-26",
+     "is_opening": true,
+     "qty": 16176,
+     "days": 31,
+     "unit_price": 185,
+     "amount": 92769360
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-27",
+     "is_opening": false,
+     "qty": 1200,
+     "days": 30,
+     "unit_price": 185,
+     "amount": 6660000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-28",
+     "is_opening": false,
+     "qty": 1500,
+     "days": 29,
+     "unit_price": 185,
+     "amount": 8047500
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-31",
+     "is_opening": false,
+     "qty": 1500,
+     "days": 26,
+     "unit_price": 185,
+     "amount": 7215000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-30",
+     "is_opening": false,
+     "qty": 1400,
+     "days": 27,
+     "unit_price": 185,
+     "amount": 6993000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-31",
+     "is_opening": false,
+     "qty": 1500,
+     "days": 26,
+     "unit_price": 185,
+     "amount": 7215000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2025-12-31",
+     "is_opening": false,
+     "qty": 1700,
+     "days": 26,
+     "unit_price": 185,
+     "amount": 8177000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-02",
+     "is_opening": false,
+     "qty": 500,
+     "days": 24,
+     "unit_price": 185,
+     "amount": 2220000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-02",
+     "is_opening": false,
+     "qty": 1500,
+     "days": 24,
+     "unit_price": 185,
+     "amount": 6660000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-04",
+     "is_opening": false,
+     "qty": 1771,
+     "days": 22,
+     "unit_price": 185,
+     "amount": 7207970
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-03",
+     "is_opening": false,
+     "qty": 2000,
+     "days": 23,
+     "unit_price": 185,
+     "amount": 8510000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-05",
+     "is_opening": false,
+     "qty": 1400,
+     "days": 21,
+     "unit_price": 185,
+     "amount": 5439000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-05",
+     "is_opening": false,
+     "qty": 2000,
+     "days": 21,
+     "unit_price": 185,
+     "amount": 7770000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-06",
+     "is_opening": false,
+     "qty": 1700,
+     "days": 20,
+     "unit_price": 185,
+     "amount": 6290000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-07",
+     "is_opening": false,
+     "qty": 600,
+     "days": 19,
+     "unit_price": 185,
+     "amount": 2109000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-10",
+     "is_opening": false,
+     "qty": 1100,
+     "days": 16,
+     "unit_price": 185,
+     "amount": 3256000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-12",
+     "is_opening": false,
+     "qty": 700,
+     "days": 14,
+     "unit_price": 185,
+     "amount": 1813000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-13",
+     "is_opening": false,
+     "qty": 1000,
+     "days": 13,
+     "unit_price": 185,
+     "amount": 2405000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-16",
+     "is_opening": false,
+     "qty": 1700,
+     "days": 10,
+     "unit_price": 185,
+     "amount": 3145000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-20",
+     "is_opening": false,
+     "qty": 1200,
+     "days": 6,
+     "unit_price": 185,
+     "amount": 1332000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-21",
+     "is_opening": false,
+     "qty": 1200,
+     "days": 5,
+     "unit_price": 185,
+     "amount": 1110000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-23",
+     "is_opening": false,
+     "qty": 1200,
+     "days": 3,
+     "unit_price": 185,
+     "amount": 666000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-23",
+     "is_opening": false,
+     "qty": 1200,
+     "days": 3,
+     "unit_price": 185,
+     "amount": 666000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-25",
+     "is_opening": false,
+     "qty": 2400,
+     "days": 1,
+     "unit_price": 185,
+     "amount": 444000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-25",
+     "is_opening": false,
+     "qty": 1100,
+     "days": 1,
+     "unit_price": 185,
+     "amount": 203500
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2025-12-26",
+     "is_opening": true,
+     "qty": 16500,
+     "days": 31,
+     "unit_price": 43,
+     "amount": 21994500
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2025-12-26",
+     "is_opening": false,
+     "qty": 2000,
+     "days": 31,
+     "unit_price": 43,
+     "amount": 2666000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2025-12-28",
+     "is_opening": false,
+     "qty": 2000,
+     "days": 29,
+     "unit_price": 43,
+     "amount": 2494000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2025-12-28",
+     "is_opening": false,
+     "qty": 2000,
+     "days": 29,
+     "unit_price": 43,
+     "amount": 2494000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2025-12-30",
+     "is_opening": false,
+     "qty": 2000,
+     "days": 27,
+     "unit_price": 43,
+     "amount": 2322000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2025-12-31",
+     "is_opening": false,
+     "qty": 2000,
+     "days": 26,
+     "unit_price": 43,
+     "amount": 2236000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2026-01-02",
+     "is_opening": false,
+     "qty": 3000,
+     "days": 24,
+     "unit_price": 43,
+     "amount": 3096000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2026-01-07",
+     "is_opening": false,
+     "qty": 2000,
+     "days": 19,
+     "unit_price": 43,
+     "amount": 1634000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2025-12-26",
+     "is_opening": true,
+     "qty": 11160,
+     "days": 31,
+     "unit_price": 55,
+     "amount": 19027800
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-01-05",
+     "is_opening": false,
+     "qty": 280,
+     "days": 21,
+     "unit_price": 55,
+     "amount": 323400
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-01-05",
+     "is_opening": false,
+     "qty": 400,
+     "days": 21,
+     "unit_price": 55,
+     "amount": 462000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-01-06",
+     "is_opening": false,
+     "qty": 1600,
+     "days": 20,
+     "unit_price": 55,
+     "amount": 1760000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-01-12",
+     "is_opening": false,
+     "qty": 400,
+     "days": 14,
+     "unit_price": 55,
+     "amount": 308000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-01-12",
+     "is_opening": false,
+     "qty": 2400,
+     "days": 14,
+     "unit_price": 55,
+     "amount": 1848000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-01-23",
+     "is_opening": false,
+     "qty": 1200,
+     "days": 3,
+     "unit_price": 55,
+     "amount": 198000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-01-23",
+     "is_opening": false,
+     "qty": 3600,
+     "days": 3,
+     "unit_price": 55,
+     "amount": 594000
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-26",
+     "is_opening": true,
+     "qty": 60715,
+     "days": 31,
+     "unit_price": 71,
+     "amount": 133633715
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-27",
+     "is_opening": false,
+     "qty": 9480,
+     "days": 30,
+     "unit_price": 71,
+     "amount": 20192400
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-27",
+     "is_opening": false,
+     "qty": 3994,
+     "days": 30,
+     "unit_price": 71,
+     "amount": 8507220
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-27",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 30,
+     "unit_price": 71,
+     "amount": 7872480
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-26",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 31,
+     "unit_price": 71,
+     "amount": 8134896
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-28",
+     "is_opening": false,
+     "qty": 5000,
+     "days": 29,
+     "unit_price": 71,
+     "amount": 10295000
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-28",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 29,
+     "unit_price": 71,
+     "amount": 7610064
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-28",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 29,
+     "unit_price": 71,
+     "amount": 7610064
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-31",
+     "is_opening": false,
+     "qty": 5000,
+     "days": 26,
+     "unit_price": 71,
+     "amount": 9230000
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-30",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 27,
+     "unit_price": 71,
+     "amount": 7085232
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-30",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 27,
+     "unit_price": 71,
+     "amount": 7085232
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-31",
+     "is_opening": false,
+     "qty": 5000,
+     "days": 26,
+     "unit_price": 71,
+     "amount": 9230000
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-31",
+     "is_opening": false,
+     "qty": 4620,
+     "days": 26,
+     "unit_price": 71,
+     "amount": 8528520
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2025-12-31",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 26,
+     "unit_price": 71,
+     "amount": 6822816
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-02",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 24,
+     "unit_price": 71,
+     "amount": 6297984
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-02",
+     "is_opening": false,
+     "qty": 5000,
+     "days": 24,
+     "unit_price": 71,
+     "amount": 8520000
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-04",
+     "is_opening": false,
+     "qty": 2772,
+     "days": 22,
+     "unit_price": 71,
+     "amount": 4329864
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-03",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 23,
+     "unit_price": 71,
+     "amount": 6035568
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-05",
+     "is_opening": false,
+     "qty": 2646,
+     "days": 21,
+     "unit_price": 71,
+     "amount": 3945186
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-07",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 19,
+     "unit_price": 71,
+     "amount": 4985904
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-06",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 20,
+     "unit_price": 71,
+     "amount": 5248320
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-07",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 19,
+     "unit_price": 71,
+     "amount": 4985904
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-09",
+     "is_opening": false,
+     "qty": 10000,
+     "days": 17,
+     "unit_price": 71,
+     "amount": 12070000
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-10",
+     "is_opening": false,
+     "qty": 4620,
+     "days": 16,
+     "unit_price": 71,
+     "amount": 5248320
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-11",
+     "is_opening": false,
+     "qty": 4620,
+     "days": 15,
+     "unit_price": 71,
+     "amount": 4920300
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-12",
+     "is_opening": false,
+     "qty": 4620,
+     "days": 14,
+     "unit_price": 71,
+     "amount": 4592280
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-12",
+     "is_opening": false,
+     "qty": 3234,
+     "days": 14,
+     "unit_price": 71,
+     "amount": 3214596
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-13",
+     "is_opening": false,
+     "qty": 5544,
+     "days": 13,
+     "unit_price": 71,
+     "amount": 5117112
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-16",
+     "is_opening": false,
+     "qty": 4620,
+     "days": 10,
+     "unit_price": 71,
+     "amount": 3280200
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-16",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 10,
+     "unit_price": 71,
+     "amount": 2624160
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-16",
+     "is_opening": false,
+     "qty": 9240,
+     "days": 10,
+     "unit_price": 71,
+     "amount": 6560400
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-20",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 6,
+     "unit_price": 71,
+     "amount": 1574496
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-21",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 5,
+     "unit_price": 71,
+     "amount": 1312080
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-23",
+     "is_opening": false,
+     "qty": 1386,
+     "days": 3,
+     "unit_price": 71,
+     "amount": 295218
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-25",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 1,
+     "unit_price": 71,
+     "amount": 262416
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2025-12-26",
+     "is_opening": true,
+     "qty": 8400,
+     "days": 31,
+     "unit_price": 70,
+     "amount": 18228000
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2025-12-27",
+     "is_opening": false,
+     "qty": 1500,
+     "days": 30,
+     "unit_price": 70,
+     "amount": 3150000
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2025-12-30",
+     "is_opening": false,
+     "qty": 1500,
+     "days": 27,
+     "unit_price": 70,
+     "amount": 2835000
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-02",
+     "is_opening": false,
+     "qty": 1500,
+     "days": 24,
+     "unit_price": 70,
+     "amount": 2520000
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-03",
+     "is_opening": false,
+     "qty": 5750,
+     "days": 23,
+     "unit_price": 70,
+     "amount": 9257500
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-07",
+     "is_opening": false,
+     "qty": 1250,
+     "days": 19,
+     "unit_price": 70,
+     "amount": 1662500
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-12",
+     "is_opening": false,
+     "qty": 1000,
+     "days": 14,
+     "unit_price": 70,
+     "amount": 980000
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-13",
+     "is_opening": false,
+     "qty": 1500,
+     "days": 13,
+     "unit_price": 70,
+     "amount": 1365000
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-16",
+     "is_opening": false,
+     "qty": 5250,
+     "days": 10,
+     "unit_price": 70,
+     "amount": 3675000
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-16",
+     "is_opening": false,
+     "qty": 1250,
+     "days": 10,
+     "unit_price": 70,
+     "amount": 875000
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-20",
+     "is_opening": false,
+     "qty": 750,
+     "days": 6,
+     "unit_price": 70,
+     "amount": 315000
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-21",
+     "is_opening": false,
+     "qty": 750,
+     "days": 5,
+     "unit_price": 70,
+     "amount": 262500
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-23",
+     "is_opening": false,
+     "qty": 750,
+     "days": 3,
+     "unit_price": 70,
+     "amount": 157500
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-23",
+     "is_opening": false,
+     "qty": 1000,
+     "days": 3,
+     "unit_price": 70,
+     "amount": 210000
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2025-12-26",
+     "is_opening": true,
+     "qty": 11350,
+     "days": 31,
+     "unit_price": 70,
+     "amount": 24629500
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2025-12-27",
+     "is_opening": false,
+     "qty": 1500,
+     "days": 30,
+     "unit_price": 70,
+     "amount": 3150000
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2025-12-30",
+     "is_opening": false,
+     "qty": 1500,
+     "days": 27,
+     "unit_price": 70,
+     "amount": 2835000
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-02",
+     "is_opening": false,
+     "qty": 1500,
+     "days": 24,
+     "unit_price": 70,
+     "amount": 2520000
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-03",
+     "is_opening": false,
+     "qty": 5500,
+     "days": 23,
+     "unit_price": 70,
+     "amount": 8855000
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-07",
+     "is_opening": false,
+     "qty": 1000,
+     "days": 19,
+     "unit_price": 70,
+     "amount": 1330000
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-12",
+     "is_opening": false,
+     "qty": 1000,
+     "days": 14,
+     "unit_price": 70,
+     "amount": 980000
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-16",
+     "is_opening": false,
+     "qty": 250,
+     "days": 10,
+     "unit_price": 70,
+     "amount": 175000
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-20",
+     "is_opening": false,
+     "qty": 750,
+     "days": 6,
+     "unit_price": 70,
+     "amount": 315000
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-21",
+     "is_opening": false,
+     "qty": 750,
+     "days": 5,
+     "unit_price": 70,
+     "amount": 262500
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-23",
+     "is_opening": false,
+     "qty": 2250,
+     "days": 3,
+     "unit_price": 70,
+     "amount": 472500
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-23",
+     "is_opening": false,
+     "qty": 1250,
+     "days": 3,
+     "unit_price": 70,
+     "amount": 262500
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-25",
+     "is_opening": false,
+     "qty": 750,
+     "days": 1,
+     "unit_price": 70,
+     "amount": 52500
+    },
+    {
+     "item": "Khóa giáo xoay D48",
+     "unit": "Cái",
+     "date": "2026-01-06",
+     "is_opening": false,
+     "qty": 1000,
+     "days": 20,
+     "unit_price": 45,
+     "amount": 900000
+    }
+   ],
+   "transport": [
+    {
+     "name": "Vận chuyển xe sơ mi 30 tấn",
+     "trips": 0,
+     "unit_price": 5000000,
+     "amount": 0,
+     "note": "Tính cuối kỳ"
+    },
+    {
+     "name": "Vận chuyển xe thùng 15 tấn",
+     "trips": 0,
+     "unit_price": 4500000,
+     "amount": 0,
+     "note": null
+    }
+   ],
+   "subtotal": 818972877,
+   "vat_rate": 0.08,
+   "vat": 65517830,
+   "deductions_after_vat": [],
+   "total": 884490707,
+   "from": "2025-12-26"
+  },
+  {
+   "label": "02/2026",
+   "to": "2026-02-25",
+   "excluded_days_per_line": 15,
+   "lines": [
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-26",
+     "is_opening": true,
+     "qty": 21400,
+     "days": 16,
+     "unit_price": 85,
+     "amount": 29104000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-26",
+     "is_opening": true,
+     "qty": 26000,
+     "days": 16,
+     "unit_price": 125,
+     "amount": 52000000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-26",
+     "is_opening": false,
+     "qty": 700,
+     "days": 16,
+     "unit_price": 125,
+     "amount": 1400000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-27",
+     "is_opening": false,
+     "qty": 1400,
+     "days": 15,
+     "unit_price": 125,
+     "amount": 2625000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-27",
+     "is_opening": false,
+     "qty": 1400,
+     "days": 15,
+     "unit_price": 125,
+     "amount": 2625000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-02-06",
+     "is_opening": false,
+     "qty": 500,
+     "days": 5,
+     "unit_price": 125,
+     "amount": 312500
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-02-06",
+     "is_opening": false,
+     "qty": 500,
+     "days": 5,
+     "unit_price": 125,
+     "amount": 312500
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-02-08",
+     "is_opening": false,
+     "qty": 600,
+     "days": 3,
+     "unit_price": 125,
+     "amount": 225000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-02-08",
+     "is_opening": false,
+     "qty": 1200,
+     "days": 3,
+     "unit_price": 125,
+     "amount": 450000
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-26",
+     "is_opening": true,
+     "qty": 1100,
+     "days": 16,
+     "unit_price": 159,
+     "amount": 2798400
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-02-06",
+     "is_opening": false,
+     "qty": 1200,
+     "days": 5,
+     "unit_price": 159,
+     "amount": 954000
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-02-06",
+     "is_opening": false,
+     "qty": 1200,
+     "days": 5,
+     "unit_price": 159,
+     "amount": 954000
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-02-08",
+     "is_opening": false,
+     "qty": 1600,
+     "days": 3,
+     "unit_price": 159,
+     "amount": 763200
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-02-08",
+     "is_opening": false,
+     "qty": 1200,
+     "days": 3,
+     "unit_price": 159,
+     "amount": 572400
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-26",
+     "is_opening": true,
+     "qty": 49247,
+     "days": 16,
+     "unit_price": 185,
+     "amount": 145771120
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-27",
+     "is_opening": false,
+     "qty": 1000,
+     "days": 15,
+     "unit_price": 185,
+     "amount": 2775000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-26",
+     "is_opening": false,
+     "qty": 1400,
+     "days": 16,
+     "unit_price": 185,
+     "amount": 4144000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-01-27",
+     "is_opening": false,
+     "qty": 1100,
+     "days": 15,
+     "unit_price": 185,
+     "amount": 3052500
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2026-01-26",
+     "is_opening": true,
+     "qty": 31500,
+     "days": 16,
+     "unit_price": 43,
+     "amount": 21672000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2026-02-06",
+     "is_opening": false,
+     "qty": 2000,
+     "days": 5,
+     "unit_price": 43,
+     "amount": 430000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2026-02-06",
+     "is_opening": false,
+     "qty": 2000,
+     "days": 5,
+     "unit_price": 43,
+     "amount": 430000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-01-26",
+     "is_opening": true,
+     "qty": 21040,
+     "days": 16,
+     "unit_price": 55,
+     "amount": 18515200
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-02-06",
+     "is_opening": false,
+     "qty": 1200,
+     "days": 5,
+     "unit_price": 55,
+     "amount": 330000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-02-06",
+     "is_opening": false,
+     "qty": 1200,
+     "days": 5,
+     "unit_price": 55,
+     "amount": 330000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-02-08",
+     "is_opening": false,
+     "qty": 400,
+     "days": 3,
+     "unit_price": 55,
+     "amount": 66000
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-26",
+     "is_opening": true,
+     "qty": 211247,
+     "days": 16,
+     "unit_price": 71,
+     "amount": 239976592
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-27",
+     "is_opening": false,
+     "qty": 4620,
+     "days": 15,
+     "unit_price": 71,
+     "amount": 4920300
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-26",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 16,
+     "unit_price": 71,
+     "amount": 4198656
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-01-27",
+     "is_opening": false,
+     "qty": 1386,
+     "days": 15,
+     "unit_price": 71,
+     "amount": 1476090
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-02-06",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 5,
+     "unit_price": 71,
+     "amount": 1312080
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-02-06",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 5,
+     "unit_price": 71,
+     "amount": 1312080
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-02-08",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 3,
+     "unit_price": 71,
+     "amount": 787248
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-02-08",
+     "is_opening": false,
+     "qty": 3696,
+     "days": 3,
+     "unit_price": 71,
+     "amount": 787248
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-26",
+     "is_opening": true,
+     "qty": 32150,
+     "days": 16,
+     "unit_price": 70,
+     "amount": 36008000
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-27",
+     "is_opening": false,
+     "qty": 1000,
+     "days": 15,
+     "unit_price": 70,
+     "amount": 1050000
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-26",
+     "is_opening": true,
+     "qty": 29350,
+     "days": 16,
+     "unit_price": 70,
+     "amount": 32872000
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-01-26",
+     "is_opening": false,
+     "qty": 500,
+     "days": 16,
+     "unit_price": 70,
+     "amount": 560000
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-02-06",
+     "is_opening": false,
+     "qty": 750,
+     "days": 5,
+     "unit_price": 70,
+     "amount": 262500
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-02-06",
+     "is_opening": false,
+     "qty": 750,
+     "days": 5,
+     "unit_price": 70,
+     "amount": 262500
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-02-08",
+     "is_opening": false,
+     "qty": 500,
+     "days": 3,
+     "unit_price": 70,
+     "amount": 105000
+    },
+    {
+     "item": "Khóa giáo xoay D48",
+     "unit": "Cái",
+     "date": "2026-01-26",
+     "is_opening": true,
+     "qty": 1000,
+     "days": 16,
+     "unit_price": 45,
+     "amount": 720000
+    }
+   ],
+   "transport": [
+    {
+     "name": "Vận chuyển xe sơ mi 30 tấn",
+     "trips": 0,
+     "unit_price": 5000000,
+     "amount": 0,
+     "note": "Tính cuối kỳ"
+    },
+    {
+     "name": "Vận chuyển xe thùng 15 tấn",
+     "trips": 0,
+     "unit_price": 4500000,
+     "amount": 0,
+     "note": null
+    }
+   ],
+   "subtotal": 619222114,
+   "vat_rate": 0.08,
+   "vat": 49537769,
+   "deductions_after_vat": [
+    {
+     "name": "Cty TP gửi tặng quà hội nghị NCC",
+     "amount": 10000000
+    }
+   ],
+   "total": 658759883,
+   "from": "2026-01-26"
+  },
+  {
+   "label": "03/2026",
+   "to": "2026-03-25",
+   "excluded_days_per_line": 0,
+   "lines": [
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-02-26",
+     "is_opening": true,
+     "qty": 21400,
+     "days": 28,
+     "unit_price": 85,
+     "amount": 50932000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-02-26",
+     "is_opening": true,
+     "qty": 32300,
+     "days": 28,
+     "unit_price": 125,
+     "amount": 113050000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-02-28",
+     "is_opening": false,
+     "qty": 400,
+     "days": 26,
+     "unit_price": 125,
+     "amount": 1300000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-03-01",
+     "is_opening": false,
+     "qty": 1800,
+     "days": 25,
+     "unit_price": 125,
+     "amount": 5625000
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-02-26",
+     "is_opening": true,
+     "qty": 6300,
+     "days": 28,
+     "unit_price": 159,
+     "amount": 28047600
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-02-28",
+     "is_opening": false,
+     "qty": 1900,
+     "days": 26,
+     "unit_price": 159,
+     "amount": 7854600
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-02-28",
+     "is_opening": false,
+     "qty": 2600,
+     "days": 26,
+     "unit_price": 159,
+     "amount": 10748400
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-02-28",
+     "is_opening": false,
+     "qty": 2600,
+     "days": 26,
+     "unit_price": 159,
+     "amount": 10748400
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-03-01",
+     "is_opening": false,
+     "qty": 1400,
+     "days": 25,
+     "unit_price": 159,
+     "amount": 5565000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-02-26",
+     "is_opening": true,
+     "qty": 52747,
+     "days": 28,
+     "unit_price": 185,
+     "amount": 273229460
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2026-02-26",
+     "is_opening": true,
+     "qty": 35500,
+     "days": 28,
+     "unit_price": 43,
+     "amount": 42742000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-02-26",
+     "is_opening": true,
+     "qty": 23840,
+     "days": 28,
+     "unit_price": 55,
+     "amount": 36713600
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-02-26",
+     "is_opening": true,
+     "qty": 235733,
+     "days": 28,
+     "unit_price": 71,
+     "amount": 468637204
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-02-28",
+     "is_opening": false,
+     "qty": 2772,
+     "days": 26,
+     "unit_price": 71,
+     "amount": 5117112
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-02-26",
+     "is_opening": true,
+     "qty": 33150,
+     "days": 28,
+     "unit_price": 70,
+     "amount": 64974000
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-02-26",
+     "is_opening": true,
+     "qty": 31850,
+     "days": 28,
+     "unit_price": 70,
+     "amount": 62426000
+    },
+    {
+     "item": "Khóa giáo xoay D48",
+     "unit": "Cái",
+     "date": "2026-02-26",
+     "is_opening": true,
+     "qty": 1000,
+     "days": 28,
+     "unit_price": 45,
+     "amount": 1260000
+    }
+   ],
+   "transport": [
+    {
+     "name": "Vận chuyển xe sơ mi 30 tấn",
+     "trips": 0,
+     "unit_price": 5000000,
+     "amount": 0,
+     "note": null
+    },
+    {
+     "name": "Vận chuyển xe thùng 15 tấn",
+     "trips": 0,
+     "unit_price": 4500000,
+     "amount": 0,
+     "note": null
+    }
+   ],
+   "subtotal": 1188970376,
+   "vat_rate": 0.08,
+   "vat": 95117630,
+   "deductions_after_vat": [],
+   "total": 1284088006,
+   "from": "2026-02-26"
+  },
+  {
+   "label": "04/2026",
+   "to": "2026-04-25",
+   "excluded_days_per_line": 0,
+   "lines": [
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-03-26",
+     "is_opening": true,
+     "qty": 21400,
+     "days": 31,
+     "unit_price": 85,
+     "amount": 56389000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-03-26",
+     "is_opening": true,
+     "qty": 34500,
+     "days": 31,
+     "unit_price": 125,
+     "amount": 133687500
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-03-26",
+     "is_opening": true,
+     "qty": 14800,
+     "days": 31,
+     "unit_price": 159,
+     "amount": 72949200
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-03-26",
+     "is_opening": true,
+     "qty": 52747,
+     "days": 31,
+     "unit_price": 185,
+     "amount": 302504045
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2026-03-26",
+     "is_opening": true,
+     "qty": 35500,
+     "days": 31,
+     "unit_price": 43,
+     "amount": 47321500
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-03-26",
+     "is_opening": true,
+     "qty": 23840,
+     "days": 31,
+     "unit_price": 55,
+     "amount": 40647200
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-03-26",
+     "is_opening": true,
+     "qty": 238505,
+     "days": 31,
+     "unit_price": 71,
+     "amount": 524949505
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-03-26",
+     "is_opening": true,
+     "qty": 33150,
+     "days": 31,
+     "unit_price": 70,
+     "amount": 71935500
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-03-26",
+     "is_opening": true,
+     "qty": 31850,
+     "days": 31,
+     "unit_price": 70,
+     "amount": 69114500
+    },
+    {
+     "item": "Khóa giáo xoay D48",
+     "unit": "Cái",
+     "date": "2026-03-26",
+     "is_opening": true,
+     "qty": 1000,
+     "days": 31,
+     "unit_price": 45,
+     "amount": 1395000
+    }
+   ],
+   "transport": [
+    {
+     "name": "Vận chuyển xe sơ mi 30 tấn",
+     "trips": 0,
+     "unit_price": 5000000,
+     "amount": 0,
+     "note": null
+    },
+    {
+     "name": "Vận chuyển xe thùng 15 tấn",
+     "trips": 0,
+     "unit_price": 4500000,
+     "amount": 0,
+     "note": null
+    }
+   ],
+   "subtotal": 1320892950,
+   "vat_rate": 0.08,
+   "vat": 105671436,
+   "deductions_after_vat": [],
+   "total": 1426564386,
+   "from": "2026-03-26"
+  },
+  {
+   "label": "05/2026",
+   "to": "2026-05-25",
+   "excluded_days_per_line": 0,
+   "lines": [
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-04-26",
+     "is_opening": true,
+     "qty": 21400,
+     "days": 30,
+     "unit_price": 85,
+     "amount": 54570000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-05",
+     "is_opening": false,
+     "qty": -400,
+     "days": 21,
+     "unit_price": 85,
+     "amount": -714000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-11",
+     "is_opening": false,
+     "qty": -200,
+     "days": 15,
+     "unit_price": 85,
+     "amount": -255000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-13",
+     "is_opening": false,
+     "qty": -200,
+     "days": 13,
+     "unit_price": 85,
+     "amount": -221000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-17",
+     "is_opening": false,
+     "qty": -12,
+     "days": 9,
+     "unit_price": 85,
+     "amount": -9180
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-04-26",
+     "is_opening": true,
+     "qty": 34500,
+     "days": 30,
+     "unit_price": 125,
+     "amount": 129375000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-05",
+     "is_opening": false,
+     "qty": -1000,
+     "days": 21,
+     "unit_price": 125,
+     "amount": -2625000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-08",
+     "is_opening": false,
+     "qty": -200,
+     "days": 18,
+     "unit_price": 125,
+     "amount": -450000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-11",
+     "is_opening": false,
+     "qty": -600,
+     "days": 15,
+     "unit_price": 125,
+     "amount": -1125000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-13",
+     "is_opening": false,
+     "qty": -500,
+     "days": 13,
+     "unit_price": 125,
+     "amount": -812500
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-15",
+     "is_opening": false,
+     "qty": -500,
+     "days": 11,
+     "unit_price": 125,
+     "amount": -687500
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-17",
+     "is_opening": false,
+     "qty": -199,
+     "days": 9,
+     "unit_price": 125,
+     "amount": -223875
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-20",
+     "is_opening": false,
+     "qty": -500,
+     "days": 6,
+     "unit_price": 125,
+     "amount": -375000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-21",
+     "is_opening": false,
+     "qty": -300,
+     "days": 5,
+     "unit_price": 125,
+     "amount": -187500
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-23",
+     "is_opening": false,
+     "qty": -100,
+     "days": 3,
+     "unit_price": 125,
+     "amount": -37500
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-04-26",
+     "is_opening": true,
+     "qty": 14800,
+     "days": 30,
+     "unit_price": 159,
+     "amount": 70596000
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-13",
+     "is_opening": false,
+     "qty": -100,
+     "days": 13,
+     "unit_price": 159,
+     "amount": -206700
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-15",
+     "is_opening": false,
+     "qty": -200,
+     "days": 11,
+     "unit_price": 159,
+     "amount": -349800
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-17",
+     "is_opening": false,
+     "qty": -300,
+     "days": 9,
+     "unit_price": 159,
+     "amount": -429300
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-20",
+     "is_opening": false,
+     "qty": -100,
+     "days": 6,
+     "unit_price": 159,
+     "amount": -95400
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-21",
+     "is_opening": false,
+     "qty": -500,
+     "days": 5,
+     "unit_price": 159,
+     "amount": -397500
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-23",
+     "is_opening": false,
+     "qty": -400,
+     "days": 3,
+     "unit_price": 159,
+     "amount": -190800
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-04-26",
+     "is_opening": true,
+     "qty": 52747,
+     "days": 30,
+     "unit_price": 185,
+     "amount": 292745850
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-05",
+     "is_opening": false,
+     "qty": -600,
+     "days": 21,
+     "unit_price": 185,
+     "amount": -2331000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-08",
+     "is_opening": false,
+     "qty": -1800,
+     "days": 18,
+     "unit_price": 185,
+     "amount": -5994000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-11",
+     "is_opening": false,
+     "qty": -1300,
+     "days": 15,
+     "unit_price": 185,
+     "amount": -3607500
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-13",
+     "is_opening": false,
+     "qty": -1400,
+     "days": 13,
+     "unit_price": 185,
+     "amount": -3367000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-15",
+     "is_opening": false,
+     "qty": -600,
+     "days": 11,
+     "unit_price": 185,
+     "amount": -1221000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-15",
+     "is_opening": false,
+     "qty": -200,
+     "days": 11,
+     "unit_price": 185,
+     "amount": -407000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-20",
+     "is_opening": false,
+     "qty": -1100,
+     "days": 6,
+     "unit_price": 185,
+     "amount": -1221000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-20",
+     "is_opening": false,
+     "qty": -300,
+     "days": 6,
+     "unit_price": 185,
+     "amount": -333000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-21",
+     "is_opening": false,
+     "qty": -800,
+     "days": 5,
+     "unit_price": 185,
+     "amount": -740000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-21",
+     "is_opening": false,
+     "qty": -500,
+     "days": 5,
+     "unit_price": 185,
+     "amount": -462500
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-23",
+     "is_opening": false,
+     "qty": -700,
+     "days": 3,
+     "unit_price": 185,
+     "amount": -388500
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-23",
+     "is_opening": false,
+     "qty": -700,
+     "days": 3,
+     "unit_price": 185,
+     "amount": -388500
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2026-04-26",
+     "is_opening": true,
+     "qty": 35500,
+     "days": 30,
+     "unit_price": 43,
+     "amount": 45795000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-04-26",
+     "is_opening": true,
+     "qty": 23840,
+     "days": 30,
+     "unit_price": 55,
+     "amount": 39336000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-05-17",
+     "is_opening": false,
+     "qty": -6,
+     "days": 9,
+     "unit_price": 55,
+     "amount": -2970
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-04-26",
+     "is_opening": true,
+     "qty": 238505,
+     "days": 30,
+     "unit_price": 71,
+     "amount": 508015650
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-05-05",
+     "is_opening": false,
+     "qty": -2730,
+     "days": 21,
+     "unit_price": 71,
+     "amount": -4070430
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-05-08",
+     "is_opening": false,
+     "qty": -2730,
+     "days": 18,
+     "unit_price": 71,
+     "amount": -3488940
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-05-11",
+     "is_opening": false,
+     "qty": -2772,
+     "days": 15,
+     "unit_price": 71,
+     "amount": -2952180
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-05-13",
+     "is_opening": false,
+     "qty": -3696,
+     "days": 13,
+     "unit_price": 71,
+     "amount": -3411408
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-05-15",
+     "is_opening": false,
+     "qty": -5544,
+     "days": 11,
+     "unit_price": 71,
+     "amount": -4329864
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-05-17",
+     "is_opening": false,
+     "qty": -818,
+     "days": 9,
+     "unit_price": 71,
+     "amount": -522702
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-05-20",
+     "is_opening": false,
+     "qty": -2772,
+     "days": 6,
+     "unit_price": 71,
+     "amount": -1180872
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-05-21",
+     "is_opening": false,
+     "qty": -2772,
+     "days": 5,
+     "unit_price": 71,
+     "amount": -984060
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-05-23",
+     "is_opening": false,
+     "qty": -2772,
+     "days": 3,
+     "unit_price": 71,
+     "amount": -590436
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-04-26",
+     "is_opening": true,
+     "qty": 33150,
+     "days": 30,
+     "unit_price": 70,
+     "amount": 69615000
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-04-26",
+     "is_opening": true,
+     "qty": 31850,
+     "days": 30,
+     "unit_price": 70,
+     "amount": 66885000
+    },
+    {
+     "item": "Khóa giáo xoay D48",
+     "unit": "Cái",
+     "date": "2026-04-26",
+     "is_opening": true,
+     "qty": 1000,
+     "days": 30,
+     "unit_price": 45,
+     "amount": 1350000
+    }
+   ],
+   "transport": [
+    {
+     "name": "Vận chuyển xe sơ mi 30 tấn",
+     "trips": 0,
+     "unit_price": 5000000,
+     "amount": 0,
+     "note": null
+    },
+    {
+     "name": "Vận chuyển xe thùng 15 tấn",
+     "trips": 0,
+     "unit_price": 4500000,
+     "amount": 0,
+     "note": null
+    }
+   ],
+   "subtotal": 1226896083,
+   "vat_rate": 0.08,
+   "vat": 98151687,
+   "deductions_after_vat": [],
+   "total": 1325047770,
+   "from": "2026-04-26"
+  },
+  {
+   "label": "06/2026",
+   "to": "2026-06-25",
+   "excluded_days_per_line": 0,
+   "lines": [
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-26",
+     "is_opening": true,
+     "qty": 20588,
+     "days": 31,
+     "unit_price": 85,
+     "amount": 54249380
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-25",
+     "is_opening": false,
+     "qty": -200,
+     "days": 32,
+     "unit_price": 85,
+     "amount": -544000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-26",
+     "is_opening": false,
+     "qty": -400,
+     "days": 31,
+     "unit_price": 85,
+     "amount": -1054000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-28",
+     "is_opening": false,
+     "qty": -600,
+     "days": 29,
+     "unit_price": 85,
+     "amount": -1479000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-28",
+     "is_opening": false,
+     "qty": -400,
+     "days": 29,
+     "unit_price": 85,
+     "amount": -986000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-06-01",
+     "is_opening": false,
+     "qty": -1000,
+     "days": 25,
+     "unit_price": 85,
+     "amount": -2125000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-06-10",
+     "is_opening": false,
+     "qty": -200,
+     "days": 16,
+     "unit_price": 85,
+     "amount": -272000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-06-17",
+     "is_opening": false,
+     "qty": -600,
+     "days": 9,
+     "unit_price": 85,
+     "amount": -459000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-26",
+     "is_opening": true,
+     "qty": 30601,
+     "days": 31,
+     "unit_price": 125,
+     "amount": 118578875
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-25",
+     "is_opening": false,
+     "qty": -800,
+     "days": 32,
+     "unit_price": 125,
+     "amount": -3200000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-26",
+     "is_opening": false,
+     "qty": -1000,
+     "days": 31,
+     "unit_price": 125,
+     "amount": -3875000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-28",
+     "is_opening": false,
+     "qty": -500,
+     "days": 29,
+     "unit_price": 125,
+     "amount": -1812500
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-28",
+     "is_opening": false,
+     "qty": -300,
+     "days": 29,
+     "unit_price": 125,
+     "amount": -1087500
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-06-01",
+     "is_opening": false,
+     "qty": -500,
+     "days": 25,
+     "unit_price": 125,
+     "amount": -1562500
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-06-02",
+     "is_opening": false,
+     "qty": -100,
+     "days": 24,
+     "unit_price": 125,
+     "amount": -300000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-06-17",
+     "is_opening": false,
+     "qty": -200,
+     "days": 9,
+     "unit_price": 125,
+     "amount": -225000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-06-21",
+     "is_opening": false,
+     "qty": -500,
+     "days": 5,
+     "unit_price": 125,
+     "amount": -312500
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-26",
+     "is_opening": true,
+     "qty": 13200,
+     "days": 31,
+     "unit_price": 159,
+     "amount": 65062800
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-25",
+     "is_opening": false,
+     "qty": -200,
+     "days": 32,
+     "unit_price": 159,
+     "amount": -1017600
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-26",
+     "is_opening": false,
+     "qty": -600,
+     "days": 31,
+     "unit_price": 159,
+     "amount": -2957400
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-28",
+     "is_opening": false,
+     "qty": -500,
+     "days": 29,
+     "unit_price": 159,
+     "amount": -2305500
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-28",
+     "is_opening": false,
+     "qty": -200,
+     "days": 29,
+     "unit_price": 159,
+     "amount": -922200
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-06-01",
+     "is_opening": false,
+     "qty": -300,
+     "days": 25,
+     "unit_price": 159,
+     "amount": -1192500
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-06-21",
+     "is_opening": false,
+     "qty": -1700,
+     "days": 5,
+     "unit_price": 159,
+     "amount": -1351500
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-26",
+     "is_opening": true,
+     "qty": 42747,
+     "days": 31,
+     "unit_price": 185,
+     "amount": 245154045
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-25",
+     "is_opening": false,
+     "qty": -400,
+     "days": 32,
+     "unit_price": 185,
+     "amount": -2368000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-26",
+     "is_opening": false,
+     "qty": -400,
+     "days": 31,
+     "unit_price": 185,
+     "amount": -2294000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-28",
+     "is_opening": false,
+     "qty": -700,
+     "days": 29,
+     "unit_price": 185,
+     "amount": -3755500
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-05-28",
+     "is_opening": false,
+     "qty": -500,
+     "days": 29,
+     "unit_price": 185,
+     "amount": -2682500
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-06-01",
+     "is_opening": false,
+     "qty": -300,
+     "days": 25,
+     "unit_price": 185,
+     "amount": -1387500
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-06-02",
+     "is_opening": false,
+     "qty": -1300,
+     "days": 24,
+     "unit_price": 185,
+     "amount": -5772000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-06-09",
+     "is_opening": false,
+     "qty": -1493,
+     "days": 17,
+     "unit_price": 185,
+     "amount": -4695485
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-06-10",
+     "is_opening": false,
+     "qty": -1900,
+     "days": 16,
+     "unit_price": 185,
+     "amount": -5624000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-06-17",
+     "is_opening": false,
+     "qty": -700,
+     "days": 9,
+     "unit_price": 185,
+     "amount": -1165500
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-06-25",
+     "is_opening": false,
+     "qty": -2400,
+     "days": 1,
+     "unit_price": 185,
+     "amount": -444000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2026-05-26",
+     "is_opening": true,
+     "qty": 35500,
+     "days": 31,
+     "unit_price": 43,
+     "amount": 47321500
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2026-06-01",
+     "is_opening": false,
+     "qty": -1260,
+     "days": 25,
+     "unit_price": 43,
+     "amount": -1354500
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2026-06-02",
+     "is_opening": false,
+     "qty": -840,
+     "days": 24,
+     "unit_price": 43,
+     "amount": -866880
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2026-06-17",
+     "is_opening": false,
+     "qty": -1050,
+     "days": 9,
+     "unit_price": 43,
+     "amount": -406350
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-05-26",
+     "is_opening": true,
+     "qty": 23834,
+     "days": 31,
+     "unit_price": 55,
+     "amount": 40636970
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-06-01",
+     "is_opening": false,
+     "qty": -2142,
+     "days": 25,
+     "unit_price": 55,
+     "amount": -2945250
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-05-26",
+     "is_opening": true,
+     "qty": 211899,
+     "days": 31,
+     "unit_price": 71,
+     "amount": 466389699
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-05-25",
+     "is_opening": false,
+     "qty": -6468,
+     "days": 32,
+     "unit_price": 71,
+     "amount": -14695296
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-05-26",
+     "is_opening": false,
+     "qty": -2772,
+     "days": 31,
+     "unit_price": 71,
+     "amount": -6101172
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-05-28",
+     "is_opening": false,
+     "qty": -2772,
+     "days": 29,
+     "unit_price": 71,
+     "amount": -5707548
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-05-28",
+     "is_opening": false,
+     "qty": -5544,
+     "days": 29,
+     "unit_price": 71,
+     "amount": -11415096
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-06-01",
+     "is_opening": false,
+     "qty": -2772,
+     "days": 25,
+     "unit_price": 71,
+     "amount": -4920300
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-06-02",
+     "is_opening": false,
+     "qty": -4620,
+     "days": 24,
+     "unit_price": 71,
+     "amount": -7872480
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-06-09",
+     "is_opening": false,
+     "qty": -5544,
+     "days": 17,
+     "unit_price": 71,
+     "amount": -6691608
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-06-10",
+     "is_opening": false,
+     "qty": -3696,
+     "days": 16,
+     "unit_price": 71,
+     "amount": -4198656
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-06-17",
+     "is_opening": false,
+     "qty": -6006,
+     "days": 9,
+     "unit_price": 71,
+     "amount": -3837834
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-06-21",
+     "is_opening": false,
+     "qty": -3696,
+     "days": 5,
+     "unit_price": 71,
+     "amount": -1312080
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-06-25",
+     "is_opening": false,
+     "qty": -3696,
+     "days": 1,
+     "unit_price": 71,
+     "amount": -262416
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-05-26",
+     "is_opening": true,
+     "qty": 33150,
+     "days": 31,
+     "unit_price": 70,
+     "amount": 71935500
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-06-18",
+     "is_opening": false,
+     "qty": -380,
+     "days": 8,
+     "unit_price": 70,
+     "amount": -212800
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-06-24",
+     "is_opening": false,
+     "qty": -1240,
+     "days": 2,
+     "unit_price": 70,
+     "amount": -173600
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-05-26",
+     "is_opening": true,
+     "qty": 31850,
+     "days": 31,
+     "unit_price": 70,
+     "amount": 69114500
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-06-09",
+     "is_opening": false,
+     "qty": -750,
+     "days": 17,
+     "unit_price": 70,
+     "amount": -892500
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-06-18",
+     "is_opening": false,
+     "qty": -1581,
+     "days": 8,
+     "unit_price": 70,
+     "amount": -885360
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-06-24",
+     "is_opening": false,
+     "qty": -420,
+     "days": 2,
+     "unit_price": 70,
+     "amount": -58800
+    },
+    {
+     "item": "Khóa giáo xoay D48",
+     "unit": "Cái",
+     "date": "2026-05-26",
+     "is_opening": true,
+     "qty": 1000,
+     "days": 31,
+     "unit_price": 45,
+     "amount": 1395000
+    }
+   ],
+   "transport": [
+    {
+     "name": "Vận chuyển xe sơ mi 30 tấn",
+     "trips": 15,
+     "unit_price": 5000000,
+     "amount": 75000000,
+     "note": "8 chuyến tháng 5 + 7 chuyến tháng 6"
+    },
+    {
+     "name": "Vận chuyển xe thùng 15 tấn",
+     "trips": 0,
+     "unit_price": 4500000,
+     "amount": 0,
+     "note": null
+    }
+   ],
+   "subtotal": 1120798558,
+   "vat_rate": 0.08,
+   "vat": 89663885,
+   "deductions_after_vat": [],
+   "total": 1210462443,
+   "from": "2026-05-26"
+  },
+  {
+   "label": "07/2026",
+   "to": "2026-07-25",
+   "excluded_days_per_line": 0,
+   "lines": [
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-06-26",
+     "is_opening": true,
+     "qty": 17188,
+     "days": 30,
+     "unit_price": 85,
+     "amount": 43829400
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-07-21",
+     "is_opening": false,
+     "qty": -800,
+     "days": 5,
+     "unit_price": 85,
+     "amount": -340000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-06-26",
+     "is_opening": true,
+     "qty": 26701,
+     "days": 30,
+     "unit_price": 125,
+     "amount": 100128750
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-06-27",
+     "is_opening": false,
+     "qty": -100,
+     "days": 29,
+     "unit_price": 125,
+     "amount": -362500
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-07-05",
+     "is_opening": false,
+     "qty": -400,
+     "days": 21,
+     "unit_price": 125,
+     "amount": -1050000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-07-21",
+     "is_opening": false,
+     "qty": -300,
+     "days": 5,
+     "unit_price": 125,
+     "amount": -187500
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-06-26",
+     "is_opening": true,
+     "qty": 9700,
+     "days": 30,
+     "unit_price": 159,
+     "amount": 46269000
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-06-27",
+     "is_opening": false,
+     "qty": -1200,
+     "days": 29,
+     "unit_price": 159,
+     "amount": -5533200
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-07-05",
+     "is_opening": false,
+     "qty": -900,
+     "days": 21,
+     "unit_price": 159,
+     "amount": -3005100
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-07-05",
+     "is_opening": false,
+     "qty": -400,
+     "days": 21,
+     "unit_price": 159,
+     "amount": -1335600
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-07-21",
+     "is_opening": false,
+     "qty": -200,
+     "days": 5,
+     "unit_price": 159,
+     "amount": -159000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-06-26",
+     "is_opening": true,
+     "qty": 32654,
+     "days": 30,
+     "unit_price": 185,
+     "amount": 181229700
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-06-27",
+     "is_opening": false,
+     "qty": -1600,
+     "days": 29,
+     "unit_price": 185,
+     "amount": -8584000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-06-27",
+     "is_opening": false,
+     "qty": -400,
+     "days": 29,
+     "unit_price": 185,
+     "amount": -2146000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-07-03",
+     "is_opening": false,
+     "qty": -900,
+     "days": 23,
+     "unit_price": 185,
+     "amount": -3829500
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-07-05",
+     "is_opening": false,
+     "qty": -300,
+     "days": 21,
+     "unit_price": 185,
+     "amount": -1165500
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-07-05",
+     "is_opening": false,
+     "qty": -900,
+     "days": 21,
+     "unit_price": 185,
+     "amount": -3496500
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-07-11",
+     "is_opening": false,
+     "qty": -1100,
+     "days": 15,
+     "unit_price": 185,
+     "amount": -3052500
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-07-21",
+     "is_opening": false,
+     "qty": -700,
+     "days": 5,
+     "unit_price": 185,
+     "amount": -647500
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2026-06-26",
+     "is_opening": true,
+     "qty": 32350,
+     "days": 30,
+     "unit_price": 43,
+     "amount": 41731500
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2026-07-03",
+     "is_opening": false,
+     "qty": -630,
+     "days": 23,
+     "unit_price": 43,
+     "amount": -623070
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2026-07-05",
+     "is_opening": false,
+     "qty": -630,
+     "days": 21,
+     "unit_price": 43,
+     "amount": -568890
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2026-07-07",
+     "is_opening": false,
+     "qty": -1680,
+     "days": 19,
+     "unit_price": 43,
+     "amount": -1372560
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2026-07-21",
+     "is_opening": false,
+     "qty": -210,
+     "days": 5,
+     "unit_price": 43,
+     "amount": -45150
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2026-07-24",
+     "is_opening": false,
+     "qty": -2100,
+     "days": 2,
+     "unit_price": 43,
+     "amount": -180600
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-06-26",
+     "is_opening": true,
+     "qty": 21692,
+     "days": 30,
+     "unit_price": 55,
+     "amount": 35791800
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-06-27",
+     "is_opening": false,
+     "qty": -352,
+     "days": 29,
+     "unit_price": 55,
+     "amount": -561440
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-07-03",
+     "is_opening": false,
+     "qty": -375,
+     "days": 23,
+     "unit_price": 55,
+     "amount": -474375
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-07-05",
+     "is_opening": false,
+     "qty": -357,
+     "days": 21,
+     "unit_price": 55,
+     "amount": -412335
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-07-13",
+     "is_opening": false,
+     "qty": -336,
+     "days": 13,
+     "unit_price": 55,
+     "amount": -240240
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-07-24",
+     "is_opening": false,
+     "qty": -127,
+     "days": 2,
+     "unit_price": 55,
+     "amount": -13970
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-06-26",
+     "is_opening": true,
+     "qty": 164313,
+     "days": 30,
+     "unit_price": 71,
+     "amount": 349986690
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-06-27",
+     "is_opening": false,
+     "qty": -4620,
+     "days": 29,
+     "unit_price": 71,
+     "amount": -9512580
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-06-27",
+     "is_opening": false,
+     "qty": -3234,
+     "days": 29,
+     "unit_price": 71,
+     "amount": -6658806
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-07-03",
+     "is_opening": false,
+     "qty": -5544,
+     "days": 23,
+     "unit_price": 71,
+     "amount": -9053352
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-07-05",
+     "is_opening": false,
+     "qty": -1848,
+     "days": 21,
+     "unit_price": 71,
+     "amount": -2755368
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-07-05",
+     "is_opening": false,
+     "qty": -2310,
+     "days": 21,
+     "unit_price": 71,
+     "amount": -3444210
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-07-11",
+     "is_opening": false,
+     "qty": -2772,
+     "days": 15,
+     "unit_price": 71,
+     "amount": -2952180
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-07-21",
+     "is_opening": false,
+     "qty": -3696,
+     "days": 5,
+     "unit_price": 71,
+     "amount": -1312080
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-06-26",
+     "is_opening": true,
+     "qty": 31530,
+     "days": 30,
+     "unit_price": 70,
+     "amount": 66213000
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-07-03",
+     "is_opening": false,
+     "qty": -630,
+     "days": 23,
+     "unit_price": 70,
+     "amount": -1014300
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-07-05",
+     "is_opening": false,
+     "qty": -910,
+     "days": 21,
+     "unit_price": 70,
+     "amount": -1337700
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-07-10",
+     "is_opening": false,
+     "qty": -1300,
+     "days": 16,
+     "unit_price": 70,
+     "amount": -1456000
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-07-17",
+     "is_opening": false,
+     "qty": -1009,
+     "days": 9,
+     "unit_price": 70,
+     "amount": -635670
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-06-26",
+     "is_opening": true,
+     "qty": 29099,
+     "days": 30,
+     "unit_price": 70,
+     "amount": 61107900
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-07-03",
+     "is_opening": false,
+     "qty": -210,
+     "days": 23,
+     "unit_price": 70,
+     "amount": -338100
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-07-05",
+     "is_opening": false,
+     "qty": -1726,
+     "days": 21,
+     "unit_price": 70,
+     "amount": -2537220
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-07-10",
+     "is_opening": false,
+     "qty": -1300,
+     "days": 16,
+     "unit_price": 70,
+     "amount": -1456000
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-07-21",
+     "is_opening": false,
+     "qty": -420,
+     "days": 5,
+     "unit_price": 70,
+     "amount": -147000
+    },
+    {
+     "item": "Khóa giáo xoay D48",
+     "unit": "Cái",
+     "date": "2026-06-26",
+     "is_opening": true,
+     "qty": 1000,
+     "days": 30,
+     "unit_price": 45,
+     "amount": 1350000
+    },
+    {
+     "item": "Khóa giáo xoay D48",
+     "unit": "Cái",
+     "date": "2026-07-13",
+     "is_opening": false,
+     "qty": -1000,
+     "days": 13,
+     "unit_price": 45,
+     "amount": -585000
+    }
+   ],
+   "transport": [
+    {
+     "name": "Vận chuyển xe sơ mi 30 tấn",
+     "trips": 3,
+     "unit_price": 5000000,
+     "amount": 15000000,
+     "note": "6 chuyến luân chuyển sang Harmony (4 chuyến xe ctr, 2 chuyển TP)\n1 chuyến về kho PT (xe TP)\n"
+    },
+    {
+     "name": "Vận chuyển xe thùng 15 tấn",
+     "trips": 0,
+     "unit_price": 4500000,
+     "amount": 0,
+     "note": null
+    }
+   ],
+   "subtotal": 858055144,
+   "vat_rate": 0.08,
+   "vat": 68644412,
+   "deductions_after_vat": [],
+   "total": 926699556,
+   "from": "2026-06-26"
+  },
+  {
+   "label": "08/2026",
+   "to": "2026-08-25",
+   "excluded_days_per_line": 0,
+   "lines": [
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-07-26",
+     "is_opening": true,
+     "qty": 16388,
+     "days": 31,
+     "unit_price": 85,
+     "amount": 43182380
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-08-03",
+     "is_opening": false,
+     "qty": -600,
+     "days": 23,
+     "unit_price": 85,
+     "amount": -1173000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-08-19",
+     "is_opening": false,
+     "qty": -200,
+     "days": 7,
+     "unit_price": 85,
+     "amount": -119000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-08-20",
+     "is_opening": false,
+     "qty": -200,
+     "days": 6,
+     "unit_price": 85,
+     "amount": -102000
+    },
+    {
+     "item": "Giáo ringlock 1.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-08-25",
+     "is_opening": false,
+     "qty": -200,
+     "days": 1,
+     "unit_price": 85,
+     "amount": -17000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-07-26",
+     "is_opening": true,
+     "qty": 25901,
+     "days": 31,
+     "unit_price": 125,
+     "amount": 100366375
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-08-03",
+     "is_opening": false,
+     "qty": -800,
+     "days": 23,
+     "unit_price": 125,
+     "amount": -2300000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-08-19",
+     "is_opening": false,
+     "qty": -400,
+     "days": 7,
+     "unit_price": 125,
+     "amount": -350000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-08-20",
+     "is_opening": false,
+     "qty": -500,
+     "days": 6,
+     "unit_price": 125,
+     "amount": -375000
+    },
+    {
+     "item": "Giáo ringlock 1.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-08-25",
+     "is_opening": false,
+     "qty": -300,
+     "days": 1,
+     "unit_price": 125,
+     "amount": -37500
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-07-26",
+     "is_opening": true,
+     "qty": 7000,
+     "days": 31,
+     "unit_price": 159,
+     "amount": 34503000
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-08-19",
+     "is_opening": false,
+     "qty": -600,
+     "days": 7,
+     "unit_price": 159,
+     "amount": -667800
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-08-20",
+     "is_opening": false,
+     "qty": -300,
+     "days": 6,
+     "unit_price": 159,
+     "amount": -286200
+    },
+    {
+     "item": "Giáo ringlock 2.0m Kẽm",
+     "unit": "Cây",
+     "date": "2026-08-25",
+     "is_opening": false,
+     "qty": -100,
+     "days": 1,
+     "unit_price": 159,
+     "amount": -15900
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-07-26",
+     "is_opening": true,
+     "qty": 26754,
+     "days": 31,
+     "unit_price": 185,
+     "amount": 153434190
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-08-03",
+     "is_opening": false,
+     "qty": -400,
+     "days": 23,
+     "unit_price": 185,
+     "amount": -1702000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-08-19",
+     "is_opening": false,
+     "qty": -700,
+     "days": 7,
+     "unit_price": 185,
+     "amount": -906500
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-08-20",
+     "is_opening": false,
+     "qty": -500,
+     "days": 6,
+     "unit_price": 185,
+     "amount": -555000
+    },
+    {
+     "item": "Giáo ringlock 2.5m Kẽm",
+     "unit": "Cây",
+     "date": "2026-08-25",
+     "is_opening": false,
+     "qty": -800,
+     "days": 1,
+     "unit_price": 185,
+     "amount": -148000
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2026-07-26",
+     "is_opening": true,
+     "qty": 27100,
+     "days": 31,
+     "unit_price": 43,
+     "amount": 36124300
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2026-08-03",
+     "is_opening": false,
+     "qty": -840,
+     "days": 23,
+     "unit_price": 43,
+     "amount": -830760
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2026-08-19",
+     "is_opening": false,
+     "qty": -630,
+     "days": 7,
+     "unit_price": 43,
+     "amount": -189630
+    },
+    {
+     "item": "Giằng ngang ringlock 0.6m",
+     "unit": "Cái",
+     "date": "2026-08-25",
+     "is_opening": false,
+     "qty": -420,
+     "days": 1,
+     "unit_price": 43,
+     "amount": -18060
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-07-26",
+     "is_opening": true,
+     "qty": 20145,
+     "days": 31,
+     "unit_price": 55,
+     "amount": 34347225
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-08-03",
+     "is_opening": false,
+     "qty": -336,
+     "days": 23,
+     "unit_price": 55,
+     "amount": -425040
+    },
+    {
+     "item": "Giằng ngang ringlock 0.9m",
+     "unit": "Cái",
+     "date": "2026-08-25",
+     "is_opening": false,
+     "qty": -1008,
+     "days": 1,
+     "unit_price": 55,
+     "amount": -55440
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-07-26",
+     "is_opening": true,
+     "qty": 140289,
+     "days": 31,
+     "unit_price": 71,
+     "amount": 308776089
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-08-03",
+     "is_opening": false,
+     "qty": -2310,
+     "days": 23,
+     "unit_price": 71,
+     "amount": -3772230
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-08-19",
+     "is_opening": false,
+     "qty": -3696,
+     "days": 7,
+     "unit_price": 71,
+     "amount": -1836912
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-08-20",
+     "is_opening": false,
+     "qty": -6468,
+     "days": 6,
+     "unit_price": 71,
+     "amount": -2755368
+    },
+    {
+     "item": "Giằng ngang ringlock 1.2m",
+     "unit": "Cái",
+     "date": "2026-08-25",
+     "is_opening": false,
+     "qty": -4620,
+     "days": 1,
+     "unit_price": 71,
+     "amount": -328020
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-07-26",
+     "is_opening": true,
+     "qty": 27681,
+     "days": 31,
+     "unit_price": 70,
+     "amount": 60067770
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-08-03",
+     "is_opening": false,
+     "qty": -960,
+     "days": 23,
+     "unit_price": 70,
+     "amount": -1545600
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-08-20",
+     "is_opening": false,
+     "qty": -480,
+     "days": 6,
+     "unit_price": 70,
+     "amount": -201600
+    },
+    {
+     "item": "Kích U Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-08-25",
+     "is_opening": false,
+     "qty": -460,
+     "days": 1,
+     "unit_price": 70,
+     "amount": -32200
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-07-26",
+     "is_opening": true,
+     "qty": 25443,
+     "days": 31,
+     "unit_price": 70,
+     "amount": 55211310
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-08-03",
+     "is_opening": false,
+     "qty": -420,
+     "days": 23,
+     "unit_price": 70,
+     "amount": -676200
+    },
+    {
+     "item": "Kích chân Ø38*(3,0ly - 4,5ly), L=600mm",
+     "unit": "Cái",
+     "date": "2026-08-25",
+     "is_opening": false,
+     "qty": -690,
+     "days": 1,
+     "unit_price": 70,
+     "amount": -48300
+    }
+   ],
+   "transport": [
+    {
+     "name": "Vận chuyển xe sơ mi 30 tấn",
+     "trips": 4,
+     "unit_price": 5000000,
+     "amount": 20000000,
+     "note": null
+    },
+    {
+     "name": "Vận chuyển xe thùng 15 tấn",
+     "trips": 0,
+     "unit_price": 4500000,
+     "amount": 0,
+     "note": null
+    }
+   ],
+   "subtotal": 824542379,
+   "vat_rate": 0.08,
+   "vat": 65963390,
+   "deductions_after_vat": [],
+   "total": 890505769,
+   "from": "2026-07-26"
+  }
+ ],
+ "misa_june_2026": {
+  "source": "MISA Sổ chi tiết VTHH, Kho <<Tất cả>>, Tháng 6/2026 (lọc kho VIETPANEL-01)",
+  "opening_2026_06_01": [
+   {
+    "ma_hang": "CCDC272",
+    "ten_hang": "Cùm xoay (khóa giáo)",
+    "qty": 1000
+   },
+   {
+    "ma_hang": "PALLET",
+    "ten_hang": "Pallet đựng NVL",
+    "qty": 32
+   },
+   {
+    "ma_hang": "VT0008",
+    "ten_hang": "Giằng ngang ringlock 0.6m",
+    "qty": 35500
+   },
+   {
+    "ma_hang": "VT0020",
+    "ten_hang": "Giáo ringlock 1.5m Kẽm",
+    "qty": 28001
+   },
+   {
+    "ma_hang": "VT0021",
+    "ten_hang": "Giáo ringlock 1.0m Kẽm",
+    "qty": 18988
+   },
+   {
+    "ma_hang": "VT0022",
+    "ten_hang": "Giáo ringlock 2.5m Kẽm",
+    "qty": 35476
+   },
+   {
+    "ma_hang": "VT0023",
+    "ten_hang": "Giáo ringlock 2.0m Kẽm",
+    "qty": 11700
+   },
+   {
+    "ma_hang": "VT0048",
+    "ten_hang": "Kích chân D38 L600 - Eku To",
+    "qty": 24000
+   },
+   {
+    "ma_hang": "VT0053",
+    "ten_hang": "Kích đầu D38 L600 - Eku To",
+    "qty": 25750
+   },
+   {
+    "ma_hang": "VT0064",
+    "ten_hang": "Giằng ngang ringlock 1.2m",
+    "qty": 178713
+   },
+   {
+    "ma_hang": "VT0067",
+    "ten_hang": "Kích đầu D38 L600 - Ecu Tán - 4ly",
+    "qty": 7400
+   },
+   {
+    "ma_hang": "VT0068",
+    "ten_hang": "Kích chân D38 L600 - Ecu Tán - 4ly",
+    "qty": 7850
+   },
+   {
+    "ma_hang": "VT0069",
+    "ten_hang": "Giằng ngang ringlock 0.9m",
+    "qty": 23834
+   },
+   {
+    "ma_hang": "VT0090",
+    "ten_hang": "Giáo RL 2.5m mạ kẽm nhúng nóng 3.2ly",
+    "qty": 5271
+   },
+   {
+    "ma_hang": "VT0091",
+    "ten_hang": "Giằng ngang ringlock 1.2m mạ kẽm nhúng nóng 2.75mm",
+    "qty": 15630
+   },
+   {
+    "ma_hang": "VT0094",
+    "ten_hang": "Pallet U",
+    "qty": 22
+   }
+  ],
+  "movements": [
+   {
+    "ma_hang": "VT0008",
+    "date": "2026-06-01",
+    "so_ct": "VIETPANEL-HD-N14",
+    "nhap": 0,
+    "xuat": 1260,
+    "dien_giai": "vietpanel trả hàng sơmi 30 tấn 15H-145.57 xe khôi an"
+   },
+   {
+    "ma_hang": "VT0008",
+    "date": "2026-06-02",
+    "so_ct": "VIETPANEL-HD-N15",
+    "nhap": 0,
+    "xuat": 840,
+    "dien_giai": "vietpanel trả hàng sơmi 30 tấn 15H-224.52 xe khôi an"
+   },
+   {
+    "ma_hang": "VT0008",
+    "date": "2026-06-17",
+    "so_ct": "HMN-LCH-03",
+    "nhap": 0,
+    "xuat": 1050,
+    "dien_giai": "Luân chuyển hàng từ dự án SENCI sang dự án Vietpanel-Harmony ( Xe công trình)"
+   },
+   {
+    "ma_hang": "VT0020",
+    "date": "2026-06-01",
+    "so_ct": "VIETPANEL-HD-N14",
+    "nhap": 0,
+    "xuat": 500,
+    "dien_giai": "vietpanel trả hàng sơmi 30 tấn 15H-145.57 xe khôi an"
+   },
+   {
+    "ma_hang": "VT0020",
+    "date": "2026-06-02",
+    "so_ct": "VIETPANEL-HD-N15",
+    "nhap": 0,
+    "xuat": 100,
+    "dien_giai": "vietpanel trả hàng sơmi 30 tấn 15H-224.52 xe khôi an"
+   },
+   {
+    "ma_hang": "VT0020",
+    "date": "2026-06-17",
+    "so_ct": "HMN-LCH-03",
+    "nhap": 0,
+    "xuat": 200,
+    "dien_giai": "Luân chuyển hàng từ dự án SENCI sang dự án Vietpanel-Harmony ( Xe công trình)"
+   },
+   {
+    "ma_hang": "VT0020",
+    "date": "2026-06-21",
+    "so_ct": "HMN-LCH-05",
+    "nhap": 0,
+    "xuat": 500,
+    "dien_giai": "Luân chuyển hàng từ dự án SENCI sang dự án Vietpanel Harmony ( Xe Khôi An BKS: 15H-17521)"
+   },
+   {
+    "ma_hang": "VT0020",
+    "date": "2026-06-27",
+    "so_ct": "HMN-LCH-09",
+    "nhap": 0,
+    "xuat": 100,
+    "dien_giai": "Luân chuyển hàng từ dự án SENCI sang dự án Vietpanel Harmony xe sơ mi 30 tấn BKS 15H 121.43 xe Khôi An"
+   },
+   {
+    "ma_hang": "VT0021",
+    "date": "2026-06-01",
+    "so_ct": "VIETPANEL-HD-N14",
+    "nhap": 0,
+    "xuat": 1000,
+    "dien_giai": "vietpanel trả hàng sơmi 30 tấn 15H-145.57 xe khôi an"
+   },
+   {
+    "ma_hang": "VT0021",
+    "date": "2026-06-10",
+    "so_ct": "HMN-LCH-02",
+    "nhap": 0,
+    "xuat": 200,
+    "dien_giai": "Luân chuyển hàng từ Vietpanel (Senci) sang Harmony Bắc Ninh) - xe CT"
+   },
+   {
+    "ma_hang": "VT0021",
+    "date": "2026-06-17",
+    "so_ct": "HMN-LCH-03",
+    "nhap": 0,
+    "xuat": 600,
+    "dien_giai": "Luân chuyển hàng từ dự án SENCI sang dự án Vietpanel-Harmony ( Xe công trình)"
+   },
+   {
+    "ma_hang": "VT0022",
+    "date": "2026-06-01",
+    "so_ct": "VIETPANEL-HD-N14",
+    "nhap": 0,
+    "xuat": 300,
+    "dien_giai": "vietpanel trả hàng sơmi 30 tấn 15H-145.57 xe khôi an"
+   },
+   {
+    "ma_hang": "VT0022",
+    "date": "2026-06-02",
+    "so_ct": "VIETPANEL-HD-N15",
+    "nhap": 0,
+    "xuat": 1200,
+    "dien_giai": "vietpanel trả hàng sơmi 30 tấn 15H-224.52 xe khôi an"
+   },
+   {
+    "ma_hang": "VT0022",
+    "date": "2026-06-09",
+    "so_ct": "HMN-LCH-01",
+    "nhap": 0,
+    "xuat": 1493,
+    "dien_giai": "Luân chuyển hàng từ Vietpanel (Senci) sang Harmony Bắc Ninh) - BKS 15H-152.17 xe Khôi An"
+   },
+   {
+    "ma_hang": "VT0022",
+    "date": "2026-06-10",
+    "so_ct": "HMN-LCH-02",
+    "nhap": 0,
+    "xuat": 1900,
+    "dien_giai": "Luân chuyển hàng từ Vietpanel (Senci) sang Harmony Bắc Ninh) - xe CT"
+   },
+   {
+    "ma_hang": "VT0022",
+    "date": "2026-06-17",
+    "so_ct": "HMN-LCH-03",
+    "nhap": 0,
+    "xuat": 700,
+    "dien_giai": "Luân chuyển hàng từ dự án SENCI sang dự án Vietpanel-Harmony ( Xe công trình)"
+   },
+   {
+    "ma_hang": "VT0022",
+    "date": "2026-06-25",
+    "so_ct": "HMN-LCH-07",
+    "nhap": 0,
+    "xuat": 2400,
+    "dien_giai": "Luân chuyển hàng từ dự án SENCI sang dự án Vietpanel Harmony ( Xe CT)"
+   },
+   {
+    "ma_hang": "VT0022",
+    "date": "2026-06-27",
+    "so_ct": "HMN-LCH-08",
+    "nhap": 0,
+    "xuat": 1600,
+    "dien_giai": "Luân chuyển hàng từ dự án SENCI sang dự án Vietpanel Harmony xe sơ mi 30 tấn BKS 15H 158.07 xe Khôi An"
+   },
+   {
+    "ma_hang": "VT0022",
+    "date": "2026-06-27",
+    "so_ct": "HMN-LCH-09",
+    "nhap": 0,
+    "xuat": 400,
+    "dien_giai": "Luân chuyển hàng từ dự án SENCI sang dự án Vietpanel Harmony xe sơ mi 30 tấn BKS 15H 121.43 xe Khôi An"
+   },
+   {
+    "ma_hang": "VT0023",
+    "date": "2026-06-01",
+    "so_ct": "VIETPANEL-HD-N14",
+    "nhap": 0,
+    "xuat": 300,
+    "dien_giai": "vietpanel trả hàng sơmi 30 tấn 15H-145.57 xe khôi an"
+   },
+   {
+    "ma_hang": "VT0023",
+    "date": "2026-06-21",
+    "so_ct": "HMN-LCH-05",
+    "nhap": 0,
+    "xuat": 1700,
+    "dien_giai": "Luân chuyển hàng từ dự án SENCI sang dự án Vietpanel Harmony ( Xe Khôi An BKS: 15H-17521)"
+   },
+   {
+    "ma_hang": "VT0023",
+    "date": "2026-06-27",
+    "so_ct": "HMN-LCH-09",
+    "nhap": 0,
+    "xuat": 1200,
+    "dien_giai": "Luân chuyển hàng từ dự án SENCI sang dự án Vietpanel Harmony xe sơ mi 30 tấn BKS 15H 121.43 xe Khôi An"
+   },
+   {
+    "ma_hang": "VT0048",
+    "date": "2026-06-09",
+    "so_ct": "HMN-LCH-01",
+    "nhap": 0,
+    "xuat": 750,
+    "dien_giai": "Luân chuyển hàng từ Vietpanel (Senci) sang Harmony Bắc Ninh) - BKS 15H-152.17 xe Khôi An"
+   },
+   {
+    "ma_hang": "VT0048",
+    "date": "2026-06-18",
+    "so_ct": "HMN-LCH-04",
+    "nhap": 0,
+    "xuat": 1581,
+    "dien_giai": "Luân chuyển hàng từ dự án SENCI sang dự án Vietpanel Harmony ( Xe  công trình)"
+   },
+   {
+    "ma_hang": "VT0048",
+    "date": "2026-06-24",
+    "so_ct": "HMN-LCH-06",
+    "nhap": 0,
+    "xuat": 420,
+    "dien_giai": "Luân chuyển hàng từ dự án SENCI sang dự án Vietpanel Harmony ( Xe CT)"
+   },
+   {
+    "ma_hang": "VT0053",
+    "date": "2026-06-18",
+    "so_ct": "HMN-LCH-04",
+    "nhap": 0,
+    "xuat": 380,
+    "dien_giai": "Luân chuyển hàng từ dự án SENCI sang dự án Vietpanel Harmony ( Xe  công trình)"
+   },
+   {
+    "ma_hang": "VT0053",
+    "date": "2026-06-24",
+    "so_ct": "HMN-LCH-06",
+    "nhap": 0,
+    "xuat": 1240,
+    "dien_giai": "Luân chuyển hàng từ dự án SENCI sang dự án Vietpanel Harmony ( Xe CT)"
+   },
+   {
+    "ma_hang": "VT0064",
+    "date": "2026-06-01",
+    "so_ct": "VIETPANEL-HD-N14",
+    "nhap": 0,
+    "xuat": 2772,
+    "dien_giai": "vietpanel trả hàng sơmi 30 tấn 15H-145.57 xe khôi an"
+   },
+   {
+    "ma_hang": "VT0064",
+    "date": "2026-06-02",
+    "so_ct": "VIETPANEL-HD-N15",
+    "nhap": 0,
+    "xuat": 4620,
+    "dien_giai": "vietpanel trả hàng sơmi 30 tấn 15H-224.52 xe khôi an"
+   },
+   {
+    "ma_hang": "VT0064",
+    "date": "2026-06-09",
+    "so_ct": "HMN-LCH-01",
+    "nhap": 0,
+    "xuat": 5544,
+    "dien_giai": "Luân chuyển hàng từ Vietpanel (Senci) sang Harmony Bắc Ninh) - BKS 15H-152.17 xe Khôi An"
+   },
+   {
+    "ma_hang": "VT0064",
+    "date": "2026-06-10",
+    "so_ct": "HMN-LCH-02",
+    "nhap": 0,
+    "xuat": 3696,
+    "dien_giai": "Luân chuyển hàng từ Vietpanel (Senci) sang Harmony Bắc Ninh) - xe CT"
+   },
+   {
+    "ma_hang": "VT0064",
+    "date": "2026-06-17",
+    "so_ct": "HMN-LCH-03",
+    "nhap": 0,
+    "xuat": 6006,
+    "dien_giai": "Luân chuyển hàng từ dự án SENCI sang dự án Vietpanel-Harmony ( Xe công trình)"
+   },
+   {
+    "ma_hang": "VT0064",
+    "date": "2026-06-21",
+    "so_ct": "HMN-LCH-05",
+    "nhap": 0,
+    "xuat": 3696,
+    "dien_giai": "Luân chuyển hàng từ dự án SENCI sang dự án Vietpanel Harmony ( Xe Khôi An BKS: 15H-17521)"
+   },
+   {
+    "ma_hang": "VT0064",
+    "date": "2026-06-25",
+    "so_ct": "HMN-LCH-07",
+    "nhap": 0,
+    "xuat": 3696,
+    "dien_giai": "Luân chuyển hàng từ dự án SENCI sang dự án Vietpanel Harmony ( Xe CT)"
+   },
+   {
+    "ma_hang": "VT0064",
+    "date": "2026-06-27",
+    "so_ct": "HMN-LCH-08",
+    "nhap": 0,
+    "xuat": 4620,
+    "dien_giai": "Luân chuyển hàng từ dự án SENCI sang dự án Vietpanel Harmony xe sơ mi 30 tấn BKS 15H 158.07 xe Khôi An"
+   },
+   {
+    "ma_hang": "VT0064",
+    "date": "2026-06-27",
+    "so_ct": "HMN-LCH-09",
+    "nhap": 0,
+    "xuat": 3234,
+    "dien_giai": "Luân chuyển hàng từ dự án SENCI sang dự án Vietpanel Harmony xe sơ mi 30 tấn BKS 15H 121.43 xe Khôi An"
+   },
+   {
+    "ma_hang": "VT0069",
+    "date": "2026-06-01",
+    "so_ct": "VIETPANEL-HD-N14",
+    "nhap": 0,
+    "xuat": 2142,
+    "dien_giai": "vietpanel trả hàng sơmi 30 tấn 15H-145.57 xe khôi an"
+   },
+   {
+    "ma_hang": "VT0069",
+    "date": "2026-06-27",
+    "so_ct": "HMN-LCH-09",
+    "nhap": 0,
+    "xuat": 352,
+    "dien_giai": "Luân chuyển hàng từ dự án SENCI sang dự án Vietpanel Harmony xe sơ mi 30 tấn BKS 15H 121.43 xe Khôi An"
+   },
+   {
+    "ma_hang": "VT0090",
+    "date": "2026-06-02",
+    "so_ct": "VIETPANEL-HD-N15",
+    "nhap": 0,
+    "xuat": 100,
+    "dien_giai": "vietpanel trả hàng sơmi 30 tấn 15H-224.52 xe khôi an"
+   }
+  ]
+ }
+}

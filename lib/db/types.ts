@@ -4,7 +4,9 @@
  * (`supabase gen types typescript`) once the project is linked.
  */
 
-export type UserRole = "admin" | "employee" | "manager";
+import type { ContractConfig, DateRange, RentResult } from "@/lib/billing/types";
+
+export type UserRole = "admin" | "employee" | "manager" | "accountant";
 
 export type DocType =
   | "contract"
@@ -315,6 +317,89 @@ export type MisaSyncLog = {
   actor_user_id: string | null;
 };
 
+export type BillingCalcStatus = "draft" | "confirmed" | "voided";
+
+export type BillingContract = {
+  id: string;
+  code: string;
+  customer_name: string;
+  project_name: string;
+  contract_no: string;
+  misa_kho: string;
+  period_start_day: number;
+  contract_start: string | null;
+  active: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type BillingContractItem = {
+  id: string;
+  contract_id: string;
+  name: string;
+  unit: string;
+  unit_price: number;
+  ma_hang: string[];
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type BillingExcludedCode = {
+  contract_id: string;
+  ma_hang: string;
+  created_at: string;
+};
+
+export type BillingExcludedRange = {
+  id: string;
+  /** null = applies to every contract. */
+  contract_id: string | null;
+  date_from: string;
+  date_to: string;
+  reason: string;
+  created_by: string | null;
+  created_at: string;
+};
+
+export type BillingMisaUpload = {
+  id: string;
+  storage_path: string;
+  file_name: string;
+  size_bytes: number;
+  sha256: string;
+  file_from: string;
+  file_to: string;
+  layout: string;
+  warehouse_count: number;
+  warnings: string[];
+  uploaded_by: string;
+  created_at: string;
+};
+
+export type BillingRentCalculation = {
+  id: string;
+  contract_id: string;
+  /** "YYYY-MM" for a billing-month (HSTT) calculation; null for a custom date range. */
+  period_month: string | null;
+  period_from: string;
+  period_to: string;
+  upload_ids: string[];
+  /** The contract config the engine ran with (prices may change later). */
+  contract_snapshot: ContractConfig;
+  excluded_ranges: DateRange[];
+  total_amount: number;
+  result: RentResult;
+  status: BillingCalcStatus;
+  created_by: string;
+  created_at: string;
+  confirmed_by: string | null;
+  confirmed_at: string | null;
+  voided_by: string | null;
+  voided_at: string | null;
+};
+
 type Insert<T, Optional extends keyof T> = Omit<T, Optional> &
   Partial<Pick<T, Optional>>;
 
@@ -525,6 +610,57 @@ export interface Database {
         >,
         Partial<MisaSyncLog>
       >;
+      billing_contracts: Table<
+        BillingContract,
+        Insert<
+          BillingContract,
+          | "id"
+          | "contract_no"
+          | "period_start_day"
+          | "contract_start"
+          | "active"
+          | "created_by"
+          | "created_at"
+          | "updated_at"
+        >,
+        Partial<BillingContract>
+      >;
+      billing_contract_items: Table<
+        BillingContractItem,
+        Insert<BillingContractItem, "id" | "sort_order" | "created_at" | "updated_at">,
+        Partial<BillingContractItem>
+      >;
+      billing_excluded_codes: Table<
+        BillingExcludedCode,
+        Insert<BillingExcludedCode, "created_at">,
+        Partial<BillingExcludedCode>
+      >;
+      billing_excluded_ranges: Table<
+        BillingExcludedRange,
+        Insert<BillingExcludedRange, "id" | "contract_id" | "created_by" | "created_at">,
+        Partial<BillingExcludedRange>
+      >;
+      billing_misa_uploads: Table<
+        BillingMisaUpload,
+        Insert<BillingMisaUpload, "id" | "warehouse_count" | "warnings" | "created_at">,
+        Partial<BillingMisaUpload>
+      >;
+      billing_rent_calculations: Table<
+        BillingRentCalculation,
+        Insert<
+          BillingRentCalculation,
+          | "id"
+          | "period_month"
+          | "excluded_ranges"
+          | "status"
+          | "created_at"
+          | "confirmed_by"
+          | "confirmed_at"
+          | "voided_by"
+          | "voided_at"
+        >,
+        Partial<BillingRentCalculation>
+      >;
     };
     Views: {
       // Service-role only (see 0020_user_emails_view.sql).
@@ -542,11 +678,20 @@ export interface Database {
         Args: { p_client_id: string };
         Returns: { project_id: string; doc_count: number; byte_sum: number }[];
       };
+      billing_save_contract_config: {
+        Args: {
+          p_contract_id: string;
+          p_items: { name: string; unit: string; unit_price: number; ma_hang: string[] }[];
+          p_excluded: string[];
+        };
+        Returns: undefined;
+      };
     };
     Enums: {
       user_role: UserRole;
       doc_type: DocType;
       course_status: CourseStatus;
+      billing_calc_status: BillingCalcStatus;
     };
     CompositeTypes: Record<string, never>;
   };

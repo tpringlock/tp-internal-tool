@@ -8,6 +8,7 @@ describe("getActiveModuleId", () => {
     expect(getActiveModuleId("/academy/my-courses")).toBe("academy");
     expect(getActiveModuleId("/admin/academy/new")).toBe("admin");
     expect(getActiveModuleId("/admin/docs")).toBe("admin");
+    expect(getActiveModuleId("/billing/contracts/x")).toBe("billing");
   });
 
   it("returns undefined outside any module", () => {
@@ -23,6 +24,23 @@ describe("getModulesForRole", () => {
       "documents",
       "academy",
     ]);
+  });
+
+  it("shows billing to admins and accountants only", () => {
+    expect(getModulesForRole("accountant").map((m) => m.id)).toEqual([
+      "documents",
+      "academy",
+      "billing",
+    ]);
+    expect(getModulesForRole("admin").map((m) => m.id)).toEqual([
+      "documents",
+      "academy",
+      "billing",
+      "admin",
+    ]);
+    expect(getModulesForRole("manager").map((m) => m.id)).not.toContain(
+      "billing",
+    );
   });
 
   it("sends managers to a section they can open", () => {

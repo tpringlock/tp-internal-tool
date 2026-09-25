@@ -33,7 +33,13 @@ export function UserMenu({
 }) {
   const t = useTranslations("Nav");
   const roleLabel =
-    role === "admin" ? t("admin") : role === "manager" ? t("manager") : null;
+    role === "admin"
+      ? t("admin")
+      : role === "manager"
+        ? t("manager")
+        : role === "accountant"
+          ? t("accountant")
+          : null;
 
   return (
     <DropdownMenu
