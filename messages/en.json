@@ -17,6 +17,7 @@
     "profile": "Profile",
     "admin": "Admin",
     "manager": "Manager",
+    "accountant": "Accountant",
     "signOut": "Sign out",
     "openUserMenu": "Open user menu"
   },
@@ -339,6 +340,7 @@
     "employee": "Employee",
     "adminRole": "Admin",
     "managerRole": "Manager",
+    "accountantRole": "Accountant",
     "updateRole": "Update",
     "roleChanged": "Role updated.",
     "changeRoleTitle": "Change role?",

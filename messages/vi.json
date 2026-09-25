@@ -17,6 +17,7 @@
     "profile": "Hồ sơ",
     "admin": "Admin",
     "manager": "Quản lý",
+    "accountant": "Kế toán",
     "signOut": "Đăng xuất",
     "openUserMenu": "Mở menu người dùng"
   },
@@ -339,6 +340,7 @@
     "employee": "Nhân viên",
     "adminRole": "Quản trị viên",
     "managerRole": "Quản lý",
+    "accountantRole": "Kế toán",
     "updateRole": "Cập nhật",
     "roleChanged": "Đã cập nhật vai trò.",
     "changeRoleTitle": "Đổi vai trò?",
