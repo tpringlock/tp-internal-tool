@@ -676,6 +676,14 @@ export interface Database {
         Args: { p_client_id: string };
         Returns: { project_id: string; doc_count: number; byte_sum: number }[];
       };
+      billing_save_contract_config: {
+        Args: {
+          p_contract_id: string;
+          p_items: { name: string; unit: string; unit_price: number; ma_hang: string[] }[];
+          p_excluded: string[];
+        };
+        Returns: undefined;
+      };
     };
     Enums: {
       user_role: UserRole;

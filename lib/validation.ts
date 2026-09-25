@@ -148,6 +148,63 @@ export const lessonNoteSchema = z.object({
   content: z.string().max(10000, "textTooLong"),
 });
 
+// --- Billing (Tính hóa đơn tự động) ------------------------------------
+
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "dateInvalid");
+const misaCode = z.string().trim().min(1).max(50, "textTooLong");
+
+export const billingContractSchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(2, "codeMin")
+    .max(40, "codeMax40")
+    .regex(/^[a-z0-9][a-z0-9_-]*$/, "billingCodeFormat"),
+  customer_name: z.string().trim().min(1, "nameRequired").max(200, "nameTooLong"),
+  project_name: z.string().trim().min(1, "nameRequired").max(200, "nameTooLong"),
+  contract_no: z.string().trim().max(100, "textTooLong"),
+  // Compared verbatim with the "Mã kho" in the MISA file: no case change.
+  misa_kho: z.string().trim().min(1, "misaKhoRequired").max(50, "textTooLong"),
+  period_start_day: z.coerce.number().int().min(2, "startDayRange").max(28, "startDayRange"),
+  contract_start: z
+    .union([isoDate, z.literal("")])
+    .optional()
+    .transform((v) => (v ? v : null)),
+  active: z.boolean(),
+});
+
+export const billingItemSchema = z.object({
+  name: z.string().trim().min(1, "nameRequired").max(200, "nameTooLong"),
+  unit: z.string().trim().min(1, "unitRequired").max(20, "textTooLong"),
+  // Integer VND per day; the cap keeps qty x days x price a safe integer.
+  unit_price: z.number().int("priceInvalid").min(0, "priceInvalid").max(10_000_000, "priceInvalid"),
+  ma_hang: z.array(misaCode).min(1, "codesRequired"),
+});
+
+export const billingContractConfigSchema = z.object({
+  items: z.array(billingItemSchema).max(200),
+  excluded: z.array(misaCode).max(200),
+});
+
+export const billingExcludedRangeSchema = z
+  .object({
+    contract_id: z
+      .union([z.string().uuid(), z.literal("")])
+      .optional()
+      .transform((v) => (v ? v : null)),
+    date_from: isoDate,
+    date_to: isoDate,
+    reason: z.string().trim().min(1, "reasonRequired").max(200, "textTooLong"),
+  })
+  .refine((v) => v.date_to >= v.date_from, { message: "rangeOrder", path: ["date_to"] });
+
+export const computeRentSchema = z.object({
+  contract_id: z.string().uuid("chooseContract"),
+  month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "monthInvalid"),
+  upload_ids: z.array(z.string().uuid()).min(1, "chooseUpload").max(12),
+});
+
 /** Minimal shape of a next-intl translator (from useTranslations/getTranslations). */
 type Translator = ((key: string) => string) & { has: (key: string) => boolean };
 
@@ -177,3 +234,5 @@ export type CourseInput = z.infer<typeof courseSchema>;
 export type LessonInput = z.infer<typeof lessonSchema>;
 export type QuizQuestionInput = z.infer<typeof quizQuestionSchema>;
 export type LessonNoteInput = z.infer<typeof lessonNoteSchema>;
+export type BillingContractInput = z.infer<typeof billingContractSchema>;
+export type BillingItemInput = z.infer<typeof billingItemSchema>;

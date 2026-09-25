@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { canUseBilling } from "@/lib/auth/roles";
 import type { Profile } from "@/lib/db/types";
 
 export interface SessionUser {
@@ -58,5 +59,15 @@ export async function requireContentManager(): Promise<SessionUser> {
   if (user.profile.role !== "admin" && user.profile.role !== "manager") {
     redirect("/");
   }
+  return user;
+}
+
+/**
+ * Require a billing user (admin or accountant) or redirect home. Guards the
+ * whole /billing app and every billing action / route handler.
+ */
+export async function requireBillingUser(): Promise<SessionUser> {
+  const user = await requireUser();
+  if (!canUseBilling(user.profile.role)) redirect("/");
   return user;
 }
