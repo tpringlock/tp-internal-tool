@@ -2,13 +2,14 @@
 
 # TP Internal Tool — hướng dẫn cho Claude Code
 
-Portal nội bộ của Ringlock TP (ringlocktp.vn). Một app Next.js duy nhất, gồm 3 module:
+Portal nội bộ của Ringlock TP (ringlocktp.vn). Một app Next.js duy nhất, gồm 4 module:
 
-| Module           | Route        | Ai vào được                                            |
-| ---------------- | ------------ | ------------------------------------------------------ |
-| Quản lí tài liệu | `/documents` | mọi người (employee chỉ thấy dự án mình là thành viên) |
-| TP Academy       | `/academy`   | mọi người                                              |
-| Admin Panel      | `/admin/*`   | admin + manager (users, activity, docs: chỉ admin)     |
+| Module                | Route        | Ai vào được                                            |
+| --------------------- | ------------ | ------------------------------------------------------ |
+| Quản lí tài liệu      | `/documents` | mọi người (employee chỉ thấy dự án mình là thành viên) |
+| TP Academy            | `/academy`   | mọi người                                              |
+| Tính hóa đơn tự động  | `/billing`   | admin + accountant (trang `/billing/compare`: chỉ admin) |
+| Admin Panel           | `/admin/*`   | admin + manager (users, activity, docs: chỉ admin)     |
 
 ## Stack
 
@@ -30,7 +31,7 @@ npm run build        # build production
 ```
 
 Trước khi báo xong việc: chạy `npx tsc --noEmit`, `npm run lint`, `npm test`. Việc lớn thì chạy thêm `npm run build`.
-Lint hiện có sẵn 6 lỗi `react-hooks/set-state-in-effect` (academy/my-courses, admin/clients, delete-\*-button). Đó là nợ cũ, chỉ được phép không thêm lỗi mới.
+Lint hiện có sẵn 6 lỗi cũ (`react-hooks/set-state-in-effect` ở admin/clients, delete-\*-button; "Cannot create components during render" ở academy/my-courses). Đó là nợ cũ, chỉ được phép không thêm lỗi mới.
 
 ## Cấu trúc
 
@@ -38,32 +39,38 @@ Lint hiện có sẵn 6 lỗi `react-hooks/set-state-in-effect` (academy/my-cour
   - `AppMain` (`components/app-main.tsx`): `/documents/*` full-width, không breadcrumb. Các module khác nằm trong container `max-w-6xl` và có `PageHeader` (breadcrumb).
   - `documents/layout.tsx`: sidebar khách hàng (`client-sidebar.tsx`). `documents/document-table.tsx` là bảng hồ sơ dùng chung.
   - `admin/layout.tsx`: guard `requireContentManager()` + `AdminNav`.
+  - `billing/layout.tsx`: guard `requireBillingUser()` + `BillingNav`. Chi tiết module ở `docs/billing-module.md`, quy tắc nghiệp vụ ở `docs/billing-rules.md`.
 - `app/(auth)/`: login, quên mật khẩu, đặt lại mật khẩu.
 - `app/actions/*.ts`: server actions (mỗi domain 1 file). `app/api/*`: route handlers (tải file, stream video, share link, MISA sync).
-- `lib/auth/dal.ts`: `getSessionUser`, `requireUser`, `requireContentManager`, `requireAdmin` (server-only). `lib/auth/roles.ts`: `canManageContent` (client-safe).
+- `lib/auth/dal.ts`: `getSessionUser`, `requireUser`, `requireContentManager`, `requireBillingUser`, `requireAdmin` (server-only). `lib/auth/roles.ts`: `canManageContent`, `canUseBilling` (client-safe).
 - `lib/app-modules.ts`: danh sách module cho switcher. Thêm module mới thì sửa ở đây và thêm key `AppModules.<id>` trong messages.
 - `lib/db/types.ts`: kiểu DB viết tay, **phải cập nhật cùng lúc với migration**. (`types.generated.ts` là file cũ, mã hóa UTF-16, không dùng.)
-- `supabase/migrations/NNNN_*.sql`: schema + RLS, đánh số tăng dần.
+- `supabase/migrations/NNNN_*.sql`: schema + RLS, đánh số tăng dần. `supabase/revert/`: file revert viết tay (không phải migration, không để `db push` chạy).
+- `lib/billing/`: module tính tiền thuê (engine, parser MISA, xuất Excel) + helper của app. **Không sửa logic `engine.ts`, `misa-parser.ts`, `dates.ts`, `merge-ledgers.ts` khi chưa hỏi chủ dự án.**
 
 ## Mô hình dữ liệu
 
 - `clients` (khách hàng, = "công ty" trên UI) → `projects` (dự án, = "thư mục") → `documents` (PDF đã ký).
 - `project_members`: employee chỉ thấy dự án/tài liệu của dự án mình là thành viên. RLS `project_members` chỉ cho admin đọc toàn bộ.
-- `profiles.role`: `employee` | `manager` | `admin`. Role ban đầu lấy từ `app_metadata` (xem migration 0023).
+- `profiles.role`: `employee` | `manager` | `accountant` | `admin`. Role ban đầu lấy từ `app_metadata` (xem migration 0023). `accountant` (kế toán, 0026) chỉ mở thêm `/billing`, không vào Admin Panel; mỗi người chỉ có 1 role.
 - Academy: `courses` → `chapters` → `lessons` (+ quiz, notes, files, progress).
 - `misa_*`: cache dữ liệu từ MISA AMIS (read-only), xem `docs/misa-integration.md`.
+- Billing: `billing_contracts` (1 hợp đồng = 1 kho MISA) → `billing_contract_items` (đơn giá/ngày, mã MISA gộp), `billing_excluded_codes`, `billing_excluded_ranges`, `billing_misa_uploads` (file ở bucket private `billing`), `billing_rent_calculations` (nháp → xác nhận → hủy; `total_amount numeric(20,4)`). RLS: `private.is_billing_user()`.
+- **Dữ liệu giả định** (`is_demo = true`, tên "[GIẢ ĐỊNH] ", đơn giá Excel, chỉ để đối chiếu): ẩn trừ khi bật công tắc, không bao giờ xác nhận được. Seed/xóa: `npm run seed:gia-dinh -- --project=<ref>` / `npm run seed:gia-dinh:xoa -- --project=<ref>`. Kiểm tra hợp đồng thật trước/sau: `supabase/revert/check-real-contracts.sql`.
 
 ## Quy tắc bắt buộc
 
 ### Bảo mật và phân quyền
 
-- **Mọi server action / route handler đều phải gọi guard ở dòng đầu**: `requireUser`, `requireContentManager` hoặc `requireAdmin`. Ẩn nút trên UI không phải là phân quyền.
+- **Mọi server action / route handler đều phải gọi guard ở dòng đầu**: `requireUser`, `requireContentManager`, `requireBillingUser` hoặc `requireAdmin`. Ẩn nút trên UI không phải là phân quyền.
 - Truy vấn dữ liệu bằng `createClient()` từ `lib/supabase/server.ts` để RLS được áp dụng.
 - `createAdminClient()` (service role, bỏ qua RLS) chỉ dùng **sau khi đã kiểm tra quyền**, và chỉ cho Storage, tạo user Auth, hoặc log truy cập share link.
 - Xóa client/project/document chỉ admin được làm. Manager được tạo/sửa client, project và nội dung academy.
 - Khi thêm bảng mới: viết migration mới kèm RLS (bật RLS + policy dùng `private.is_admin()`, `private.is_content_manager()`, `private.is_project_member()`).
 - **Không bao giờ sửa migration đã có**. Luôn tạo file mới với số tiếp theo.
 - Không đọc, in ra hay commit `.env*` (trừ `.env.example`).
+- ⚠ `.env.local` đang trỏ tới **PRODUCTION** (`surnokungqebqzzlyrsz`), không có database dev riêng. `npm run dev`, script seed và `supabase db query --linked` đều chạm dữ liệu thật: hỏi trước khi ghi.
+- `supabase/revert/0032_billing_demo_and_decimal.revert.sql` chỉ để dự phòng. Dọn dữ liệu giả định thì chỉ dùng `seed:gia-dinh:xoa`, **không** chạy file revert (code cần schema 0032).
 
 ### Server actions
 
@@ -81,7 +88,8 @@ Lint hiện có sẵn 6 lỗi `react-hooks/set-state-in-effect` (academy/my-cour
 - Bảng: class `responsive-table` + `data-label` trên mỗi `td` để tự thành card trên mobile. Ô hành động không có `data-label`.
 - Header sticky cao 64px: phần tử sticky bên dưới dùng `top-16` hoặc `top-24`.
 - Mobile-first: không được có cuộn ngang ở 375px. Sidebar chuyển thành drawer dưới `lg` (AdminNav dưới `md`).
-- Ngày giờ dùng `formatDate` / `formatDateTime` / `formatBytes` / `formatVND` trong `lib/format.ts` (đã cố định timezone ICT để tránh hydration mismatch).
+- Ngày giờ dùng `formatDate` / `formatDateTime` / `formatBytes` / `formatVND` trong `lib/format.ts` (đã cố định timezone ICT để tránh hydration mismatch). Số lượng/đơn giá/tiền của billing dùng `formatNumber` (kiểu Việt Nam, chỉ hiện phần lẻ khi có).
+- Text trong messages đi qua ICU (next-intl): không viết `<<…>>` hay `<` trần (bị hiểu là thẻ). `lib/messages.test.ts` kiểm tra vi/en đồng bộ key và parse được.
 - Theo quy tắc React 19 / eslint: không `setState` đồng bộ trong `useEffect`. Nếu cần reset state khi prop hoặc pathname đổi thì so sánh ngay trong lúc render.
 
 ### Code style
