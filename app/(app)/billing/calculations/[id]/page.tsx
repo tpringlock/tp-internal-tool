@@ -11,6 +11,7 @@ import {
 } from "@/app/actions/billing";
 import { formatVnDate } from "@/lib/billing/dates";
 import { formatBillingMonth } from "@/lib/billing/periods";
+import { hasFractionalQuantities, toAmount } from "@/lib/billing/amounts";
 import { getProfileNames } from "@/lib/billing/queries";
 import { formatDateTime, formatNumber } from "@/lib/format";
 import { Alert } from "@/components/ui/alert";
@@ -38,12 +39,17 @@ export default async function CalculationPage({
     .maybeSingle();
   if (!calc) notFound();
 
-  const [{ data: uploads }, names] = await Promise.all([
+  const [{ data: uploads }, names, { data: contractRow }] = await Promise.all([
     supabase
       .from("billing_misa_uploads")
       .select("id, file_name, file_from, file_to")
       .in("id", calc.upload_ids),
     getProfileNames(supabase, [calc.created_by, calc.confirmed_by, calc.voided_by]),
+    supabase
+      .from("billing_contracts")
+      .select("is_demo")
+      .eq("id", calc.contract_id)
+      .maybeSingle(),
   ]);
 
   const { result, contract_snapshot: contract } = calc;
@@ -53,6 +59,10 @@ export default async function CalculationPage({
     to: formatVnDate(calc.period_to),
   };
   const isAdmin = user.profile.role === "admin";
+  const isDemo = contractRow?.is_demo ?? false;
+  const fractional = hasFractionalQuantities(result);
+  // Only a billing-month draft of a real contract with whole quantities.
+  const confirmable = !!monthLabel && !isDemo && !fractional;
 
   return (
     <div className="space-y-6">
@@ -103,7 +113,7 @@ export default async function CalculationPage({
                 variant="danger"
                 icon={<Trash2 className="h-4 w-4" aria-hidden />}
               />
-              {monthLabel && (
+              {confirmable && (
                 <ActionButton
                   action={confirmCalculation}
                   id={calc.id}
@@ -111,7 +121,7 @@ export default async function CalculationPage({
                   title={t("confirmTitle")}
                   body={t("confirmBody", {
                     month: monthLabel,
-                    total: formatNumber(calc.total_amount),
+                    total: formatNumber(toAmount(calc.total_amount)),
                   })}
                   confirmLabel={t("confirm")}
                   variant="primary"
@@ -135,9 +145,29 @@ export default async function CalculationPage({
         </div>
       </div>
 
+      {isDemo && (
+        <div
+          role="alert"
+          className="flex items-start gap-3 rounded-2xl border-2 border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800"
+        >
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
+          <p>{t("demoBanner")}</p>
+        </div>
+      )}
+
       <ScopeNotice />
 
-      {!monthLabel && calc.status === "draft" && (
+      {!isDemo && fractional && (
+        <div
+          role="alert"
+          className="flex items-start gap-3 rounded-2xl border-2 border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800"
+        >
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
+          <p>{t("fractionalBanner")}</p>
+        </div>
+      )}
+
+      {!monthLabel && !isDemo && calc.status === "draft" && (
         <Alert tone="info">{t("rangeNotConfirmable")}</Alert>
       )}
 

@@ -1,6 +1,7 @@
 "use server";
 
 import { createHash } from "node:crypto";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
@@ -17,13 +18,14 @@ import {
 } from "@/lib/validation";
 import { BillingError, computeRentFromLedger } from "@/lib/billing/engine";
 import { MisaParseError, parseMisaLedger } from "@/lib/billing/misa-parser";
+import { findDuplicateCodes } from "@/lib/billing/contract-config";
 import {
-  findDuplicateCodes,
   findUnknownCodes,
   warningsForWarehouse,
   type UnknownCode,
-} from "@/lib/billing/contract-config";
+} from "@/lib/billing/ledger-checks";
 import { contractPeriod, rangesForPeriod } from "@/lib/billing/periods";
+import { amountForDb, hasFractionalQuantities } from "@/lib/billing/amounts";
 import {
   BILLING_BUCKET,
   MAX_MISA_FILE_SIZE,
@@ -31,6 +33,7 @@ import {
   loadContract,
   loadMergedLedger,
 } from "@/lib/billing/server";
+import { SHOW_DEMO_COOKIE } from "@/lib/billing/queries";
 import type { FormState } from "@/app/actions/auth";
 
 /** Postgres unique-violation error code. */
@@ -276,6 +279,8 @@ export async function computeRent(
       };
     }
     result = computeRentFromLedger(ledger, config, period, excludedRanges);
+    // Stored at 4 decimals (numeric(20,4)); keep the saved result consistent.
+    result.totalAmount = Number(amountForDb(result.totalAmount));
     // Surface file-level warnings for this warehouse next to the engine's own.
     result.warnings.unshift(...warningsForWarehouse(ledger.warnings, contract.misa_kho));
   } catch (e) {
@@ -295,7 +300,7 @@ export async function computeRent(
       upload_ids: uploadIds,
       contract_snapshot: config,
       excluded_ranges: excludedRanges,
-      total_amount: result.totalAmount,
+      total_amount: amountForDb(result.totalAmount),
       result,
       created_by: user.id,
     })
@@ -329,6 +334,23 @@ export async function confirmCalculation(
   const id = String(formData.get("id") ?? "");
 
   const supabase = await createClient();
+  const { data: calc } = await supabase
+    .from("billing_rent_calculations")
+    .select("contract_id, result")
+    .eq("id", id)
+    .maybeSingle();
+  if (!calc) return { error: t("errNotFound") };
+  const { data: contract } = await supabase
+    .from("billing_contracts")
+    .select("is_demo")
+    .eq("id", calc.contract_id)
+    .maybeSingle();
+  // Demo prices are for comparison only (also enforced by a DB trigger).
+  if (!contract || contract.is_demo) return { error: t("errDemoNotConfirmable") };
+  // Fractional quantities usually mean a raw material is in a rental
+  // warehouse: the accountant must fix the codes and recalculate first.
+  if (hasFractionalQuantities(calc.result)) return { error: t("errFractionalNotConfirmable") };
+
   // confirmed_by / confirmed_at are stamped by the billing_calc_guard trigger.
   // Only billing-month calculations can be confirmed (also a DB constraint).
   const { data, error } = await supabase
@@ -586,6 +608,31 @@ export async function deleteBillingContract(
   });
   revalidateBilling();
   redirect("/billing/contracts");
+}
+
+// ---------------------------------------------------------------------------
+// "Hiện dữ liệu giả định" switch
+// ---------------------------------------------------------------------------
+
+/**
+ * Show or hide demo ("giả định") contracts and their calculations. Only a
+ * view preference: demo data stays unconfirmable either way.
+ */
+export async function setShowDemo(formData: FormData): Promise<void> {
+  await requireBillingUser();
+  const on = formData.get("show") === "1";
+  const store = await cookies();
+  if (on) {
+    store.set(SHOW_DEMO_COOKIE, "1", {
+      path: "/billing",
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 30,
+    });
+  } else {
+    store.delete({ name: SHOW_DEMO_COOKIE, path: "/billing" });
+  }
+  revalidateBilling();
 }
 
 // ---------------------------------------------------------------------------

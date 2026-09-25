@@ -164,8 +164,12 @@ export const billingContractSchema = z.object({
   customer_name: z.string().trim().min(1, "nameRequired").max(200, "nameTooLong"),
   project_name: z.string().trim().min(1, "nameRequired").max(200, "nameTooLong"),
   contract_no: z.string().trim().max(100, "textTooLong"),
-  // Compared verbatim with the "Mã kho" in the MISA file: no case change.
-  misa_kho: z.string().trim().min(1, "misaKhoRequired").max(50, "textTooLong"),
+  // Compared with the "Mã kho" in the MISA file: no case change, but runs of
+  // spaces collapse to one, as misa-parser's normalizeCode does.
+  misa_kho: z
+    .string()
+    .transform((v) => v.replace(/\s+/g, " ").trim())
+    .pipe(z.string().min(1, "misaKhoRequired").max(50, "textTooLong")),
   period_start_day: z.coerce.number().int().min(2, "startDayRange").max(28, "startDayRange"),
   contract_start: z
     .union([isoDate, z.literal("")])

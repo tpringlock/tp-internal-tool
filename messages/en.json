@@ -946,7 +946,11 @@
     "rangeNotConfirmable": "Date-range calculations are for reference only and can't be confirmed. For a payment dossier, calculate by billing period.",
     "errNotConfirmable": "Only drafts calculated by billing period can be confirmed.",
     "kindLabel": "Type",
-    "allKinds": "All types"
+    "allKinds": "All types",
+    "demoBanner": "Assumed prices – not for payment dossiers. This contract is only for comparing with the Excel tool.",
+    "fractionalBanner": "Some items have fractional quantities, so amounts are not whole numbers (see warnings below). Usually a raw material sits in the rental warehouse by mistake. Check that item code in the contract and recalculate. The draft is kept but can't be confirmed.",
+    "errDemoNotConfirmable": "Demo contract: prices are for comparison only and can't be confirmed.",
+    "errFractionalNotConfirmable": "This calculation has fractional quantities and can't be confirmed yet. Check that item code and recalculate."
   },
   "BillingNav": {
     "subtitle": "Phase 1: equipment rent",
@@ -958,6 +962,8 @@
     "uploads": "MISA files",
     "contracts": "Contracts & prices",
     "excludedRanges": "Non-billable days",
-    "scopeNote": "This phase only calculates EQUIPMENT RENT. Transport, VAT, deductions, receivables and payment requests are still done as today."
+    "scopeNote": "This phase only calculates EQUIPMENT RENT. Transport, VAT, deductions, receivables and payment requests are still done as today.",
+    "showDemo": "Show demo data",
+    "showDemoHint": "Excel-price contracts, for comparison only"
   }
 }

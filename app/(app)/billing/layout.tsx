@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { requireBillingUser } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
+import { getShowDemo } from "@/lib/billing/queries";
 import { WorkspaceContent } from "@/components/workspace-content";
 import { BillingNav } from "./billing-nav";
 
@@ -15,19 +16,26 @@ export default async function BillingLayout({
 }) {
   await requireBillingUser();
   const supabase = await createClient();
+  const showDemo = await getShowDemo();
 
+  let contractCount = supabase
+    .from("billing_contracts")
+    .select("id", { count: "exact", head: true })
+    .eq("active", true);
+  let draftCount = supabase
+    .from("billing_rent_calculations")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "draft");
+  if (!showDemo) {
+    contractCount = contractCount.eq("is_demo", false);
+    draftCount = draftCount.eq("is_demo", false);
+  }
   const [contracts, uploads, drafts] = await Promise.all([
-    supabase
-      .from("billing_contracts")
-      .select("id", { count: "exact", head: true })
-      .eq("active", true),
+    contractCount,
     supabase
       .from("billing_misa_uploads")
       .select("id", { count: "exact", head: true }),
-    supabase
-      .from("billing_rent_calculations")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "draft"),
+    draftCount,
   ]);
 
   return (
@@ -37,6 +45,7 @@ export default async function BillingLayout({
           contractCount={contracts.count ?? 0}
           uploadCount={uploads.count ?? 0}
           draftCount={drafts.count ?? 0}
+          showDemo={showDemo}
         />
       </Suspense>
       <WorkspaceContent>{children}</WorkspaceContent>

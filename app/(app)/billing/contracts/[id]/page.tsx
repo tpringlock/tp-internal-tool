@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { Calculator, Trash2 } from "lucide-react";
+import { AlertTriangle, Calculator, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireBillingUser } from "@/lib/auth/dal";
 import { deleteBillingContract } from "@/app/actions/billing";
@@ -97,6 +97,16 @@ export default async function BillingContractPage({
           )}
         </div>
       </div>
+
+      {contract.is_demo && (
+        <div
+          role="alert"
+          className="flex items-start gap-3 rounded-2xl border-2 border-red-300 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800"
+        >
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
+          <p>{t("demoBanner")}</p>
+        </div>
+      )}
 
       <Card>
         <CardHeader>

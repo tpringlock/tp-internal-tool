@@ -13,6 +13,7 @@ import {
   getContractLabels,
   getContractsWithCounts,
   getProfileNames,
+  getShowDemo,
   todayIct,
 } from "@/lib/billing/queries";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,20 +35,24 @@ export default async function BillingCalculatePage({
   const sp = await searchParams;
   const t = await getTranslations("Billing");
   const supabase = await createClient();
+  const showDemo = await getShowDemo();
+
+  let recentQuery = supabase
+    .from("billing_rent_calculations")
+    .select("id, contract_id, period_month, period_from, period_to, total_amount, status, created_at, created_by")
+    .order("created_at", { ascending: false })
+    .limit(5);
+  if (!showDemo) recentQuery = recentQuery.eq("is_demo", false);
 
   const [contracts, { data: uploads }, { data: recent }] = await Promise.all([
-    getContractsWithCounts(supabase),
+    getContractsWithCounts(supabase, showDemo),
     supabase
       .from("billing_misa_uploads")
       .select("id, file_name, file_from, file_to, layout, created_at, warnings")
       .order("file_from", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(200),
-    supabase
-      .from("billing_rent_calculations")
-      .select("id, contract_id, period_month, period_from, period_to, total_amount, status, created_at, created_by")
-      .order("created_at", { ascending: false })
-      .limit(5),
+    recentQuery,
   ]);
 
   const active = contracts.filter((c) => c.active);

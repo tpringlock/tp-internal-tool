@@ -49,7 +49,15 @@ export async function exportRentXlsx(result: RentResult, contract: ContractConfi
   head.height = 45;
   ws.addRow(["I", "Thiết bị vật tư", "", "", "", "", "", "", "", result.totalAmount]).font = { bold: true };
 
-  const num = "#,##0;[Red]-#,##0";
+  // Whole numbers keep the plain format; fractional values (fractional MISA
+  // quantities) show their decimals, up to the 4 kept in storage.
+  const setNum = (cell: ExcelJS.Cell) => {
+    const v = cell.value;
+    if (typeof v !== "number") return;
+    const rounded = Number(v.toFixed(4));
+    cell.value = rounded;
+    cell.numFmt = Number.isInteger(rounded) ? NUM_INT : NUM_DEC;
+  };
   result.items.forEach((item, idx) => {
     item.lines.forEach((l, i) => {
       const r = ws.addRow([
@@ -66,16 +74,16 @@ export async function exportRentXlsx(result: RentResult, contract: ContractConfi
         l.kind === "ton-dau-ky" ? "" : l.ref + (l.excludedDays ? ` · trừ ${l.excludedDays} ngày miễn tính` : ""),
       ]);
       r.getCell(4).numFmt = r.getCell(5).numFmt = "dd/mm/yyyy";
-      [6, 7, 9, 10].forEach((c) => (r.getCell(c).numFmt = num));
+      [6, 7, 9, 10].forEach((c) => setNum(r.getCell(c)));
     });
     const sum = ws.addRow(["", "Cộng", "", "", "", "", item.closingQty, "", "", item.amount]);
     sum.font = { bold: true };
-    [7, 10].forEach((c) => (sum.getCell(c).numFmt = num));
+    [7, 10].forEach((c) => setNum(sum.getCell(c)));
   });
   const total = ws.addRow(["", "Tổng tiền thuê thiết bị", "", "", "", "", "", "", "", result.totalAmount]);
   total.font = { bold: true };
-  total.getCell(10).numFmt = num;
-  ws.getRow(6).getCell(10).numFmt = num;
+  setNum(total.getCell(10));
+  setNum(ws.getRow(6).getCell(10));
 
   if (result.warnings.length) {
     ws.addRow([]);
@@ -84,6 +92,9 @@ export async function exportRentXlsx(result: RentResult, contract: ContractConfi
   }
   return Buffer.from(await wb.xlsx.writeBuffer());
 }
+
+const NUM_INT = "#,##0;[Red]-#,##0";
+const NUM_DEC = "#,##0.0###;[Red]-#,##0.0###";
 
 function toDate(iso: string) {
   const [y, m, d] = iso.split("-").map(Number);

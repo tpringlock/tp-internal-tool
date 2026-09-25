@@ -10,6 +10,8 @@ import {
   History,
   Info,
 } from "lucide-react";
+import { setShowDemo } from "@/app/actions/billing";
+import { cn } from "@/lib/utils";
 import { AsideHeading, WorkspaceAside } from "@/components/workspace-aside";
 import { SidebarNav, type SidebarNavSection } from "@/components/sidebar-nav";
 
@@ -18,10 +20,12 @@ export function BillingNav({
   contractCount,
   uploadCount,
   draftCount,
+  showDemo,
 }: {
   contractCount: number;
   uploadCount: number;
   draftCount: number;
+  showDemo: boolean;
 }) {
   const pathname = usePathname();
   const t = useTranslations("BillingNav");
@@ -93,6 +97,39 @@ export function BillingNav({
             sections={sections}
             onNavigate={close}
           />
+          <form action={setShowDemo} className="px-3 pb-3">
+            <input type="hidden" name="show" value={showDemo ? "0" : "1"} />
+            <button
+              type="submit"
+              role="switch"
+              aria-checked={showDemo}
+              className={cn(
+                "flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-2.5 text-left text-sm transition-colors",
+                showDemo
+                  ? "border-red-300 bg-red-50 text-red-800"
+                  : "border-slate-200 text-slate-600 hover:bg-slate-50",
+              )}
+            >
+              <span className="min-w-0">
+                <span className="block font-medium">{t("showDemo")}</span>
+                <span className="block text-xs opacity-80">{t("showDemoHint")}</span>
+              </span>
+              <span
+                aria-hidden
+                className={cn(
+                  "relative h-5 w-9 shrink-0 rounded-full transition-colors",
+                  showDemo ? "bg-red-500" : "bg-slate-300",
+                )}
+              >
+                <span
+                  className={cn(
+                    "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all",
+                    showDemo ? "left-[1.125rem]" : "left-0.5",
+                  )}
+                />
+              </span>
+            </button>
+          </form>
           <div className="p-3 pt-0">
             <div className="flex gap-2.5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900">
               <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />

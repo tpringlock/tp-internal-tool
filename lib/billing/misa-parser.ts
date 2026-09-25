@@ -94,12 +94,12 @@ export async function parseMisaLedger(
     const a = text(r, 1);
     if (!a) continue;
     if (a.startsWith("Mã kho:")) {
-      kho = a.slice(7).trim();
+      kho = normalizeCode(a.slice(7));
       maHang = "";
       continue;
     }
     if (a.startsWith("Mã hàng:")) {
-      maHang = a.slice(8).trim();
+      maHang = normalizeCode(a.slice(8));
       running = 0;
       continue;
     }
@@ -151,6 +151,12 @@ export async function parseMisaLedger(
 }
 
 export class MisaParseError extends Error {}
+
+/** Chuẩn hóa mã kho / mã hàng giống hàm TRIM của Excel: bỏ khoảng trắng hai đầu và gộp nhiều dấu cách thành một.
+ *  (MISA có mã "INTECH  - 1" với 2 dấu cách.) */
+export function normalizeCode(s: string): string {
+  return s.replace(/\s+/g, " ").trim();
+}
 
 /** "Kho: <<Tất cả>>, Tháng 9 năm 2026" | "…, Quý 3 năm 2026" | "…, Năm 2026" | "…Từ ngày 26/08/2026 đến ngày 25/09/2026" */
 export function parsePeriodText(s: string): { from: IsoDate; to: IsoDate } | null {

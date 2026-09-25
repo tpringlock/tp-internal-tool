@@ -3,13 +3,8 @@ import { describe, expect, it } from "vitest";
 import { vietpanelSenci } from "./contracts/vietpanel-senci";
 import { parseMisaLedger } from "./misa-parser";
 import { buildRentInput, BillingError } from "./engine";
-import {
-  findDuplicateCodes,
-  findUnknownCodes,
-  parseCodeList,
-  toContractConfig,
-  warningsForWarehouse,
-} from "./contract-config";
+import { findDuplicateCodes, parseCodeList, toContractConfig } from "./contract-config";
+import { findUnknownCodes, warningsForWarehouse } from "./ledger-checks";
 import { mergeLedgers } from "./merge-ledgers";
 import type { ContractConfig } from "./types";
 
@@ -66,6 +61,21 @@ describe("findUnknownCodes", () => {
     }
     for (const u of unknown) expect(message).toContain(u.maHang);
   });
+
+  it("matches a warehouse code typed with extra spaces, like the engine", async () => {
+    const ledger = await load("misa-2026-06-16cot.xlsx");
+    const intech: ContractConfig = { ...vietpanelSenci, misaKho: "INTECH  - 1", items: [], excludedMaHang: [] };
+    const unknown = findUnknownCodes(ledger, intech, period);
+    expect(unknown.length).toBeGreaterThan(0);
+    expect(() => buildRentInput(ledger, intech, period)).toThrow(/chưa khai báo/);
+  });
+
+  it("leaves a warehouse missing from the file to the engine", async () => {
+    const ledger = await load("misa-2026-06-16cot.xlsx");
+    const missing: ContractConfig = { ...vietpanelSenci, misaKho: "VIETPANEL-99" };
+    expect(findUnknownCodes(ledger, missing, period)).toEqual([]);
+    expect(() => buildRentInput(ledger, missing, period)).toThrow(/Không tìm thấy kho/);
+  });
 });
 
 describe("parseCodeList", () => {
@@ -94,6 +104,7 @@ describe("warningsForWarehouse", () => {
     ];
     expect(warningsForWarehouse(ws, "VIETPANEL-01")).toEqual([ws[0], ws[2], ws[3]]);
     expect(warningsForWarehouse(ws, "319.5 - 1")).toEqual([ws[2], ws[5]]);
+    expect(warningsForWarehouse(ws, "319.5  - 1")).toEqual([ws[2], ws[5]]);
   });
 
   it("matches the real merge warning format", async () => {

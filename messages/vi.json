@@ -946,7 +946,11 @@
     "rangeNotConfirmable": "Bản tính theo khoảng ngày chỉ để tra cứu nên không xác nhận được. Để lập hồ sơ thanh toán, hãy tính theo kỳ HSTT.",
     "errNotConfirmable": "Chỉ bản nháp tính theo kỳ HSTT mới xác nhận được.",
     "kindLabel": "Loại",
-    "allKinds": "Tất cả loại"
+    "allKinds": "Tất cả loại",
+    "demoBanner": "Đơn giá giả định – không dùng để lập HSTT. Hợp đồng này chỉ để đối chiếu với tool Excel.",
+    "fractionalBanner": "Có mặt hàng số lượng lẻ nên thành tiền không phải số nguyên (xem cảnh báo bên dưới). Thường là do nguyên vật liệu nằm nhầm trong kho cho thuê. Hãy kiểm tra lại mã hàng đó trong hợp đồng rồi tính lại. Bản tính vẫn lưu nháp nhưng không xác nhận được.",
+    "errDemoNotConfirmable": "Hợp đồng giả định: đơn giá chỉ để đối chiếu, không được xác nhận.",
+    "errFractionalNotConfirmable": "Bản tính có mặt hàng số lượng lẻ nên chưa xác nhận được. Hãy kiểm tra lại mã hàng đó rồi tính lại."
   },
   "BillingNav": {
     "subtitle": "Giai đoạn 1: tiền thuê thiết bị",
@@ -958,6 +962,8 @@
     "uploads": "File MISA",
     "contracts": "Hợp đồng & đơn giá",
     "excludedRanges": "Ngày miễn tính",
-    "scopeNote": "Giai đoạn này chỉ tính TIỀN THUÊ THIẾT BỊ. Vận chuyển, VAT, giảm trừ, công nợ và giấy đề nghị thanh toán vẫn làm như hiện tại."
+    "scopeNote": "Giai đoạn này chỉ tính TIỀN THUÊ THIẾT BỊ. Vận chuyển, VAT, giảm trừ, công nợ và giấy đề nghị thanh toán vẫn làm như hiện tại.",
+    "showDemo": "Hiện dữ liệu giả định",
+    "showDemoHint": "Hợp đồng đơn giá Excel, chỉ để đối chiếu"
   }
 }

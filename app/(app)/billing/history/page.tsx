@@ -6,6 +6,7 @@ import {
   getContractLabels,
   getContractsWithCounts,
   getProfileNames,
+  getShowDemo,
 } from "@/lib/billing/queries";
 import type { BillingCalcStatus } from "@/lib/db/types";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,7 +34,8 @@ export default async function BillingHistoryPage({
 
   const pageNum = Math.max(1, Number(sp.page) || 1);
   const from = (pageNum - 1) * PAGE_SIZE;
-  const contracts = await getContractsWithCounts(supabase);
+  const showDemo = await getShowDemo();
+  const contracts = await getContractsWithCounts(supabase, showDemo);
   const contractId = contracts.some((c) => c.id === sp.contract) ? sp.contract! : "";
   const status = STATUSES.includes(sp.status as BillingCalcStatus)
     ? (sp.status as BillingCalcStatus)
@@ -50,6 +52,7 @@ export default async function BillingHistoryPage({
     .order("created_at", { ascending: false })
     .range(from, from + PAGE_SIZE - 1);
   if (contractId) query = query.eq("contract_id", contractId);
+  if (!showDemo) query = query.eq("is_demo", false);
   if (status) query = query.eq("status", status);
   if (kind === "month") query = query.not("period_month", "is", null);
   if (kind === "range") query = query.is("period_month", null);

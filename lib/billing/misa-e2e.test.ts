@@ -104,6 +104,15 @@ describe("Từ file MISA ra tiền thuê", () => {
     expect(() => buildRentInput(ledger, thieu, { from: "2026-09-01", to: "2026-09-25" })).toThrow(/VT0008/);
   });
 
+  it("mã kho có 2 dấu cách vẫn khớp, kho không có trong file thì báo lỗi", async () => {
+    const ledger = await load("misa-2026-06-16cot.xlsx");
+    expect(Object.keys(ledger.warehouses)).toContain("INTECH - 1"); // MISA ghi "INTECH  - 1"
+    const c = { ...vietpanelSenci, misaKho: "INTECH  - 1", items: [], excludedMaHang: [] };
+    expect(() => buildRentInput(ledger, c, { from: "2026-06-01", to: "2026-06-30" })).toThrow(/chưa khai báo/);
+    const khongCo = { ...vietpanelSenci, misaKho: "VIETPANEL-99" };
+    expect(() => buildRentInput(ledger, khongCo, { from: "2026-06-01", to: "2026-06-30" })).toThrow(/Không tìm thấy kho/);
+  });
+
   it("gộp mã, bỏ pallet và cộng các phiếu", async () => {
     const ledger = await load("misa-2026-09-13cot.xlsx");
     const res = computeRentFromLedger(ledger, vietpanelSenci, { from: "2026-09-01", to: "2026-09-25" });

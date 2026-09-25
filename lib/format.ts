@@ -56,11 +56,13 @@ export function formatDate(iso: string): string {
 }
 
 /**
- * Integer in Vietnamese grouping, e.g. 1.210.462.443 (quantities, unit
- * prices and billing amounts, matching the "…đ" text in the rent engine's
- * explanations). vi-VN is pinned so server and client agree.
+ * Number in Vietnamese style for quantities, unit prices and billing amounts:
+ * whole numbers as 1.210.462.443, fractional ones as -665.017,5 (decimals
+ * only when present). Up to 4 decimals, the precision amounts are stored at,
+ * so stored values are never rounded. vi-VN is pinned so server and client
+ * agree.
  */
-const numberFormat = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 });
+const numberFormat = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 4 });
 export function formatNumber(value: number): string {
   return numberFormat.format(value);
 }

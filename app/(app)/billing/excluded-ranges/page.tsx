@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { requireBillingUser } from "@/lib/auth/dal";
-import { contractLabel, getContractsWithCounts } from "@/lib/billing/queries";
+import { contractLabel, getContractsWithCounts, getShowDemo } from "@/lib/billing/queries";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { ModuleEyebrow, pageTitleClass } from "@/components/page-title";
 import { DialogButton } from "@/components/dialog-button";
@@ -18,7 +18,7 @@ export default async function ExcludedRangesPage() {
       .from("billing_excluded_ranges")
       .select("*")
       .order("date_from", { ascending: false }),
-    getContractsWithCounts(supabase),
+    getContractsWithCounts(supabase, await getShowDemo()),
   ]);
   const labels = new Map(contracts.map((c) => [c.id, contractLabel(c)]));
 

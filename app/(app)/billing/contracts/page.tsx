@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { requireBillingUser } from "@/lib/auth/dal";
 import { formatVnDate } from "@/lib/billing/dates";
-import { getContractsWithCounts } from "@/lib/billing/queries";
+import { getContractsWithCounts, getShowDemo } from "@/lib/billing/queries";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { ModuleEyebrow, pageTitleClass } from "@/components/page-title";
 import { DialogButton } from "@/components/dialog-button";
@@ -13,7 +13,8 @@ export default async function BillingContractsPage() {
   await requireBillingUser();
   const t = await getTranslations("Billing");
   const supabase = await createClient();
-  const contracts = await getContractsWithCounts(supabase);
+  const showDemo = await getShowDemo();
+  const contracts = await getContractsWithCounts(supabase, showDemo);
 
   return (
     <div className="space-y-6">
@@ -49,9 +50,18 @@ export default async function BillingContractsPage() {
               </thead>
               <tbody>
                 {contracts.map((c) => (
-                  <tr key={c.id} className="border-b border-slate-50 last:border-0">
+                  <tr
+                    key={c.id}
+                    className={
+                      c.is_demo
+                        ? "border-b border-red-100 bg-red-50/40 last:border-0"
+                        : "border-b border-slate-50 last:border-0"
+                    }
+                  >
                     <td data-label={t("customerName")} className="px-5 py-3 md:max-w-sm">
-                      <span className="block font-medium text-slate-900">{c.customer_name}</span>
+                      <span className={c.is_demo ? "block font-medium text-red-700" : "block font-medium text-slate-900"}>
+                        {c.customer_name}
+                      </span>
                       <span className="block text-xs text-slate-500">
                         {c.project_name}
                         {c.contract_no && ` · ${c.contract_no}`}
