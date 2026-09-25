@@ -54,3 +54,13 @@ export function formatDate(iso: string): string {
     timeZone: DISPLAY_TIME_ZONE,
   });
 }
+
+/**
+ * Integer in Vietnamese grouping, e.g. 1.210.462.443 (quantities, unit
+ * prices and billing amounts, matching the "…đ" text in the rent engine's
+ * explanations). vi-VN is pinned so server and client agree.
+ */
+const numberFormat = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 });
+export function formatNumber(value: number): string {
+  return numberFormat.format(value);
+}

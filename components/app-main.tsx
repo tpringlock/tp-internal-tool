@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { PageHeader } from "@/components/page-header";
 
 /** Modules that render their own workspace shell (sidebar + content). */
-const WORKSPACES = ["/documents", "/academy", "/admin"];
+const WORKSPACES = ["/documents", "/academy", "/billing", "/admin"];
 
 /**
  * Main content frame below the header. Module workspaces are full-bleed (their

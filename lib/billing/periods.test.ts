@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { contractPeriod, defaultBillingMonth, overlapsPeriod, rangesForPeriod, suggestUploads } from "./periods";
+import {
+  contractPeriod,
+  defaultBillingMonth,
+  nextMonth,
+  overlapsPeriod,
+  rangesForPeriod,
+  recentMonths,
+  suggestUploads,
+} from "./periods";
 
 describe("defaultBillingMonth", () => {
   it("suggests the latest period that has ended", () => {
@@ -67,5 +75,13 @@ describe("suggestUploads", () => {
   it("overlapsPeriod", () => {
     expect(overlapsPeriod(u("x", "2026-09-01", "2026-09-30"), period)).toBe(true);
     expect(overlapsPeriod(u("x", "2026-06-01", "2026-06-30"), period)).toBe(false);
+  });
+});
+
+describe("recentMonths / nextMonth", () => {
+  it("walks back across year boundaries", () => {
+    expect(recentMonths("2026-02", 4)).toEqual(["2026-02", "2026-01", "2025-12", "2025-11"]);
+    expect(nextMonth("2026-12")).toBe("2027-01");
+    expect(nextMonth("2026-08")).toBe("2026-09");
   });
 });

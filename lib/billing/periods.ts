@@ -73,3 +73,19 @@ export function suggestUploads(uploads: UploadSpan[], period: Period): string[] 
 export function overlapsPeriod(u: Pick<UploadSpan, "file_from" | "file_to">, period: Period): boolean {
   return u.file_from <= period.to && u.file_to >= period.from;
 }
+
+/** `count` months ending at `latest` ("YYYY-MM"), newest first. */
+export function recentMonths(latest: string, count: number): string[] {
+  const [y, m] = latest.split("-").map(Number);
+  return Array.from({ length: count }, (_, i) => {
+    const d = new Date(Date.UTC(y, m - 1 - i, 1));
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+  });
+}
+
+/** Month after `month` ("YYYY-MM"). */
+export function nextMonth(month: string): string {
+  const [y, m] = month.split("-").map(Number);
+  const d = new Date(Date.UTC(y, m, 1));
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+}

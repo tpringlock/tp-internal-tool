@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { FileText, GraduationCap, Calculator } from "lucide-react";
 import { requireUser } from "@/lib/auth/dal";
+import { canUseBilling } from "@/lib/auth/roles";
 import { Card, CardBody } from "@/components/ui/card";
 
 export default async function HomePage() {
@@ -55,33 +56,26 @@ export default async function HomePage() {
           </Card>
         </Link>
 
-        <div
-          className="group cursor-not-allowed"
-          aria-disabled
-          title={t("comingSoon")}
-        >
-          <Card className="h-full opacity-60">
-            <CardBody className="flex items-start gap-4">
-              <Calculator
-                className="h-10 w-10 shrink-0 text-primary"
-                aria-hidden
-              />
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
+        {canUseBilling(user.profile.role) && (
+          <Link href="/billing" className="group">
+            <Card className="h-full transition-colors group-hover:border-slate-300">
+              <CardBody className="flex items-start gap-4">
+                <Calculator
+                  className="h-10 w-10 shrink-0 text-primary"
+                  aria-hidden
+                />
+                <div className="space-y-1">
                   <div className="text-sm font-semibold text-primary">
                     {t("calculateBill")}
                   </div>
-                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
-                    {t("comingSoon")}
-                  </span>
+                  <p className="text-sm text-slate-500">
+                    {t("calculateBillDesc")}
+                  </p>
                 </div>
-                <p className="text-sm text-slate-500">
-                  {t("calculateBillDesc")}
-                </p>
-              </div>
-            </CardBody>
-          </Card>
-        </div>
+              </CardBody>
+            </Card>
+          </Link>
+        )}
       </div>
     </div>
   );
