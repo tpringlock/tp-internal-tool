@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   contractPeriod,
   defaultBillingMonth,
+  formatBillingMonth,
   nextMonth,
   overlapsPeriod,
   rangesForPeriod,
@@ -83,5 +84,6 @@ describe("recentMonths / nextMonth", () => {
     expect(recentMonths("2026-02", 4)).toEqual(["2026-02", "2026-01", "2025-12", "2025-11"]);
     expect(nextMonth("2026-12")).toBe("2027-01");
     expect(nextMonth("2026-08")).toBe("2026-09");
+    expect(formatBillingMonth("2026-08")).toBe("08/2026");
   });
 });

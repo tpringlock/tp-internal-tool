@@ -381,7 +381,8 @@ export type BillingMisaUpload = {
 export type BillingRentCalculation = {
   id: string;
   contract_id: string;
-  period_month: string;
+  /** "YYYY-MM" for a billing-month (HSTT) calculation; null for a custom date range. */
+  period_month: string | null;
   period_from: string;
   period_to: string;
   upload_ids: string[];
@@ -649,6 +650,7 @@ export interface Database {
         Insert<
           BillingRentCalculation,
           | "id"
+          | "period_month"
           | "excluded_ranges"
           | "status"
           | "created_at"

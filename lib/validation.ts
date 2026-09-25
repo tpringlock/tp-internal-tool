@@ -199,11 +199,38 @@ export const billingExcludedRangeSchema = z
   })
   .refine((v) => v.date_to >= v.date_from, { message: "rangeOrder", path: ["date_to"] });
 
-export const computeRentSchema = z.object({
+/** Longest custom range accepted (a sanity cap; files must still cover it). */
+export const MAX_RANGE_DAYS = 400;
+
+const computeBase = {
   contract_id: z.string().uuid("chooseContract"),
-  month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "monthInvalid"),
   upload_ids: z.array(z.string().uuid()).min(1, "chooseUpload").max(12),
-});
+};
+
+/**
+ * Either a billing month (the 26 -> 25 period used for the payment dossier,
+ * confirmable) or a custom date range (quick look, never confirmable).
+ */
+export const computeRentSchema = z.discriminatedUnion("mode", [
+  z.object({
+    ...computeBase,
+    mode: z.literal("month"),
+    month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "monthInvalid"),
+  }),
+  z
+    .object({
+      ...computeBase,
+      mode: z.literal("range"),
+      date_from: isoDate,
+      date_to: isoDate,
+    })
+    .refine((v) => v.date_to >= v.date_from, { message: "rangeOrder", path: ["date_to"] })
+    .refine(
+      (v) =>
+        (Date.parse(v.date_to) - Date.parse(v.date_from)) / 86_400_000 < MAX_RANGE_DAYS,
+      { message: "rangeTooLong", path: ["date_to"] },
+    ),
+]);
 
 /** Minimal shape of a next-intl translator (from useTranslations/getTranslations). */
 type Translator = ((key: string) => string) & { has: (key: string) => boolean };

@@ -494,7 +494,8 @@
     "rangeOrder": "End date must be on or after the start date",
     "chooseContract": "Choose a contract",
     "monthInvalid": "Invalid month",
-    "chooseUpload": "Choose at least one MISA file"
+    "chooseUpload": "Choose at least one MISA file",
+    "rangeTooLong": "The range can be at most 400 days"
   },
   "Academy": {
     "title": "TP Academy",
@@ -932,7 +933,20 @@
     "dateTo": "To",
     "reasonPlaceholder": "E.g. Lunar New Year 2027",
     "rangeHint": "Applies to calculations made after adding it. Saved calculations don't change.",
-    "addRange": "Add non-billable days"
+    "addRange": "Add non-billable days",
+    "periodMode": "Period type",
+    "modeMonth": "By billing period",
+    "modeRange": "By date range",
+    "modeMonthHint": "The 26 → 25 period used for payment dossiers. Only period calculations can be confirmed.",
+    "modeRangeHint": "Quick look at any date range. Saved as a draft and exportable, but can't be confirmed.",
+    "chooseValidRange": "Choose a valid date range (start not after end).",
+    "customRange": "Custom date range",
+    "calcTitleRange": "Equipment rent {from} – {to}",
+    "customRangeNote": "Custom date range (not a billing period)",
+    "rangeNotConfirmable": "Date-range calculations are for reference only and can't be confirmed. For a payment dossier, calculate by billing period.",
+    "errNotConfirmable": "Only drafts calculated by billing period can be confirmed.",
+    "kindLabel": "Type",
+    "allKinds": "All types"
   },
   "BillingNav": {
     "subtitle": "Phase 1: equipment rent",

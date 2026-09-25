@@ -200,8 +200,9 @@ export interface ComputeState extends FormState {
 }
 
 /**
- * Calculate equipment rent for a contract and billing month from the chosen
- * MISA uploads, save it as a draft and open it. Any engine/parser refusal
+ * Calculate equipment rent for a contract from the chosen MISA uploads, over
+ * either a billing month (26 -> 25, the HSTT period) or a custom date range,
+ * save it as a draft and open it. Range calculations can't be confirmed. Any engine/parser refusal
  * (file doesn't cover the period, unknown codes, ...) is shown verbatim: it
  * is safer to stop than to under-bill silently.
  */
@@ -213,15 +214,20 @@ export async function computeRent(
   const t = await getTranslations("Billing");
 
   const parsed = computeRentSchema.safeParse({
+    mode: formData.get("mode") === "range" ? "range" : "month",
     contract_id: formData.get("contract_id"),
     month: formData.get("month"),
+    date_from: formData.get("date_from"),
+    date_to: formData.get("date_to"),
     upload_ids: formData.getAll("upload_ids").map(String),
   });
   if (!parsed.success) {
     const tv = await getTranslations("Validation");
     return { fieldErrors: translateFieldErrors(tv, parsed.error) };
   }
-  const { contract_id: contractId, month, upload_ids: uploadIds } = parsed.data;
+  const input = parsed.data;
+  const { contract_id: contractId, upload_ids: uploadIds } = input;
+  const month = input.mode === "month" ? input.month : null;
 
   const supabase = await createClient();
   const loaded = await loadContract(supabase, contractId);
@@ -247,7 +253,10 @@ export async function computeRent(
 
   let period;
   try {
-    period = contractPeriod(month, contract.period_start_day, contract.contract_start);
+    period =
+      input.mode === "month"
+        ? contractPeriod(input.month, contract.period_start_day, contract.contract_start)
+        : { from: input.date_from, to: input.date_to };
   } catch (e) {
     return { error: (e as Error).message };
   }
@@ -298,7 +307,13 @@ export async function computeRent(
     action: "billing.calculated",
     entityType: "billing_calculation",
     entityId: saved.id,
-    metadata: { contract: contract.code, month, total: result.totalAmount },
+    metadata: {
+      contract: contract.code,
+      month,
+      from: period.from,
+      to: period.to,
+      total: result.totalAmount,
+    },
   });
   revalidateBilling();
   redirect(`/billing/calculations/${saved.id}`);
@@ -315,16 +330,18 @@ export async function confirmCalculation(
 
   const supabase = await createClient();
   // confirmed_by / confirmed_at are stamped by the billing_calc_guard trigger.
+  // Only billing-month calculations can be confirmed (also a DB constraint).
   const { data, error } = await supabase
     .from("billing_rent_calculations")
     .update({ status: "confirmed" })
     .eq("id", id)
     .eq("status", "draft")
+    .not("period_month", "is", null)
     .select("id");
   if (error) {
     return { error: error.code === UNIQUE_VIOLATION ? t("errAlreadyConfirmed") : error.message };
   }
-  if (!data || data.length === 0) return { error: t("errNotDraft") };
+  if (!data || data.length === 0) return { error: t("errNotConfirmable") };
 
   await logActivity(supabase, {
     action: "billing.confirmed",

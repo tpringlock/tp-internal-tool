@@ -494,7 +494,8 @@
     "rangeOrder": "Ngày kết thúc phải sau hoặc bằng ngày bắt đầu",
     "chooseContract": "Hãy chọn một hợp đồng",
     "monthInvalid": "Tháng không hợp lệ",
-    "chooseUpload": "Hãy chọn ít nhất một file MISA"
+    "chooseUpload": "Hãy chọn ít nhất một file MISA",
+    "rangeTooLong": "Khoảng ngày tối đa 400 ngày"
   },
   "Academy": {
     "title": "TP Academy",
@@ -932,7 +933,20 @@
     "dateTo": "Đến ngày",
     "reasonPlaceholder": "Ví dụ: Nghỉ Tết Nguyên đán 2027",
     "rangeHint": "Chỉ áp dụng cho các lần tính sau khi thêm. Bản tính đã lưu không thay đổi.",
-    "addRange": "Thêm ngày miễn tính"
+    "addRange": "Thêm ngày miễn tính",
+    "periodMode": "Cách chọn thời gian",
+    "modeMonth": "Theo kỳ HSTT",
+    "modeRange": "Theo khoảng ngày",
+    "modeMonthHint": "Kỳ 26 → 25 dùng để lập hồ sơ thanh toán. Chỉ bản tính theo kỳ mới xác nhận được.",
+    "modeRangeHint": "Tính nhanh cho khoảng ngày bất kỳ để tra cứu. Bản tính được lưu nháp, tải Excel được nhưng không xác nhận được.",
+    "chooseValidRange": "Hãy chọn khoảng ngày hợp lệ (từ ngày không sau đến ngày).",
+    "customRange": "Khoảng ngày tùy chọn",
+    "calcTitleRange": "Tiền thuê thiết bị {from} – {to}",
+    "customRangeNote": "Tính theo khoảng ngày tùy chọn (không phải kỳ HSTT)",
+    "rangeNotConfirmable": "Bản tính theo khoảng ngày chỉ để tra cứu nên không xác nhận được. Để lập hồ sơ thanh toán, hãy tính theo kỳ HSTT.",
+    "errNotConfirmable": "Chỉ bản nháp tính theo kỳ HSTT mới xác nhận được.",
+    "kindLabel": "Loại",
+    "allKinds": "Tất cả loại"
   },
   "BillingNav": {
     "subtitle": "Giai đoạn 1: tiền thuê thiết bị",

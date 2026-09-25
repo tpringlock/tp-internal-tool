@@ -42,7 +42,9 @@ export async function GET(
 
   const kho = calc.contract_snapshot.misaKho.replace(/[^A-Za-z0-9_-]+/g, "-");
   const draft = calc.status === "draft" ? "-nhap" : calc.status === "voided" ? "-da-huy" : "";
-  const fileName = `tien-thue-${kho}-${calc.period_month}${draft}.xlsx`;
+  const result = calc.result;
+  const span = calc.period_month ?? `${result.period.from}_${result.period.to}`;
+  const fileName = `tien-thue-${kho}-${span}${draft}.xlsx`;
   return new NextResponse(new Uint8Array(buffer), {
     status: 200,
     headers: {

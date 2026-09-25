@@ -10,8 +10,10 @@ import {
   voidCalculation,
 } from "@/app/actions/billing";
 import { formatVnDate } from "@/lib/billing/dates";
+import { formatBillingMonth } from "@/lib/billing/periods";
 import { getProfileNames } from "@/lib/billing/queries";
 import { formatDateTime, formatNumber } from "@/lib/format";
+import { Alert } from "@/components/ui/alert";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { DownloadLink } from "@/components/ui/download-link";
 import { ModuleEyebrow, pageTitleClass } from "@/components/page-title";
@@ -45,7 +47,11 @@ export default async function CalculationPage({
   ]);
 
   const { result, contract_snapshot: contract } = calc;
-  const monthLabel = `${calc.period_month.slice(5)}/${calc.period_month.slice(0, 4)}`;
+  const monthLabel = calc.period_month ? formatBillingMonth(calc.period_month) : null;
+  const periodText = {
+    from: formatVnDate(calc.period_from),
+    to: formatVnDate(calc.period_to),
+  };
   const isAdmin = user.profile.role === "admin";
 
   return (
@@ -54,7 +60,11 @@ export default async function CalculationPage({
         <div className="min-w-0">
           <ModuleEyebrow id="billing" />
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className={pageTitleClass}>{t("calcTitle", { month: monthLabel })}</h1>
+            <h1 className={pageTitleClass}>
+              {monthLabel
+                ? t("calcTitle", { month: monthLabel })
+                : t("calcTitleRange", periodText)}
+            </h1>
             <StatusBadge status={calc.status} />
           </div>
           <p className="mt-1.5 text-sm text-slate-600">
@@ -69,10 +79,7 @@ export default async function CalculationPage({
             {contract.contractNo && ` · ${t("contractNoLabel", { no: contract.contractNo })}`}
           </p>
           <p className="mt-0.5 text-sm text-slate-500">
-            {t("periodRange", {
-              from: formatVnDate(calc.period_from),
-              to: formatVnDate(calc.period_to),
-            })}
+            {monthLabel ? t("periodRange", periodText) : t("customRangeNote")}
           </p>
         </div>
 
@@ -96,19 +103,21 @@ export default async function CalculationPage({
                 variant="danger"
                 icon={<Trash2 className="h-4 w-4" aria-hidden />}
               />
-              <ActionButton
-                action={confirmCalculation}
-                id={calc.id}
-                label={t("confirm")}
-                title={t("confirmTitle")}
-                body={t("confirmBody", {
-                  month: monthLabel,
-                  total: formatNumber(calc.total_amount),
-                })}
-                confirmLabel={t("confirm")}
-                variant="primary"
-                icon={<CheckCircle2 className="h-4 w-4" aria-hidden />}
-              />
+              {monthLabel && (
+                <ActionButton
+                  action={confirmCalculation}
+                  id={calc.id}
+                  label={t("confirm")}
+                  title={t("confirmTitle")}
+                  body={t("confirmBody", {
+                    month: monthLabel,
+                    total: formatNumber(calc.total_amount),
+                  })}
+                  confirmLabel={t("confirm")}
+                  variant="primary"
+                  icon={<CheckCircle2 className="h-4 w-4" aria-hidden />}
+                />
+              )}
             </>
           )}
           {calc.status === "confirmed" && isAdmin && (
@@ -127,6 +136,10 @@ export default async function CalculationPage({
       </div>
 
       <ScopeNotice />
+
+      {!monthLabel && calc.status === "draft" && (
+        <Alert tone="info">{t("rangeNotConfirmable")}</Alert>
+      )}
 
       {result.warnings.length > 0 && (
         <div

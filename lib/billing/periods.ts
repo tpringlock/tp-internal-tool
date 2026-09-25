@@ -89,3 +89,8 @@ export function nextMonth(month: string): string {
   const d = new Date(Date.UTC(y, m, 1));
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
 }
+
+/** "2026-08" -> "08/2026". */
+export function formatBillingMonth(month: string): string {
+  return `${month.slice(5, 7)}/${month.slice(0, 4)}`;
+}

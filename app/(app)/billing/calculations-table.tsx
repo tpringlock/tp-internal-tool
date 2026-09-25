@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { formatVnDate } from "@/lib/billing/dates";
+import { formatBillingMonth } from "@/lib/billing/periods";
 import { formatDateTime, formatNumber } from "@/lib/format";
 import type { BillingRentCalculation } from "@/lib/db/types";
 import { StatusBadge } from "./status-badge";
@@ -45,7 +46,9 @@ export async function CalculationsTable({
           <tr key={r.id} className="border-b border-slate-50 last:border-0">
             <td data-label={t("period")} className="px-5 py-3">
               <span className="font-medium text-slate-900">
-                {t("monthShort", { month: `${r.period_month.slice(5)}/${r.period_month.slice(0, 4)}` })}
+                {r.period_month
+                  ? t("monthShort", { month: formatBillingMonth(r.period_month) })
+                  : t("customRange")}
               </span>
               <span className="block text-xs text-slate-500">
                 {formatVnDate(r.period_from)} – {formatVnDate(r.period_to)}

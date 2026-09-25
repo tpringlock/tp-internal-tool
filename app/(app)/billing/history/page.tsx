@@ -17,11 +17,14 @@ import { CalculationsTable } from "../calculations-table";
 
 const PAGE_SIZE = 30;
 const STATUSES: BillingCalcStatus[] = ["draft", "confirmed", "voided"];
+/** Billing-month (HSTT) calculations vs custom date ranges. */
+const KINDS = ["month", "range"] as const;
+type Kind = (typeof KINDS)[number];
 
 export default async function BillingHistoryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ contract?: string; status?: string; page?: string }>;
+  searchParams: Promise<{ contract?: string; status?: string; kind?: string; page?: string }>;
 }) {
   await requireBillingUser();
   const sp = await searchParams;
@@ -35,6 +38,7 @@ export default async function BillingHistoryPage({
   const status = STATUSES.includes(sp.status as BillingCalcStatus)
     ? (sp.status as BillingCalcStatus)
     : "";
+  const kind = KINDS.includes(sp.kind as Kind) ? (sp.kind as Kind) : "";
 
   let query = supabase
     .from("billing_rent_calculations")
@@ -47,6 +51,8 @@ export default async function BillingHistoryPage({
     .range(from, from + PAGE_SIZE - 1);
   if (contractId) query = query.eq("contract_id", contractId);
   if (status) query = query.eq("status", status);
+  if (kind === "month") query = query.not("period_month", "is", null);
+  if (kind === "range") query = query.is("period_month", null);
   const { data, count } = await query;
 
   const rows = data ?? [];
@@ -60,6 +66,7 @@ export default async function BillingHistoryPage({
     const q = new URLSearchParams();
     if (contractId) q.set("contract", contractId);
     if (status) q.set("status", status);
+    if (kind) q.set("kind", kind);
     q.set("page", String(p));
     return `/billing/history?${q.toString()}`;
   };
@@ -99,6 +106,16 @@ export default async function BillingHistoryPage({
                     {t(`status_${s}`)}
                   </option>
                 ))}
+              </Select>
+            </div>
+            <div className="w-full sm:w-48">
+              <label htmlFor="h-kind" className="mb-1 block text-xs font-medium text-slate-500">
+                {t("kindLabel")}
+              </label>
+              <Select id="h-kind" name="kind" defaultValue={kind}>
+                <option value="">{t("allKinds")}</option>
+                <option value="month">{t("modeMonth")}</option>
+                <option value="range">{t("modeRange")}</option>
               </Select>
             </div>
             <Button type="submit" variant="secondary" className="w-full sm:w-auto">

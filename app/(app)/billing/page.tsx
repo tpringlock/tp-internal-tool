@@ -2,7 +2,12 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { requireBillingUser } from "@/lib/auth/dal";
-import { defaultBillingMonth, nextMonth, recentMonths } from "@/lib/billing/periods";
+import {
+  contractPeriod,
+  defaultBillingMonth,
+  nextMonth,
+  recentMonths,
+} from "@/lib/billing/periods";
 import {
   contractLabel,
   getContractLabels,
@@ -51,6 +56,10 @@ export default async function BillingCalculatePage({
   const defaultMonth = sp.month && months.includes(sp.month) ? sp.month : suggested;
   const defaultContractId =
     active.find((c) => c.id === sp.contract)?.id ?? active[0]?.id ?? "";
+  // Custom range defaults to "the running period so far": its start -> today.
+  const today = todayIct();
+  const running = contractPeriod(nextMonth(suggested), 26, null);
+  const defaultRange = { from: running.from, to: today };
 
   const rows = recent ?? [];
   const [labels, names] = await Promise.all([
@@ -95,6 +104,7 @@ export default async function BillingCalculatePage({
               months={months}
               defaultContractId={defaultContractId}
               defaultMonth={defaultMonth}
+              defaultRange={defaultRange}
             />
           </CardBody>
         </Card>
