@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { WorkspaceContent } from "@/components/workspace-content";
 import { documentCountsByClient } from "@/lib/documents/counts";
 import { ClientSidebar, type SidebarClient } from "./client-sidebar";
+import { ClientMessages } from "@/components/client-messages";
 
 /**
  * Documents workspace shell: the customer ("công ty") sidebar on the left and
@@ -44,11 +45,13 @@ export default async function DocumentsLayout({
   );
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-      <Suspense>
-        <ClientSidebar clients={clients} canManage={canManage} />
-      </Suspense>
-      <WorkspaceContent>{children}</WorkspaceContent>
-    </div>
+    <ClientMessages module="documents">
+      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+        <Suspense>
+          <ClientSidebar clients={clients} canManage={canManage} />
+        </Suspense>
+        <WorkspaceContent>{children}</WorkspaceContent>
+      </div>
+    </ClientMessages>
   );
 }

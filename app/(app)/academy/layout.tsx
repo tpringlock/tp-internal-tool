@@ -4,6 +4,7 @@ import { canManageContent } from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/server";
 import { WorkspaceContent } from "@/components/workspace-content";
 import { AcademyNav, type AcademyCategory } from "./academy-nav";
+import { ClientMessages } from "@/components/client-messages";
 
 /**
  * TP Academy workspace shell: library/category sidebar + content. Course and
@@ -41,17 +42,19 @@ export default async function AcademyLayout({
   const completed = enrollments.filter((e) => e.completed_at).length;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-      <Suspense>
-        <AcademyNav
-          categories={categories}
-          totalCourses={courseRows?.length ?? 0}
-          inProgress={enrollments.length - completed}
-          completed={completed}
-          canManage={canManageContent(user.profile.role)}
-        />
-      </Suspense>
-      <WorkspaceContent>{children}</WorkspaceContent>
-    </div>
+    <ClientMessages module="academy">
+      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+        <Suspense>
+          <AcademyNav
+            categories={categories}
+            totalCourses={courseRows?.length ?? 0}
+            inProgress={enrollments.length - completed}
+            completed={completed}
+            canManage={canManageContent(user.profile.role)}
+          />
+        </Suspense>
+        <WorkspaceContent>{children}</WorkspaceContent>
+      </div>
+    </ClientMessages>
   );
 }

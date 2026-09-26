@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ToastProvider } from "@/components/ui/toast";
+import { ClientMessages } from "@/components/client-messages";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -35,9 +35,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <meta name="apple-mobile-web-app-title" content="TP Tools" />
       </head>
       <body className="min-h-full flex flex-col">
-        <NextIntlClientProvider>
+        <ClientMessages>
           <ToastProvider>{children}</ToastProvider>
-        </NextIntlClientProvider>
+        </ClientMessages>
       </body>
     </html>
   );
