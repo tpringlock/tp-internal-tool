@@ -73,7 +73,36 @@ export default async function LessonPage({
   const supabase = await createClient();
   const t = await getTranslations("Academy");
 
-  const tree = await getCourseTree(supabase, courseId);
+  // Every query below depends only on the route params and the user, so they
+  // run in one parallel round; access checks are applied to the results below
+  // in the same order as before (course -> lesson in course -> chapter unlock).
+  const [
+    tree,
+    completedIds,
+    passedIds,
+    courseFiles,
+    note,
+    { data: lesson },
+    { data: fileData },
+  ] = await Promise.all([
+    getCourseTree(supabase, courseId),
+    getCompletedLessonIds(supabase, user.id, courseId),
+    getPassedChapterIds(supabase, user.id, courseId),
+    getCourseFiles(supabase, courseId),
+    getLessonNote(supabase, user.id, lessonId),
+    // Full lesson row (video + description) and its PDFs.
+    supabase
+      .from("lessons")
+      .select("*")
+      .eq("id", lessonId)
+      .eq("course_id", courseId)
+      .single<Lesson>(),
+    supabase
+      .from("lesson_files")
+      .select("id, file_name, file_size")
+      .eq("lesson_id", lessonId)
+      .order("created_at", { ascending: true }),
+  ]);
   if (!tree) notFound();
   const { course, chapters, orderedLessons } = tree;
 
@@ -85,11 +114,6 @@ export default async function LessonPage({
   const currentChapterIndex = chapterIndexByLesson.get(lessonId);
   if (currentChapterIndex === undefined) notFound();
 
-  const [completedIds, passedIds, courseFiles] = await Promise.all([
-    getCompletedLessonIds(supabase, user.id, courseId),
-    getPassedChapterIds(supabase, user.id, courseId),
-    getCourseFiles(supabase, courseId),
-  ]);
   const unlockFlags = chapterUnlockFlags(chapters, completedIds, passedIds);
 
   // Server-side gating: a locked chapter's lessons are not reachable by URL.
@@ -97,22 +121,7 @@ export default async function LessonPage({
     redirect(`/academy/${courseId}`);
   }
 
-  const note = await getLessonNote(supabase, user.id, lessonId);
-
-  // Full lesson row (video + description) and its PDFs.
-  const { data: lesson } = await supabase
-    .from("lessons")
-    .select("*")
-    .eq("id", lessonId)
-    .eq("course_id", courseId)
-    .single<Lesson>();
   if (!lesson) notFound();
-
-  const { data: fileData } = await supabase
-    .from("lesson_files")
-    .select("id, file_name, file_size")
-    .eq("lesson_id", lessonId)
-    .order("created_at", { ascending: true });
   const files = (fileData ?? []) as Pick<
     LessonFile,
     "id" | "file_name" | "file_size"

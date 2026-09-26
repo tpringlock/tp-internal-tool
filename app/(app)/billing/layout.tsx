@@ -3,6 +3,7 @@ import { requireBillingUser } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { WorkspaceContent } from "@/components/workspace-content";
 import { BillingNav } from "./billing-nav";
+import { ClientMessages } from "@/components/client-messages";
 
 /**
  * "Tính hóa đơn tự động" workspace shell. Guards every /billing route:
@@ -31,15 +32,17 @@ export default async function BillingLayout({
   ]);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-      <Suspense>
-        <BillingNav
-          contractCount={contracts.count ?? 0}
-          uploadCount={uploads.count ?? 0}
-          draftCount={drafts.count ?? 0}
-        />
-      </Suspense>
-      <WorkspaceContent>{children}</WorkspaceContent>
-    </div>
+    <ClientMessages module="billing">
+      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+        <Suspense>
+          <BillingNav
+            contractCount={contracts.count ?? 0}
+            uploadCount={uploads.count ?? 0}
+            draftCount={drafts.count ?? 0}
+          />
+        </Suspense>
+        <WorkspaceContent>{children}</WorkspaceContent>
+      </div>
+    </ClientMessages>
   );
 }

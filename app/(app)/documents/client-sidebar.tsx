@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Building2, Plus, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -24,6 +24,36 @@ function fold(s: string): string {
     .replace(/đ/g, "d")
     .replace(/Đ/g, "d")
     .toLowerCase();
+}
+
+const CLIENT_ICON_ID = "client-sidebar-building";
+
+/**
+ * lucide's Building2 as a single <symbol>. Every customer row references it
+ * with <use> instead of inlining the full five-path SVG, which kept ~560 B of
+ * markup and 6 DOM nodes per row in a list that can hold hundreds of rows.
+ * Paths and stroke attributes match lucide-react's Building2 exactly.
+ */
+function ClientIconSymbol() {
+  return (
+    <svg aria-hidden width="0" height="0" className="absolute">
+      <symbol
+        id={CLIENT_ICON_ID}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M10 12h4" />
+        <path d="M10 8h4" />
+        <path d="M14 21v-3a2 2 0 0 0-4 0v3" />
+        <path d="M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2" />
+        <path d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16" />
+      </symbol>
+    </svg>
+  );
 }
 
 /** Customer id from /documents/clients/<id>[/...], if any. */
@@ -51,6 +81,9 @@ export function ClientSidebar({
 
   return (
     <>
+      {/* Rendered once here: WorkspaceAside mounts the list twice while the
+          mobile drawer is open, and the symbol id must stay unique. */}
+      <ClientIconSymbol />
       <WorkspaceAside
         label={t("customers")}
         current={active ? active.name : t("chooseCustomer")}
@@ -92,6 +125,7 @@ function ClientList({
   onAdd: () => void;
 }) {
   const t = useTranslations("DocWorkspace");
+  const router = useRouter();
   const [query, setQuery] = useState("");
 
   const visible = useMemo(() => {
@@ -146,10 +180,18 @@ function ClientList({
         ) : (
           visible.map((c) => {
             const isActive = c.id === activeId;
+            const href = `/documents/clients/${c.id}`;
             return (
+              // Viewport prefetch is off: the list can hold hundreds of
+              // customers and each prefetch is a dynamic server render. Warm
+              // the route on intent (hover/focus/touch) instead.
               <Link
                 key={c.id}
-                href={`/documents/clients/${c.id}`}
+                href={href}
+                prefetch={false}
+                onMouseEnter={() => router.prefetch(href)}
+                onFocus={() => router.prefetch(href)}
+                onTouchStart={() => router.prefetch(href)}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
                   "flex items-center gap-3 rounded-xl border px-3 py-3 transition-colors",
@@ -166,7 +208,9 @@ function ClientList({
                       : "bg-slate-100 text-slate-500",
                   )}
                 >
-                  <Building2 className="h-[18px] w-[18px]" aria-hidden />
+                  <svg className="h-[18px] w-[18px]" aria-hidden>
+                    <use href={`#${CLIENT_ICON_ID}`} />
+                  </svg>
                 </span>
                 <span className="min-w-0 flex-1">
                   <span

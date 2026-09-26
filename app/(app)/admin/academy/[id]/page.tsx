@@ -28,6 +28,13 @@ import { ModuleEyebrow } from "@/components/page-title";
 
 type FileRow = Pick<LessonFile, "id" | "lesson_id" | "file_name" | "file_size">;
 type CourseDocRow = Pick<CourseFile, "id" | "file_name" | "file_size">;
+interface QuestionRow {
+  id: string;
+  chapter_id: string;
+  prompt: string;
+  position: number;
+  quiz_options: AdminQuizQuestion["options"] | null;
+}
 
 export default async function AdminCoursePage({
   params,
@@ -40,37 +47,61 @@ export default async function AdminCoursePage({
   const supabase = await createClient();
   const t = await getTranslations("AcademyAdmin");
 
-  const { data: course } = await supabase
-    .from("courses")
-    .select("*")
-    .eq("id", id)
-    .single<Course>();
+  // One parallel round: lesson files and quiz questions are filtered through
+  // their parent's course_id (inner join) instead of waiting for the lesson /
+  // chapter id lists, and quiz options are embedded in their question.
+  const [
+    { data: course },
+    { data: chapterData },
+    { data: lessonData },
+    { data: fileData },
+    { data: questionData },
+    { data: courseDocData },
+  ] = await Promise.all([
+    supabase.from("courses").select("*").eq("id", id).single<Course>(),
+    supabase
+      .from("chapters")
+      .select("*")
+      .eq("course_id", id)
+      .order("position", { ascending: true }),
+    supabase
+      .from("lessons")
+      .select("*")
+      .eq("course_id", id)
+      .order("position", { ascending: true }),
+    supabase
+      .from("lesson_files")
+      .select("id, lesson_id, file_name, file_size, lessons!inner ( course_id )")
+      .eq("lessons.course_id", id)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("quiz_questions")
+      .select(
+        `id, chapter_id, prompt, position,
+         chapters!inner ( course_id ),
+         quiz_options ( id, label, is_correct, position )`,
+      )
+      .eq("chapters.course_id", id)
+      .order("position", { ascending: true })
+      .order("position", { referencedTable: "quiz_options", ascending: true }),
+    supabase
+      .from("course_files")
+      .select("id, file_name, file_size")
+      .eq("course_id", id)
+      .order("created_at", { ascending: true }),
+  ]);
   if (!course) notFound();
 
-  const { data: chapterData } = await supabase
-    .from("chapters")
-    .select("*")
-    .eq("course_id", id)
-    .order("position", { ascending: true });
   const chapters = (chapterData ?? []) as Chapter[];
-
-  const { data: lessonData } = await supabase
-    .from("lessons")
-    .select("*")
-    .eq("course_id", id)
-    .order("position", { ascending: true });
   const lessons = (lessonData ?? []) as Lesson[];
-
-  const lessonIds = lessons.map((l) => l.id);
-  let files: FileRow[] = [];
-  if (lessonIds.length > 0) {
-    const { data: fileData } = await supabase
-      .from("lesson_files")
-      .select("id, lesson_id, file_name, file_size")
-      .in("lesson_id", lessonIds)
-      .order("created_at", { ascending: true });
-    files = (fileData ?? []) as FileRow[];
-  }
+  const files: FileRow[] = ((fileData ?? []) as unknown as FileRow[]).map(
+    (f) => ({
+      id: f.id,
+      lesson_id: f.lesson_id,
+      file_name: f.file_name,
+      file_size: f.file_size,
+    }),
+  );
   const filesByLesson = new Map<string, FileRow[]>();
   for (const file of files) {
     const list = filesByLesson.get(file.lesson_id) ?? [];
@@ -85,55 +116,24 @@ export default async function AdminCoursePage({
   }
 
   // Quiz questions + options grouped by chapter (content managers see answers).
-  const chapterIds = chapters.map((c) => c.id);
+  const questions = (questionData ?? []) as unknown as QuestionRow[];
   const quizByChapter = new Map<string, AdminQuizQuestion[]>();
-  if (chapterIds.length > 0) {
-    const { data: questionData } = await supabase
-      .from("quiz_questions")
-      .select("id, chapter_id, prompt, position")
-      .in("chapter_id", chapterIds)
-      .order("position", { ascending: true });
-    const questions = questionData ?? [];
-    const questionIds = questions.map((q) => q.id);
-
-    const optionsByQuestion = new Map<
-      string,
-      AdminQuizQuestion["options"]
-    >();
-    if (questionIds.length > 0) {
-      const { data: optionData } = await supabase
-        .from("quiz_options")
-        .select("id, question_id, label, is_correct, position")
-        .in("question_id", questionIds)
-        .order("position", { ascending: true });
-      for (const o of optionData ?? []) {
-        const list = optionsByQuestion.get(o.question_id) ?? [];
-        list.push({
-          id: o.id,
-          label: o.label,
-          is_correct: o.is_correct,
-          position: o.position,
-        });
-        optionsByQuestion.set(o.question_id, list);
-      }
-    }
-    for (const q of questions) {
-      const list = quizByChapter.get(q.chapter_id) ?? [];
-      list.push({
-        id: q.id,
-        prompt: q.prompt,
-        position: q.position,
-        options: optionsByQuestion.get(q.id) ?? [],
-      });
-      quizByChapter.set(q.chapter_id, list);
-    }
+  for (const q of questions) {
+    const list = quizByChapter.get(q.chapter_id) ?? [];
+    list.push({
+      id: q.id,
+      prompt: q.prompt,
+      position: q.position,
+      options: (q.quiz_options ?? []).map((o) => ({
+        id: o.id,
+        label: o.label,
+        is_correct: o.is_correct,
+        position: o.position,
+      })),
+    });
+    quizByChapter.set(q.chapter_id, list);
   }
 
-  const { data: courseDocData } = await supabase
-    .from("course_files")
-    .select("id, file_name, file_size")
-    .eq("course_id", id)
-    .order("created_at", { ascending: true });
   const courseDocs = (courseDocData ?? []) as CourseDocRow[];
 
   const published = course.status === "published";
