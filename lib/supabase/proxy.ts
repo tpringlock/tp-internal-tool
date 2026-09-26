@@ -51,11 +51,13 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  // IMPORTANT: getUser() must be called to refresh the token. Do not add other
-  // logic between client creation and this call.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // IMPORTANT: getClaims() must be called to refresh the token. Do not add other
+  // logic between client creation and this call. It refreshes an expired
+  // session, then verifies the JWT signature locally against the project's
+  // cached JWKS (asymmetric keys), so unlike getUser() it costs no Auth
+  // round-trip on the common path.
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims ?? null;
 
   const { pathname } = request.nextUrl;
   const isPublic = matches(pathname, PUBLIC_PREFIXES);

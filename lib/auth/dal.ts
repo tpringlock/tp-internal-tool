@@ -16,23 +16,26 @@ export interface SessionUser {
  * Memoised per request with React cache so repeated calls in one render pass
  * hit Supabase once. Deactivated accounts are treated as signed-out (they are
  * also banned at the auth layer, so a live session should not exist).
+ *
+ * The session JWT is verified locally with getClaims() (signature + expiry via
+ * the cached JWKS) instead of a getUser() round-trip to Supabase Auth; the
+ * profile lookup below still re-checks is_active and the role on every request.
  */
 export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims;
+  if (!claims?.sub) return null;
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", user.id)
+    .eq("id", claims.sub)
     .single();
 
   if (!profile || !profile.is_active) return null;
 
-  return { id: user.id, email: user.email ?? null, profile };
+  return { id: claims.sub, email: claims.email ?? null, profile };
 });
 
 /** Require a signed-in user or redirect to the login page. */
