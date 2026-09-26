@@ -26,6 +26,36 @@ function fold(s: string): string {
     .toLowerCase();
 }
 
+const CLIENT_ICON_ID = "client-sidebar-building";
+
+/**
+ * lucide's Building2 as a single <symbol>. Every customer row references it
+ * with <use> instead of inlining the full five-path SVG, which kept ~560 B of
+ * markup and 6 DOM nodes per row in a list that can hold hundreds of rows.
+ * Paths and stroke attributes match lucide-react's Building2 exactly.
+ */
+function ClientIconSymbol() {
+  return (
+    <svg aria-hidden width="0" height="0" className="absolute">
+      <symbol
+        id={CLIENT_ICON_ID}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M10 12h4" />
+        <path d="M10 8h4" />
+        <path d="M14 21v-3a2 2 0 0 0-4 0v3" />
+        <path d="M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2" />
+        <path d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16" />
+      </symbol>
+    </svg>
+  );
+}
+
 /** Customer id from /documents/clients/<id>[/...], if any. */
 function activeClientId(pathname: string): string | undefined {
   const m = pathname.match(/^\/documents\/clients\/([^/]+)/);
@@ -51,6 +81,9 @@ export function ClientSidebar({
 
   return (
     <>
+      {/* Rendered once here: WorkspaceAside mounts the list twice while the
+          mobile drawer is open, and the symbol id must stay unique. */}
+      <ClientIconSymbol />
       <WorkspaceAside
         label={t("customers")}
         current={active ? active.name : t("chooseCustomer")}
@@ -175,7 +208,9 @@ function ClientList({
                       : "bg-slate-100 text-slate-500",
                   )}
                 >
-                  <Building2 className="h-[18px] w-[18px]" aria-hidden />
+                  <svg className="h-[18px] w-[18px]" aria-hidden>
+                    <use href={`#${CLIENT_ICON_ID}`} />
+                  </svg>
                 </span>
                 <span className="min-w-0 flex-1">
                   <span
