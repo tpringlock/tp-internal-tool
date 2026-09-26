@@ -77,17 +77,26 @@ export default async function ClientWorkspacePage({
   const t = await getTranslations("DocWorkspace");
   const ts = await getTranslations("Shares");
 
-  const { data: client } = await supabase
-    .from("clients")
-    .select("id, name, code, tax_code")
-    .eq("id", clientId)
-    .single<ClientRow>();
-  if (!client) notFound();
+  // Search results deep-link with ?highlight=<docId> but no page. The lookup
+  // of that document only needs the route params, so it joins the first round.
+  const wantsHighlight = tab === "files" && Boolean(highlight) && !sp.page;
 
-  // Projects ("thư mục") the user may see — RLS: all for admins/managers,
-  // assigned ones for employees — plus per-project counts and total size from
-  // the documents the user can see.
-  const [{ data: projectData }, projStats] = await Promise.all([
+  // First round, all independent of each other: the client, the projects
+  // ("thư mục") the user may see — RLS: all for admins/managers, assigned ones
+  // for employees — per-project counts and total size from the documents the
+  // user can see, the highlighted document and the folder share links.
+  const [
+    { data: client },
+    { data: projectData },
+    projStats,
+    { data: hlDoc },
+    { data: shareData },
+  ] = await Promise.all([
+    supabase
+      .from("clients")
+      .select("id, name, code, tax_code")
+      .eq("id", clientId)
+      .single<ClientRow>(),
     supabase
       .from("projects")
       .select("id, name, status")
@@ -95,7 +104,23 @@ export default async function ClientWorkspacePage({
       .order("status")
       .order("name"),
     documentStatsByProject(supabase, clientId),
+    wantsHighlight
+      ? supabase
+          .from("documents")
+          .select("created_at, projects!inner ( client_id )")
+          .eq("id", highlight)
+          .eq("projects.client_id", clientId)
+          .single<{ created_at: string }>()
+      : Promise.resolve({ data: null }),
+    tab === "share"
+      ? supabase
+          .from("folder_share_links")
+          .select("id, token, expires_at, revoked_at, created_at")
+          .eq("client_id", clientId)
+          .order("created_at", { ascending: false })
+      : Promise.resolve({ data: null }),
   ]);
+  if (!client) notFound();
   const { countByProject, totalFiles, totalBytes } = projStats;
 
   // Employees only see projects they belong to; for them hide assigned-but-
@@ -110,26 +135,18 @@ export default async function ClientWorkspacePage({
   // ---- Documents (files tab) -------------------------------------------
   let pageNum = Math.max(1, Number(sp.page) || 1);
 
-  // Search results deep-link with ?highlight=<docId> but no page; locate the
-  // page containing that document (created_at desc) so it is rendered.
-  if (tab === "files" && highlight && !sp.page && !projectId) {
-    const { data: hlDoc } = await supabase
+  // Locate the page containing the highlighted document (created_at desc) so
+  // it is rendered.
+  if (wantsHighlight && !projectId && hlDoc) {
+    const { count: newer } = await supabase
       .from("documents")
-      .select("created_at, projects!inner ( client_id )")
-      .eq("id", highlight)
+      .select("id, projects!inner ( client_id )", {
+        count: "exact",
+        head: true,
+      })
       .eq("projects.client_id", clientId)
-      .single<{ created_at: string }>();
-    if (hlDoc) {
-      const { count: newer } = await supabase
-        .from("documents")
-        .select("id, projects!inner ( client_id )", {
-          count: "exact",
-          head: true,
-        })
-        .eq("projects.client_id", clientId)
-        .gt("created_at", hlDoc.created_at);
-      pageNum = Math.floor((newer ?? 0) / PAGE_SIZE) + 1;
-    }
+      .gt("created_at", hlDoc.created_at);
+    pageNum = Math.floor((newer ?? 0) / PAGE_SIZE) + 1;
   }
 
   let documents: DocumentTableRow[] = [];
@@ -162,21 +179,13 @@ export default async function ClientWorkspacePage({
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   // ---- Share links (share tab) -----------------------------------------
-  let shareLinks: FolderShareLinkView[] = [];
-  if (tab === "share") {
-    const { data: shareData } = await supabase
-      .from("folder_share_links")
-      .select("id, token, expires_at, revoked_at, created_at")
-      .eq("client_id", clientId)
-      .order("created_at", { ascending: false });
-    shareLinks = (shareData ?? []).map((l) => ({
-      id: l.id,
-      url: `${env.siteUrl()}/share/folder/${l.token}`,
-      expires_at: l.expires_at,
-      revoked_at: l.revoked_at,
-      created_at: l.created_at,
-    }));
-  }
+  const shareLinks: FolderShareLinkView[] = (shareData ?? []).map((l) => ({
+    id: l.id,
+    url: `${env.siteUrl()}/share/folder/${l.token}`,
+    expires_at: l.expires_at,
+    revoked_at: l.revoked_at,
+    created_at: l.created_at,
+  }));
 
   const base = `/documents/clients/${clientId}`;
   const projectHref = (id?: string) => (id ? `${base}?project=${id}` : base);
