@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Building2, Plus, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -92,6 +92,7 @@ function ClientList({
   onAdd: () => void;
 }) {
   const t = useTranslations("DocWorkspace");
+  const router = useRouter();
   const [query, setQuery] = useState("");
 
   const visible = useMemo(() => {
@@ -146,10 +147,18 @@ function ClientList({
         ) : (
           visible.map((c) => {
             const isActive = c.id === activeId;
+            const href = `/documents/clients/${c.id}`;
             return (
+              // Viewport prefetch is off: the list can hold hundreds of
+              // customers and each prefetch is a dynamic server render. Warm
+              // the route on intent (hover/focus/touch) instead.
               <Link
                 key={c.id}
-                href={`/documents/clients/${c.id}`}
+                href={href}
+                prefetch={false}
+                onMouseEnter={() => router.prefetch(href)}
+                onFocus={() => router.prefetch(href)}
+                onTouchStart={() => router.prefetch(href)}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
                   "flex items-center gap-3 rounded-xl border px-3 py-3 transition-colors",
