@@ -42,11 +42,6 @@ export default async function DocumentsListPage({
   const t = await getTranslations("Documents");
   const dt = await getTranslations("DocTypes");
 
-  const { data: projectOptions } = await supabase
-    .from("projects")
-    .select("id, name")
-    .order("name");
-
   let query = supabase
     .from("documents")
     .select(
@@ -62,7 +57,11 @@ export default async function DocumentsListPage({
   if (type) query = query.eq("doc_type", type as DocType);
   if (q) query = query.ilike("canonical_name", `%${q}%`);
 
-  const { data, count } = await query;
+  // The project filter options and the page of documents are independent.
+  const [{ data: projectOptions }, { data, count }] = await Promise.all([
+    supabase.from("projects").select("id, name").order("name"),
+    query,
+  ]);
   const documents = (data ?? []) as unknown as DocRow[];
   const total = count ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
