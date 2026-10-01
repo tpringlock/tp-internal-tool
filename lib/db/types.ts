@@ -479,6 +479,142 @@ export type BillingMisaMonthFile = {
   superseded_at: string | null;
 };
 
+// ───────────── HSTT export (0038) ─────────────
+// Money columns are bigint (integer VND); supabase-js returns them as numbers.
+
+/** Bên B (TP): the single row id = 1. Only admins update it. */
+export type CompanyProfile = {
+  id: 1;
+  ten_in_hoa: string;
+  /** ĐNTT header, contains a line break. */
+  ten_2_dong: string;
+  ten_thuong: string;
+  ten_thu_huong: string;
+  dia_chi: string;
+  dia_chi_ngan: string;
+  dien_thoai: string;
+  so_tk: string;
+  /** Bank + branch, printed after "Tại ". */
+  ngan_hang: string;
+  mst: string;
+  dai_dien: string;
+  chuc_vu: string;
+  noi_lap: string;
+  updated_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+/** Bên A. One customer can have several contracts. */
+export type BillingCustomer = {
+  id: string;
+  ten_in_hoa: string;
+  ten_thuong: string;
+  /** Used in the file name "HSTT T08.2026 - {ten_rut_gon} - TP.xlsx". */
+  ten_rut_gon: string;
+  dia_chi: string;
+  dien_thoai: string;
+  so_tk: string;
+  ngan_hang: string;
+  mst: string;
+  dai_dien: string;
+  chuc_vu: string;
+  note: string;
+  created_by: string | null;
+  updated_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+/** HSTT fields of a contract (1:1 with billing_contracts, optional). */
+export type BillingContractHstt = {
+  contract_id: string;
+  customer_id: string | null;
+  contract_type: string;
+  contract_date: string | null;
+  du_an_ten: string;
+  du_an_dia_chi: string;
+  /** null = the "Căn cứ" sentence is generated. */
+  can_cu_override: string | null;
+  vat_percent: number;
+  /** One note for the whole ĐCCN "Đã tạm ứng" line. */
+  advances_note: string;
+  /** Debt at the END of opening_debt_month ("YYYY-MM"); both null or both set. */
+  opening_debt: number | null;
+  opening_debt_month: string | null;
+  updated_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type BillingTransportPrice = {
+  id: string;
+  contract_id: string;
+  name: string;
+  unit: string;
+  unit_price: number;
+  sort_order: number;
+  active: boolean;
+  updated_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+/** One advance paid by Bên A; the HSTT writes their sum as =a+b+... */
+export type BillingContractAdvance = {
+  id: string;
+  contract_id: string;
+  amount: number;
+  paid_on: string | null;
+  sort_order: number;
+  updated_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+/** Typed per period, keyed like the confirmed calculation (contract, period_from). */
+export type BillingPeriodInput = {
+  id: string;
+  contract_id: string;
+  period_from: string;
+  period_to: string;
+  paid_in_period: number;
+  /** null = computed from the chain of confirmed periods. */
+  opening_debt_override: number | null;
+  note: string;
+  updated_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type BillingTransportChargeMode = "now" | "end_of_term";
+
+export type BillingPeriodTransport = {
+  id: string;
+  period_input_id: string;
+  transport_price_id: string;
+  /** Column G; null = blank cell. */
+  trips: number | null;
+  /** Column F ("lũy kế"). */
+  cumulative_trips: number | null;
+  /** Copied from billing_transport_prices when entered. */
+  unit_price: number;
+  charge_mode: BillingTransportChargeMode;
+  note: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type BillingPeriodDeduction = {
+  id: string;
+  period_input_id: string;
+  label: string;
+  amount: number;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
 type Insert<T, Optional extends keyof T> = Omit<T, Optional> &
   Partial<Pick<T, Optional>>;
 
@@ -785,6 +921,88 @@ export interface Database {
           "id" | "status" | "voucher_count" | "catalog" | "created_at" | "superseded_by" | "superseded_at"
         >,
         Partial<Pick<BillingMisaMonthFile, "status" | "voucher_count" | "catalog">>
+      >;
+      company_profile: Table<
+        CompanyProfile,
+        // No insert policy: the row is created by 0039.
+        Record<string, never>,
+        Partial<Omit<CompanyProfile, "id" | "created_at" | "updated_at">>
+      >;
+      billing_customers: Table<
+        BillingCustomer,
+        Insert<
+          BillingCustomer,
+          | "id"
+          | "ten_thuong"
+          | "ten_rut_gon"
+          | "dia_chi"
+          | "dien_thoai"
+          | "so_tk"
+          | "ngan_hang"
+          | "mst"
+          | "dai_dien"
+          | "chuc_vu"
+          | "note"
+          | "created_by"
+          | "updated_by"
+          | "created_at"
+          | "updated_at"
+        >,
+        Partial<BillingCustomer>
+      >;
+      billing_contract_hstt: Table<
+        BillingContractHstt,
+        Insert<
+          BillingContractHstt,
+          | "customer_id"
+          | "contract_type"
+          | "contract_date"
+          | "du_an_ten"
+          | "du_an_dia_chi"
+          | "can_cu_override"
+          | "vat_percent"
+          | "advances_note"
+          | "opening_debt"
+          | "opening_debt_month"
+          | "updated_by"
+          | "created_at"
+          | "updated_at"
+        >,
+        Partial<BillingContractHstt>
+      >;
+      billing_transport_prices: Table<
+        BillingTransportPrice,
+        Insert<
+          BillingTransportPrice,
+          "id" | "unit" | "sort_order" | "active" | "updated_by" | "created_at" | "updated_at"
+        >,
+        Partial<BillingTransportPrice>
+      >;
+      billing_contract_advances: Table<
+        BillingContractAdvance,
+        Insert<BillingContractAdvance, "id" | "paid_on" | "sort_order" | "updated_by" | "created_at" | "updated_at">,
+        Partial<BillingContractAdvance>
+      >;
+      billing_period_inputs: Table<
+        BillingPeriodInput,
+        Insert<
+          BillingPeriodInput,
+          "id" | "paid_in_period" | "opening_debt_override" | "note" | "updated_by" | "created_at" | "updated_at"
+        >,
+        Partial<BillingPeriodInput>
+      >;
+      billing_period_transport: Table<
+        BillingPeriodTransport,
+        Insert<
+          BillingPeriodTransport,
+          "id" | "trips" | "cumulative_trips" | "charge_mode" | "note" | "created_at" | "updated_at"
+        >,
+        Partial<BillingPeriodTransport>
+      >;
+      billing_period_deductions: Table<
+        BillingPeriodDeduction,
+        Insert<BillingPeriodDeduction, "id" | "sort_order" | "created_at" | "updated_at">,
+        Partial<BillingPeriodDeduction>
       >;
     };
     Views: {
