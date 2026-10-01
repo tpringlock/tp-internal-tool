@@ -18,6 +18,7 @@
     "admin": "Admin",
     "manager": "Quản lý",
     "accountant": "Kế toán",
+    "billingViewer": "Chỉ xem",
     "signOut": "Đăng xuất",
     "openUserMenu": "Mở menu người dùng"
   },
@@ -354,6 +355,7 @@
     "adminRole": "Quản trị viên",
     "managerRole": "Quản lý",
     "accountantRole": "Kế toán",
+    "billingViewerRole": "Chỉ xem (Tính hóa đơn)",
     "updateRole": "Cập nhật",
     "roleChanged": "Đã cập nhật vai trò.",
     "changeRoleTitle": "Đổi vai trò?",
@@ -782,6 +784,7 @@
     "rangeDeleted": "Đã xóa khoảng ngày miễn tính.",
     "scopeNotice": "Giai đoạn này ứng dụng chỉ tính <b>tiền thuê thiết bị</b> (mục I của BB đối chiếu giá trị). Chưa gồm vận chuyển, VAT, giảm trừ, BB công nợ và giấy đề nghị thanh toán.",
     "calculateTitle": "Tính tiền thuê thiết bị",
+    "readOnlyNotice": "Tài khoản Chỉ xem: bạn xem được bản tính, hợp đồng, bảng giá, file nguồn và tải Excel, nhưng không tính tiền, tải file lên hay sửa dữ liệu. Cần thay đổi gì, hãy nhờ kế toán hoặc admin.",
     "calculateSubtitle": "Tải sổ chi tiết vật tư hàng hóa từ MISA, chọn hợp đồng và tháng, hệ thống tính tiền thuê theo từng phiếu.",
     "step1Title": "1. Tải file MISA",
     "step1Hint": "Sổ chi tiết vật tư hàng hóa, Kho «Tất cả», file .xlsx. Có thể tải 2 file theo tháng (ví dụ tháng 8 + tháng 9).",
@@ -969,6 +972,7 @@
   },
   "BillingNav": {
     "subtitle": "Giai đoạn 1: tiền thuê thiết bị",
+    "readOnlyBadge": "Chỉ xem",
     "sectionRent": "Tiền thuê",
     "calculate": "Tính tiền thuê",
     "history": "Lịch sử bản tính",

@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { AlertTriangle, Calculator, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { requireBillingUser } from "@/lib/auth/dal";
+import { requireBillingViewer } from "@/lib/auth/dal";
+import { canEditBilling } from "@/lib/auth/roles";
 import { deleteBillingContract } from "@/app/actions/billing";
 import { parseCodeList } from "@/lib/billing/contract-config";
 import { contractLabel, getProfileNames } from "@/lib/billing/queries";
@@ -23,7 +24,8 @@ export default async function BillingContractPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ add?: string }>;
 }) {
-  const user = await requireBillingUser();
+  const user = await requireBillingViewer();
+  const canEdit = canEditBilling(user.profile.role);
   const { id } = await params;
   const { add = "" } = await searchParams;
   const t = await getTranslations("Billing");
@@ -75,6 +77,7 @@ export default async function BillingContractPage({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          {canEdit && (
           <Link
             href={`/billing?contract=${contract.id}`}
             className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-hover"
@@ -82,6 +85,7 @@ export default async function BillingContractPage({
             <Calculator className="h-4 w-4" aria-hidden />
             {t("calculateForContract")}
           </Link>
+          )}
           {user.profile.role === "admin" && (
             <ActionButton
               action={deleteBillingContract}
@@ -125,7 +129,8 @@ export default async function BillingContractPage({
               ma_hang: i.ma_hang,
             }))}
             excluded={(excluded ?? []).map((e) => e.ma_hang)}
-            addCodes={parseCodeList(add)}
+            addCodes={canEdit ? parseCodeList(add) : []}
+            readOnly={!canEdit}
           />
         </CardBody>
       </Card>
@@ -136,7 +141,7 @@ export default async function BillingContractPage({
             <CardTitle>{t("contractInfo")}</CardTitle>
           </CardHeader>
           <CardBody>
-            <ContractForm contract={contract} />
+            <ContractForm contract={contract} readOnly={!canEdit} />
           </CardBody>
         </Card>
 
@@ -146,11 +151,13 @@ export default async function BillingContractPage({
             <p className="mt-1 text-sm text-slate-500">{t("contractRangesSubtitle")}</p>
           </CardHeader>
           <CardBody className="p-0">
-            <RangesTable ranges={ranges ?? []} />
+            <RangesTable ranges={ranges ?? []} canDelete={canEdit} />
           </CardBody>
-          <CardBody className="border-t border-slate-100">
-            <RangeForm contractId={contract.id} />
-          </CardBody>
+          {canEdit && (
+            <CardBody className="border-t border-slate-100">
+              <RangeForm contractId={contract.id} />
+            </CardBody>
+          )}
         </Card>
       </div>
 

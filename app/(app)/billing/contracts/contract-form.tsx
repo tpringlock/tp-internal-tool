@@ -15,9 +15,10 @@ import { Input, Select } from "@/components/ui/input";
 
 /**
  * Contract header form: create (no `contract`) or edit. The price lines are
- * edited separately (ContractConfigEditor).
+ * edited separately (ContractConfigEditor). `readOnly` ("Chỉ xem") shows the
+ * same fields disabled, without the save button.
  */
-export function ContractForm({ contract }: { contract?: BillingContract }) {
+export function ContractForm({ contract, readOnly = false }: { contract?: BillingContract; readOnly?: boolean }) {
   const t = useTranslations("Billing");
   const [state, action, pending] = useActionState<FormState, FormData>(
     contract ? updateBillingContract : createBillingContract,
@@ -31,7 +32,7 @@ export function ContractForm({ contract }: { contract?: BillingContract }) {
       {state.success && <Alert tone="success">{state.success}</Alert>}
       {state.error && <Alert tone="error">{state.error}</Alert>}
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <fieldset disabled={readOnly} className="grid min-w-0 gap-4 sm:grid-cols-2">
         <Field label={t("customerName")} htmlFor="customer_name" error={err("customer_name")}>
           <Input id="customer_name" name="customer_name" defaultValue={contract?.customer_name} required />
         </Field>
@@ -89,11 +90,13 @@ export function ContractForm({ contract }: { contract?: BillingContract }) {
             </Select>
           </Field>
         )}
-      </div>
+      </fieldset>
 
-      <Button type="submit" loading={pending}>
-        {contract ? t("save") : t("createContract")}
-      </Button>
+      {!readOnly && (
+        <Button type="submit" loading={pending}>
+          {contract ? t("save") : t("createContract")}
+        </Button>
+      )}
     </form>
   );
 }

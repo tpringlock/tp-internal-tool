@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { requireBillingUser } from "@/lib/auth/dal";
+import { requireBillingUser, requireBillingViewer } from "@/lib/auth/dal";
 import { logActivity } from "@/lib/activity";
 import {
   billingContractConfigSchema,
@@ -694,7 +694,8 @@ export async function compareDemoContracts(
  * view preference: demo data stays unconfirmable either way.
  */
 export async function setShowDemo(formData: FormData): Promise<void> {
-  await requireBillingUser();
+  await requireBillingViewer();
+  // A display preference (cookie), not a data change: viewers may toggle it.
   const on = formData.get("show") === "1";
   const store = await cookies();
   if (on) {

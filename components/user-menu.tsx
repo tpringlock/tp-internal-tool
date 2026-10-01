@@ -39,7 +39,9 @@ export function UserMenu({
         ? t("manager")
         : role === "accountant"
           ? t("accountant")
-          : null;
+          : role === "billing_viewer"
+            ? t("billingViewer")
+            : null;
 
   return (
     <DropdownMenu

@@ -45,11 +45,14 @@ export function ContractConfigEditor({
   items,
   excluded,
   addCodes,
+  readOnly = false,
 }: {
   contractId: string;
   items: EditorItem[];
   excluded: string[];
   addCodes: string[];
+  /** "Chỉ xem": inputs disabled, no add/move/remove/save. */
+  readOnly?: boolean;
 }) {
   const t = useTranslations("Billing");
   const known = new Set([...items.flatMap((i) => i.ma_hang), ...excluded]);
@@ -95,6 +98,7 @@ export function ContractConfigEditor({
       {state.success && <Alert tone="success">{state.success}</Alert>}
       {state.error && <Alert tone="error">{state.error}</Alert>}
 
+      <fieldset disabled={readOnly} className="min-w-0 space-y-5">
       <div className="overflow-hidden rounded-xl border border-slate-200">
         <div className="hidden grid-cols-[2rem_minmax(0,2.2fr)_5rem_7rem_minmax(0,1.6fr)_5.5rem] gap-2 border-b border-slate-100 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-500 md:grid">
           <span>#</span>
@@ -148,7 +152,7 @@ export function ContractConfigEditor({
                 className="col-span-2 font-mono md:col-span-1"
                 required
               />
-              <span className="col-span-2 flex justify-end gap-1 md:col-span-1">
+              {!readOnly && <span className="col-span-2 flex justify-end gap-1 md:col-span-1">
                 <IconButton label={t("moveUp")} disabled={i === 0} onClick={() => move(i, -1)}>
                   <ArrowUp className="h-4 w-4" />
                 </IconButton>
@@ -166,7 +170,7 @@ export function ContractConfigEditor({
                 >
                   <X className="h-4 w-4" />
                 </IconButton>
-              </span>
+              </span>}
             </li>
           ))}
           {rows.length === 0 && (
@@ -175,6 +179,7 @@ export function ContractConfigEditor({
         </ul>
       </div>
 
+      {!readOnly && (
       <Button
         variant="secondary"
         size="sm"
@@ -185,6 +190,7 @@ export function ContractConfigEditor({
         <Plus className="h-4 w-4" aria-hidden />
         {t("addLine")}
       </Button>
+      )}
 
       <div className="space-y-1.5">
         <label htmlFor="excluded-codes" className="text-sm font-medium text-slate-700">
@@ -200,14 +206,17 @@ export function ContractConfigEditor({
         />
         <p className="text-xs text-slate-500">{t("excludedCodesHint")}</p>
       </div>
+      </fieldset>
 
       {duplicates.length > 0 && (
         <Alert tone="error">{t("errDuplicateCodes", { codes: duplicates.join(", ") })}</Alert>
       )}
 
-      <Button type="submit" loading={saving} disabled={duplicates.length > 0}>
-        {t("saveConfig")}
-      </Button>
+      {!readOnly && (
+        <Button type="submit" loading={saving} disabled={duplicates.length > 0}>
+          {t("saveConfig")}
+        </Button>
+      )}
     </form>
   );
 }

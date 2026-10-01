@@ -1,7 +1,8 @@
 import { getTranslations } from "next-intl/server";
 import { AlertTriangle, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { requireBillingUser } from "@/lib/auth/dal";
+import { requireBillingViewer } from "@/lib/auth/dal";
+import { canEditBilling } from "@/lib/auth/roles";
 import { deleteMisaUpload } from "@/app/actions/billing";
 import { formatVnDate } from "@/lib/billing/dates";
 import { getProfileNames } from "@/lib/billing/queries";
@@ -19,7 +20,8 @@ export default async function BillingUploadsPage({
 }: {
   searchParams: Promise<{ page?: string }>;
 }) {
-  const user = await requireBillingUser();
+  const user = await requireBillingViewer();
+  const canEdit = canEditBilling(user.profile.role);
   const sp = await searchParams;
   const t = await getTranslations("Billing");
   const supabase = await createClient();
@@ -46,6 +48,7 @@ export default async function BillingUploadsPage({
         <p className="mt-1.5 text-sm text-slate-500">{t("uploadsSubtitle")}</p>
       </div>
 
+      {canEdit && (
       <Card>
         <CardBody className="space-y-3">
           <UploadDropzone />
@@ -61,6 +64,7 @@ export default async function BillingUploadsPage({
           </details>
         </CardBody>
       </Card>
+      )}
 
       <Card>
         <CardHeader>

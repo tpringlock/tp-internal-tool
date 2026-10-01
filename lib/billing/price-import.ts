@@ -1,7 +1,7 @@
 import ExcelJS from "exceljs";
 import { foldSearchText } from "@/lib/search";
 import type { MisaCatalog } from "./misa-catalog";
-import { describeConflict, groupPriceLines, type PriceLineFields } from "./price-lines";
+import { groupPriceLines, type PriceGroupConflict, type PriceLineFields } from "./price-lines";
 import {
   PRICE_SHEET,
   REQUIRED_COLUMNS,
@@ -162,6 +162,44 @@ export function parseUnitPrice(raw: unknown): PriceParse {
   if (!Number.isInteger(n)) return { ok: false, error: `Đơn giá ${n} có phần lẻ; đơn giá phải là số nguyên đồng.` };
   if (n > MAX_PRICE) return { ok: false, error: `Đơn giá ${n} quá lớn.` };
   return { ok: true, value: n };
+}
+
+/** "A", "A và B", "A, B và C". */
+function joinVi(items: string[]): string {
+  return items.length <= 1 ? items.join("") : `${items.slice(0, -1).join(", ")} và ${items[items.length - 1]}`;
+}
+
+/**
+ * Error for a row whose code prints on the same HSTT line as other codes
+ * with a different price or unit, telling the user how to fix it, e.g.
+ * "VT0053 và VT0067 đang in chung dòng 'Kích U…'. Muốn đổi giá: đổi cả hai
+ * mã, hoặc đổi/xóa 'Tên in trên HSTT' của VT0053 để tách thành dòng riêng."
+ * `lines` are the warehouse's rows after the import (for the current values).
+ */
+export function conflictFixMessage(
+  c: PriceGroupConflict,
+  code: string,
+  lines: readonly Pick<PriceLineFields, "ma_vt" | "unit_price" | "print_name" | "print_dvt" | "dvt">[],
+): string {
+  const what =
+    c.prices.length > 1 && c.units.length > 1 ? "giá và ĐVT in" : c.prices.length > 1 ? "giá" : "ĐVT in";
+  const all = c.codes.length === 2 ? "cả hai mã" : `cả ${c.codes.length} mã`;
+  const row = lines.find((l) => l.ma_vt === code);
+  const split = row?.print_name
+    ? `đổi/xóa 'Tên in trên HSTT' của ${code}`
+    : `đặt 'Tên in trên HSTT' khác cho ${code}`;
+  const now = c.codes
+    .map((m) => {
+      const l = lines.find((x) => x.ma_vt === m);
+      if (!l) return m;
+      const unit = l.print_dvt || l.dvt;
+      return c.prices.length > 1 ? `${m} ${l.unit_price}đ` : `${m} ${unit || "(trống)"}`;
+    })
+    .join(", ");
+  return (
+    `${joinVi(c.codes)} đang in chung dòng '${c.name}'. Muốn đổi ${what}: đổi ${all}, hoặc ${split} để tách thành dòng riêng.` +
+    ` (Hiện tại: ${now}.)`
+  );
 }
 
 /** Readable, unique contract code for a new warehouse ("HÀ MINH chothue" -> "ha-minh-chothue"). */
@@ -405,7 +443,9 @@ export function validatePriceImport(sheet: PriceSheet, ctx: PriceImportContext):
     }
     const existing = matches[0];
 
-    // Header values: one distinct non-empty value per warehouse.
+    // Header values: one value per warehouse. Compared ignoring case and
+    // extra spaces; only a real difference blocks (Số HĐ, Khách hàng) or
+    // warns (Tên kho). The value stored is the first row's.
     const header = {} as Record<HeaderKey, string>;
     for (const key of HEADER_KEYS) {
       const old = existing?.[key] ?? "";
@@ -413,20 +453,29 @@ export function validatePriceImport(sheet: PriceSheet, ctx: PriceImportContext):
         header[key] = old;
         continue;
       }
-      const distinct: { v: string; row: number }[] = [];
-      for (const r of khoRows) {
-        const v = cleanText(r.values[key]);
-        if (v && !distinct.some((d) => sameText(d.v, v))) distinct.push({ v, row: r.row });
-      }
+      const filled = khoRows
+        .map((r) => ({ v: cleanText(r.values[key]), row: r.row }))
+        .filter((x) => x.v);
+      const distinct = filled.filter((x, i) => filled.findIndex((y) => sameText(y.v, x.v)) === i);
       if (distinct.length > 1 && key !== "misa_kho_name") {
         const list = distinct.map((d) => `"${d.v}" (dòng ${d.row})`).join(", ");
         for (const r of khoRows) {
           err(r.row, `Kho "${kho}" có nhiều ${columnHeader(key)} khác nhau: ${list}. Một kho chỉ thuộc 1 hợp đồng.`, key);
         }
       } else if (distinct.length > 1) {
-        warn(first, `Kho "${kho}" có nhiều Tên kho khác nhau; dùng "${distinct[0].v}".`, key);
+        warn(first, `Kho "${kho}" có nhiều Tên kho khác nhau; dùng "${distinct[0].v}" (dòng ${distinct[0].row}).`, key);
+      } else {
+        const spellings = filled.filter((x, i) => filled.findIndex((y) => y.v === x.v) === i);
+        if (spellings.length > 1) {
+          const list = spellings.map((s) => `"${s.v}" (dòng ${s.row})`).join(", ");
+          warn(
+            spellings[1].row,
+            `Kho "${kho}": ${columnHeader(key)} ghi khác nhau về chữ hoa/thường hoặc khoảng trắng: ${list}. Lưu theo dòng ${spellings[0].row}.`,
+            key,
+          );
+        }
       }
-      header[key] = distinct[0]?.v ?? "";
+      header[key] = filled[0]?.v ?? "";
     }
 
     if (!existing) {
@@ -540,9 +589,11 @@ export function validatePriceImport(sheet: PriceSheet, ctx: PriceImportContext):
     ];
     for (const c of groupPriceLines(finalLines).conflicts) {
       const inFile = khoRows.filter((r) => c.codes.includes(r.maVt));
-      for (const r of inFile.length > 0 ? inFile : [khoRows[0]]) {
-        err(r.row, `Kho "${kho}": ${describeConflict(c)}`, "print_name");
+      if (inFile.length === 0) {
+        err(khoRows[0].row, conflictFixMessage(c, c.codes[0], finalLines), "print_name");
       }
+      const column = c.prices.length > 1 ? "unit_price" : "print_dvt";
+      for (const r of inFile) err(r.row, conflictFixMessage(c, r.maVt, finalLines), column);
     }
 
     contracts.push({ misaKho: kho, code, isNew: !existing, headerChanges, header, lines: lineDiffs });

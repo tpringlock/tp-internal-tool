@@ -26,7 +26,15 @@ describe("getModulesForRole", () => {
     ]);
   });
 
-  it("shows billing to admins and accountants only", () => {
+  it("shows billing (but not Admin Panel) to view-only billing accounts", () => {
+    expect(getModulesForRole("billing_viewer").map((m) => m.id)).toEqual([
+      "documents",
+      "academy",
+      "billing",
+    ]);
+  });
+
+  it("shows billing to admins, accountants and viewers only", () => {
     expect(getModulesForRole("accountant").map((m) => m.id)).toEqual([
       "documents",
       "academy",

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
-import { requireBillingUser } from "@/lib/auth/dal";
+import { requireBillingViewer } from "@/lib/auth/dal";
+import { canEditBilling } from "@/lib/auth/roles";
 import {
   contractPeriod,
   defaultBillingMonth,
@@ -16,6 +17,7 @@ import {
   getShowDemo,
   todayIct,
 } from "@/lib/billing/queries";
+import { Alert } from "@/components/ui/alert";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { ModuleEyebrow, pageTitleClass } from "@/components/page-title";
 import { CalculateForm } from "./calculate-form";
@@ -31,7 +33,8 @@ export default async function BillingCalculatePage({
 }: {
   searchParams: Promise<{ contract?: string; month?: string }>;
 }) {
-  await requireBillingUser();
+  const user = await requireBillingViewer();
+  const canEdit = canEditBilling(user.profile.role);
   const sp = await searchParams;
   const t = await getTranslations("Billing");
   const supabase = await createClient();
@@ -82,6 +85,9 @@ export default async function BillingCalculatePage({
 
       <ScopeNotice />
 
+      {!canEdit && <Alert tone="info">{t("readOnlyNotice")}</Alert>}
+
+      {canEdit && (
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
         <Card>
           <CardHeader>
@@ -130,6 +136,7 @@ export default async function BillingCalculatePage({
           </CardBody>
         </Card>
       </div>
+      )}
 
       <Card>
         <CardHeader className="flex items-center justify-between gap-3">

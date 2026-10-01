@@ -13,7 +13,11 @@ import type {
   PriceLinePayload,
 } from "@/lib/billing/price-import";
 
-export type UserRole = "admin" | "employee" | "manager" | "accountant";
+/**
+ * billing_viewer ("Chỉ xem", 0033): read-only access to /billing; elsewhere
+ * the same as an employee.
+ */
+export type UserRole = "admin" | "employee" | "manager" | "accountant" | "billing_viewer";
 
 export type DocType =
   | "contract"

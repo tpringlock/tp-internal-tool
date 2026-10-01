@@ -10,10 +10,23 @@ export function canManageContent(role: UserRole): boolean {
 }
 
 /**
- * Whether a role may open the billing app ("Tính hóa đơn tự động"): upload
- * MISA files, calculate rent, manage billing contracts. Admins and
- * accountants only; managers are NOT included.
+ * Whether a role may open the billing app ("Tính hóa đơn tự động") and read
+ * everything in it: contracts, price table, source files, calculations,
+ * Excel downloads. Admins, accountants and "Chỉ xem" (billing_viewer);
+ * managers are NOT included. Same rule as private.is_billing_viewer() (0034).
  */
-export function canUseBilling(role: UserRole): boolean {
+export function canViewBilling(role: UserRole): boolean {
+  return role === "admin" || role === "accountant" || role === "billing_viewer";
+}
+
+/**
+ * Whether a role may change billing data: upload source files, calculate and
+ * save drafts, confirm, edit or import prices, edit contracts and
+ * non-billable ranges. Admins and accountants. Same rule as
+ * private.is_billing_user() (0027). Deleting data, voiding confirmed
+ * calculations and replacing a file used by a confirmed calculation stay
+ * admin-only on top of this.
+ */
+export function canEditBilling(role: UserRole): boolean {
   return role === "admin" || role === "accountant";
 }

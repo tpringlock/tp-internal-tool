@@ -174,6 +174,30 @@ describe("row errors (block the import)", () => {
     expect(msgs[0].message).toMatch(/nhiều Số hợp đồng khác nhau: "HĐ-1" \(dòng 2\), "HĐ-2" \(dòng 3\)/);
   });
 
+  it("Số HĐ / Khách hàng differing only in case or spaces: not an error, first row kept, warned", async () => {
+    const p = await preview([
+      ["Mã kho", "Số hợp đồng", "Khách hàng", "Mã VT", "Đơn giá"],
+      ["VIETPANEL-01", "0412/HĐKT2025/TP-VIETPANEL", "Công ty TNHH Xây dựng Việt Panel", "VT0021", 85],
+      ["VIETPANEL-01", "0412/hđkt2025/tp-vietpanel ", "CÔNG TY TNHH  XÂY DỰNG VIỆT PANEL", "VT0020", 125],
+    ]);
+    expect(errorsOf(p)).toEqual([]);
+    expect(p.contracts[0].header).toMatchObject({
+      contract_no: "0412/HĐKT2025/TP-VIETPANEL",
+      customer_name: "Công ty TNHH Xây dựng Việt Panel",
+    });
+    const w = warningsOf(p).filter((i) => i.column === "contract_no" || i.column === "customer_name");
+    expect(w.map((i) => [i.row, i.column])).toEqual([
+      [3, "contract_no"],
+      [3, "customer_name"],
+    ]);
+    expect(w[1].message).toBe(
+      'Kho "VIETPANEL-01": Khách hàng ghi khác nhau về chữ hoa/thường hoặc khoảng trắng: ' +
+        '"Công ty TNHH Xây dựng Việt Panel" (dòng 2), "CÔNG TY TNHH XÂY DỰNG VIỆT PANEL" (dòng 3). Lưu theo dòng 2.',
+    );
+    // the stored customer changes case -> counted as a contract update, shown old -> new
+    expect(p.contracts[0].headerChanges.map((c) => c.field)).toEqual(["customer_name"]);
+  });
+
   it("a new warehouse needs a contract number and a customer", async () => {
     const p = await preview([THREE, ["NEW-1", "VT0001", 10]], { existing: [] });
     expect(errorsOf(p)[0].message).toBe('Kho mới "NEW-1" (chưa có trên hệ thống) cần Số hợp đồng và Khách hàng.');
@@ -191,8 +215,11 @@ describe("row errors (block the import)", () => {
       ["Mã kho", "Mã VT", "Đơn giá", "Tên in trên HSTT"],
       ["VIETPANEL-01", "VT0090", 190, "Giáo ringlock 2.5m Kẽm"], // VT0022 stays 185 in the table
     ]);
-    expect(errorsOf(p)[0]).toMatchObject({ row: 2 });
-    expect(errorsOf(p)[0].message).toMatch(/VT0022, VT0090 cùng in thành "Giáo ringlock 2.5m Kẽm" nhưng đơn giá khác nhau \(185, 190\)/);
+    expect(errorsOf(p)[0]).toMatchObject({ row: 2, column: "unit_price" });
+    expect(errorsOf(p)[0].message).toBe(
+      "VT0022 và VT0090 đang in chung dòng 'Giáo ringlock 2.5m Kẽm'. Muốn đổi giá: đổi cả hai mã, " +
+        "hoặc đổi/xóa 'Tên in trên HSTT' của VT0090 để tách thành dòng riêng. (Hiện tại: VT0022 185đ, VT0090 190đ.)",
+    );
   });
 });
 
@@ -262,10 +289,43 @@ describe("missing column vs empty cell", () => {
     expect(pl.lines[0]).toEqual({ ma_vt: "VT0053", unit_price: 75, sort_order: 8001 });
   });
 
-  it("changing the price of only one code of a merged HSTT line is blocked", async () => {
+  it("changing the price of only one code of a merged HSTT line is blocked, and says how to fix it", async () => {
     const p = await preview([THREE, ["VIETPANEL-01", "VT0053", 75]]);
     expect(p.canImport).toBe(false);
-    expect(errorsOf(p)[0].message).toMatch(/VT0053, VT0067 cùng in thành "Kích U/);
+    expect(errorsOf(p)).toHaveLength(1);
+    expect(errorsOf(p)[0]).toMatchObject({ row: 2, column: "unit_price" });
+    expect(errorsOf(p)[0].message).toBe(
+      "VT0053 và VT0067 đang in chung dòng 'Kích U Ø38*(3,0ly - 4,5ly), L=600mm'. Muốn đổi giá: đổi cả hai mã, " +
+        "hoặc đổi/xóa 'Tên in trên HSTT' của VT0053 để tách thành dòng riêng. (Hiện tại: VT0053 75đ, VT0067 70đ.)",
+    );
+  });
+
+  it("…and the two fixes the message suggests both work", async () => {
+    // a) change both codes
+    const both = await preview([THREE, ["VIETPANEL-01", "VT0053", 75], ["VIETPANEL-01", "VT0067", 75]]);
+    expect(both.canImport).toBe(true);
+    // b) give VT0053 its own print name -> separate HSTT line
+    const split = await preview([
+      ["Mã kho", "Mã VT", "Đơn giá", "Tên in trên HSTT"],
+      ["VIETPANEL-01", "VT0053", 75, "Kích U Ø38 Eku To"],
+    ]);
+    expect(split.canImport).toBe(true);
+  });
+
+  it("a unit conflict and a group made by the MISA name get the matching advice", async () => {
+    const existing = vpExisting();
+    existing.lines.push(
+      { ma_vt: "X1", ten_vt: "Ống", dvt: "cây", unit_price: 9, print_name: null, print_dvt: null, sort_order: 1, note: "" },
+      { ma_vt: "X2", ten_vt: "Ống", dvt: "cây", unit_price: 9, print_name: null, print_dvt: null, sort_order: 2, note: "" },
+    );
+    const p = await preview([["Mã kho", "Mã VT", "Đơn giá", "ĐVT in trên HSTT"], ["VIETPANEL-01", "X2", 9, "Bộ"]], {
+      existing: [existing],
+    });
+    expect(errorsOf(p)[0]).toMatchObject({ row: 2, column: "print_dvt" });
+    expect(errorsOf(p)[0].message).toBe(
+      "X1 và X2 đang in chung dòng 'Ống'. Muốn đổi ĐVT in: đổi cả hai mã, " +
+        "hoặc đặt 'Tên in trên HSTT' khác cho X2 để tách thành dòng riêng. (Hiện tại: X1 cây, X2 Bộ.)",
+    );
   });
 
   it("a column present with an empty cell clears the value (shown as cleared)", async () => {

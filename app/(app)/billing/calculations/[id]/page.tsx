@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { AlertTriangle, CheckCircle2, Download, Trash2, Undo2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { requireBillingUser } from "@/lib/auth/dal";
+import { requireBillingViewer } from "@/lib/auth/dal";
+import { canEditBilling } from "@/lib/auth/roles";
 import {
   confirmCalculation,
   deleteDraftCalculation,
@@ -27,7 +28,8 @@ export default async function CalculationPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const user = await requireBillingUser();
+  const user = await requireBillingViewer();
+  const canEdit = canEditBilling(user.profile.role);
   const { id } = await params;
   const t = await getTranslations("Billing");
   const supabase = await createClient();
@@ -101,7 +103,7 @@ export default async function CalculationPage({
             <Download className="h-4 w-4" aria-hidden />
             {t("downloadExcel")}
           </DownloadLink>
-          {calc.status === "draft" && (
+          {calc.status === "draft" && canEdit && (
             <>
               <ActionButton
                 action={deleteDraftCalculation}

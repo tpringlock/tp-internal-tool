@@ -1,5 +1,5 @@
 import type { UserRole } from "@/lib/db/types";
-import { canManageContent, canUseBilling } from "@/lib/auth/roles";
+import { canManageContent, canViewBilling } from "@/lib/auth/roles";
 
 /**
  * The apps ("modules") inside this project, shown in the header's module
@@ -34,7 +34,7 @@ export function getModulesForRole(role: UserRole): AppModuleLink[] {
     { id: "documents", href: "/documents" },
     { id: "academy", href: "/academy" },
   ];
-  if (canUseBilling(role)) {
+  if (canViewBilling(role)) {
     modules.push({ id: "billing", href: "/billing" });
   }
   if (canManageContent(role)) {

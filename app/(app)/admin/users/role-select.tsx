@@ -12,6 +12,7 @@ const ROLE_KEYS: Record<UserRole, string> = {
   employee: "employee",
   manager: "managerRole",
   accountant: "accountantRole",
+  billing_viewer: "billingViewerRole",
   admin: "adminRole",
 };
 
@@ -62,6 +63,7 @@ export function RoleSelect({
         <option value="employee">{t("employee")}</option>
         <option value="manager">{t("managerRole")}</option>
         <option value="accountant">{t("accountantRole")}</option>
+        <option value="billing_viewer">{t("billingViewerRole")}</option>
         <option value="admin">{t("adminRole")}</option>
       </Select>
 

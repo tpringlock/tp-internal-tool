@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
-import { requireBillingUser } from "@/lib/auth/dal";
+import { requireBillingViewer } from "@/lib/auth/dal";
 import {
   contractLabel,
   getContractLabels,
@@ -27,7 +27,7 @@ export default async function BillingHistoryPage({
 }: {
   searchParams: Promise<{ contract?: string; status?: string; kind?: string; page?: string }>;
 }) {
-  await requireBillingUser();
+  await requireBillingViewer();
   const sp = await searchParams;
   const t = await getTranslations("Billing");
   const supabase = await createClient();

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
-import { requireBillingUser } from "@/lib/auth/dal";
+import { requireBillingViewer } from "@/lib/auth/dal";
+import { canEditBilling } from "@/lib/auth/roles";
 import { formatVnDate } from "@/lib/billing/dates";
 import { getContractsWithCounts, getShowDemo } from "@/lib/billing/queries";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +11,8 @@ import { DialogButton } from "@/components/dialog-button";
 import { ContractForm } from "./contract-form";
 
 export default async function BillingContractsPage() {
-  await requireBillingUser();
+  const user = await requireBillingViewer();
+  const canEdit = canEditBilling(user.profile.role);
   const t = await getTranslations("Billing");
   const supabase = await createClient();
   const showDemo = await getShowDemo();
@@ -24,9 +26,11 @@ export default async function BillingContractsPage() {
           <h1 className={pageTitleClass}>{t("contractsTitle")}</h1>
           <p className="mt-1.5 text-sm text-slate-500">{t("contractsSubtitle")}</p>
         </div>
-        <DialogButton label={t("addContract")}>
-          <ContractForm />
-        </DialogButton>
+        {canEdit && (
+          <DialogButton label={t("addContract")}>
+            <ContractForm />
+          </DialogButton>
+        )}
       </div>
 
       <Card>
@@ -97,7 +101,7 @@ export default async function BillingContractsPage() {
                         href={`/billing/contracts/${c.id}`}
                         className="whitespace-nowrap text-sm font-medium text-primary hover:underline"
                       >
-                        {t("edit")}
+                        {canEdit ? t("edit") : t("view")}
                       </Link>
                     </td>
                   </tr>

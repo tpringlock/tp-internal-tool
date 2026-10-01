@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { FileText, GraduationCap, Calculator } from "lucide-react";
 import { requireUser } from "@/lib/auth/dal";
-import { canUseBilling } from "@/lib/auth/roles";
+import { canViewBilling } from "@/lib/auth/roles";
 import { Card, CardBody } from "@/components/ui/card";
 
 export default async function HomePage() {
@@ -56,7 +56,7 @@ export default async function HomePage() {
           </Card>
         </Link>
 
-        {canUseBilling(user.profile.role) && (
+        {canViewBilling(user.profile.role) && (
           <Link href="/billing" className="group">
             <Card className="h-full transition-colors group-hover:border-slate-300">
               <CardBody className="flex items-start gap-4">

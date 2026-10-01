@@ -23,12 +23,15 @@ export function BillingNav({
   draftCount,
   showDemo,
   isAdmin,
+  canEdit,
 }: {
   contractCount: number;
   uploadCount: number;
   draftCount: number;
   showDemo: boolean;
   isAdmin: boolean;
+  /** false for "Chỉ xem": the heading says so. */
+  canEdit: boolean;
 }) {
   const pathname = usePathname();
   const t = useTranslations("BillingNav");
@@ -107,7 +110,10 @@ export function BillingNav({
     >
       {({ close }) => (
         <>
-          <AsideHeading title={tm("billing.name")} subtitle={t("subtitle")} />
+          <AsideHeading
+            title={tm("billing.name")}
+            subtitle={canEdit ? t("subtitle") : `${t("subtitle")} · ${t("readOnlyBadge")}`}
+          />
           <SidebarNav
             label={tm("billing.name")}
             sections={sections}
