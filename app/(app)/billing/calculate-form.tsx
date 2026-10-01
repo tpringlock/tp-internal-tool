@@ -16,6 +16,7 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input, Select } from "@/components/ui/input";
+import { Combobox } from "@/components/ui/combobox";
 import { cn } from "@/lib/utils";
 
 export interface CalcContractOption {
@@ -25,6 +26,8 @@ export interface CalcContractOption {
   period_start_day: number;
   contract_start: string | null;
   item_count: number;
+  /** Searchable text: warehouse code first, then warehouse name, customer, contract no. */
+  keywords: (string | null)[];
 }
 
 export interface CalcUploadOption {
@@ -35,6 +38,9 @@ export interface CalcUploadOption {
   layout: string;
   created_at: string;
   warning_count: number;
+  /** Month file: its month ("YYYY-MM") and version; null for a legacy (non-month) file. */
+  month: string | null;
+  version: number | null;
 }
 
 type Mode = "month" | "range";
@@ -174,17 +180,14 @@ export function CalculateForm({
           htmlFor="calc-contract"
           error={state.fieldErrors?.contract_id?.[0]}
         >
-          <Select
+          <Combobox
             id="calc-contract"
             value={contractId}
-            onChange={(e) => setContractId(e.target.value)}
-          >
-            {contracts.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.label}
-              </option>
-            ))}
-          </Select>
+            onChange={(v) => v && setContractId(v)}
+            options={contracts.map((c) => ({ value: c.id, label: c.label, keywords: c.keywords }))}
+            placeholder={t("searchContract")}
+            emptyText={t("noContractMatch")}
+          />
         </Field>
         {mode === "month" ? (
           <Field
@@ -278,10 +281,17 @@ export function CalculateForm({
                     className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300"
                   />
                   <span className="min-w-0 flex-1">
-                    <span className="block break-words text-sm font-medium text-slate-900">
-                      {u.file_name}
+                    <span className="block text-sm font-medium text-slate-900">
+                      {u.month
+                        ? t("fileMonthLabel", { month: formatBillingMonth(u.month), version: u.version ?? 1 })
+                        : t("fileLegacyLabel", {
+                            from: formatVnDate(u.file_from).slice(0, 5),
+                            to: formatVnDate(u.file_to).slice(0, 5),
+                          })}
                     </span>
-                    <span className="block text-xs text-slate-500">
+                    <span className="block break-words text-xs text-slate-500">
+                      {u.file_name}
+                      {" · "}
                       {t("fileSpan", {
                         from: formatVnDate(u.file_from),
                         to: formatVnDate(u.file_to),

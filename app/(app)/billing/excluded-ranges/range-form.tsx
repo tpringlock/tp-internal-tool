@@ -7,7 +7,8 @@ import type { FormState } from "@/app/actions/auth";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
-import { Input, Select } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
+import { Combobox } from "@/components/ui/combobox";
 
 /**
  * Add a non-billable date range (e.g. Tết). With `contractId` the range is
@@ -18,7 +19,7 @@ export function RangeForm({
   contracts,
 }: {
   contractId?: string;
-  contracts?: { id: string; label: string }[];
+  contracts?: { id: string; label: string; keywords?: (string | null)[] }[];
 }) {
   const t = useTranslations("Billing");
   const [state, action, pending] = useActionState<FormState, FormData>(
@@ -48,14 +49,14 @@ export function RangeForm({
         {!contractId && contracts && (
           <div className="sm:col-span-2">
             <Field label={t("appliesTo")} htmlFor="contract_id" error={err("contract_id")}>
-              <Select id="contract_id" name="contract_id" defaultValue="">
-                <option value="">{t("allContracts")}</option>
-                {contracts.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.label}
-                  </option>
-                ))}
-              </Select>
+              <Combobox
+                id="contract_id"
+                name="contract_id"
+                defaultValue=""
+                allLabel={t("allContracts")}
+                emptyText={t("noContractMatch")}
+                options={contracts.map((c) => ({ value: c.id, label: c.label, keywords: c.keywords }))}
+              />
             </Field>
           </div>
         )}

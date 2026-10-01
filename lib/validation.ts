@@ -47,7 +47,7 @@ export const changePasswordSchema = z
 export const createUserSchema = z.object({
   email: z.string().email("emailInvalid"),
   full_name: z.string().trim().min(1, "nameRequired").max(120, "nameTooLong"),
-  role: z.enum(["admin", "employee", "manager", "accountant"]),
+  role: z.enum(["admin", "employee", "manager", "accountant", "billing_viewer"]),
   password: passwordSchema,
 });
 
@@ -151,7 +151,6 @@ export const lessonNoteSchema = z.object({
 // --- Billing (Tính hóa đơn tự động) ------------------------------------
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "dateInvalid");
-const misaCode = z.string().trim().min(1).max(50, "textTooLong");
 
 export const billingContractSchema = z.object({
   code: z
@@ -170,6 +169,8 @@ export const billingContractSchema = z.object({
     .string()
     .transform((v) => v.replace(/\s+/g, " ").trim())
     .pipe(z.string().min(1, "misaKhoRequired").max(50, "textTooLong")),
+  // Warehouse name as on MISA (optional; also filled by the price import).
+  misa_kho_name: z.string().trim().max(200, "textTooLong").default(""),
   period_start_day: z.coerce.number().int().min(2, "startDayRange").max(28, "startDayRange"),
   contract_start: z
     .union([isoDate, z.literal("")])
@@ -178,18 +179,41 @@ export const billingContractSchema = z.object({
   active: z.boolean(),
 });
 
-export const billingItemSchema = z.object({
-  name: z.string().trim().min(1, "nameRequired").max(200, "nameTooLong"),
-  unit: z.string().trim().min(1, "unitRequired").max(20, "textTooLong"),
-  // Integer VND per day; the cap keeps qty x days x price a safe integer.
-  unit_price: z.number().int("priceInvalid").min(0, "priceInvalid").max(10_000_000, "priceInvalid"),
-  ma_hang: z.array(misaCode).min(1, "codesRequired"),
+/** Highest daily unit price accepted (VND); keeps qty x days x price a safe integer. */
+export const MAX_UNIT_PRICE = 10_000_000;
+
+/** Optional text of a price row: null/absent -> "". */
+const priceText = (max: number) =>
+  z
+    .string()
+    .nullish()
+    .transform((v) => (v ?? "").trim())
+    .pipe(z.string().max(max, "textTooLong"));
+/** Empty -> null (HSTT override not set). */
+const optionalOverride = (max: number) =>
+  z
+    .string()
+    .nullish()
+    .transform((v) => (v ?? "").trim())
+    .pipe(z.string().max(max, "textTooLong"))
+    .transform((v) => (v ? v : null));
+
+/** One row of the flat price table (billing_price_lines, 0036), as edited on the contract page. */
+export const billingPriceLineSchema = z.object({
+  // Same normalisation as the MISA parser (trim, single spaces).
+  ma_vt: z
+    .string()
+    .transform((v) => v.replace(/\s+/g, " ").trim())
+    .pipe(z.string().min(1, "codesRequired").max(50, "textTooLong")),
+  ten_vt: priceText(300),
+  dvt: priceText(30),
+  unit_price: z.number().int("priceInvalid").min(0, "priceInvalid").max(MAX_UNIT_PRICE, "priceInvalid"),
+  print_name: optionalOverride(300),
+  print_dvt: optionalOverride(30),
+  note: priceText(500),
 });
 
-export const billingContractConfigSchema = z.object({
-  items: z.array(billingItemSchema).max(200),
-  excluded: z.array(misaCode).max(200),
-});
+export const billingPriceLinesSchema = z.array(billingPriceLineSchema).max(2000);
 
 export const billingExcludedRangeSchema = z
   .object({
@@ -275,4 +299,4 @@ export type LessonInput = z.infer<typeof lessonSchema>;
 export type QuizQuestionInput = z.infer<typeof quizQuestionSchema>;
 export type LessonNoteInput = z.infer<typeof lessonNoteSchema>;
 export type BillingContractInput = z.infer<typeof billingContractSchema>;
-export type BillingItemInput = z.infer<typeof billingItemSchema>;
+export type BillingPriceLineInput = z.infer<typeof billingPriceLineSchema>;

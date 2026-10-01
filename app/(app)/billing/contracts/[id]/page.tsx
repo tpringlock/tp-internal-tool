@@ -3,14 +3,17 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { AlertTriangle, Calculator, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { requireBillingUser } from "@/lib/auth/dal";
+import { requireBillingViewer } from "@/lib/auth/dal";
+import { canEditBilling } from "@/lib/auth/roles";
 import { deleteBillingContract } from "@/app/actions/billing";
 import { parseCodeList } from "@/lib/billing/contract-config";
 import { contractLabel, getProfileNames } from "@/lib/billing/queries";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { ModuleEyebrow, pageTitleClass } from "@/components/page-title";
 import { ContractForm } from "../contract-form";
-import { ContractConfigEditor } from "../config-editor";
+import { PriceLinesEditor } from "../price-lines-editor";
+import { loadActiveCatalog } from "@/lib/billing/month-files-server";
+import { normalizeCode } from "@/lib/billing/text";
 import { RangesTable } from "../../excluded-ranges/ranges";
 import { RangeForm } from "../../excluded-ranges/range-form";
 import { CalculationsTable } from "../../calculations-table";
@@ -23,7 +26,8 @@ export default async function BillingContractPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ add?: string }>;
 }) {
-  const user = await requireBillingUser();
+  const user = await requireBillingViewer();
+  const canEdit = canEditBilling(user.profile.role);
   const { id } = await params;
   const { add = "" } = await searchParams;
   const t = await getTranslations("Billing");
@@ -36,19 +40,15 @@ export default async function BillingContractPage({
     .maybeSingle();
   if (!contract) notFound();
 
-  const [{ data: items }, { data: excluded }, { data: ranges }, { data: calcs }] =
+  const [{ data: lines }, { catalog }, { data: ranges }, { data: calcs }] =
     await Promise.all([
       supabase
-        .from("billing_contract_items")
+        .from("billing_price_lines")
         .select("*")
         .eq("contract_id", id)
         .order("sort_order")
-        .order("name"),
-      supabase
-        .from("billing_excluded_codes")
-        .select("ma_hang")
-        .eq("contract_id", id)
-        .order("ma_hang"),
+        .order("ma_vt"),
+      loadActiveCatalog(supabase, { fill: false }),
       supabase
         .from("billing_excluded_ranges")
         .select("*")
@@ -75,6 +75,7 @@ export default async function BillingContractPage({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          {canEdit && (
           <Link
             href={`/billing?contract=${contract.id}`}
             className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary-hover"
@@ -82,6 +83,7 @@ export default async function BillingContractPage({
             <Calculator className="h-4 w-4" aria-hidden />
             {t("calculateForContract")}
           </Link>
+          )}
           {user.profile.role === "admin" && (
             <ActionButton
               action={deleteBillingContract}
@@ -115,17 +117,21 @@ export default async function BillingContractPage({
         </CardHeader>
         <CardBody>
           {/* Remount when "?add=" changes so the pre-added lines refresh. */}
-          <ContractConfigEditor
+          <PriceLinesEditor
             key={add}
             contractId={contract.id}
-            items={(items ?? []).map((i) => ({
-              name: i.name,
-              unit: i.unit,
-              unit_price: i.unit_price,
-              ma_hang: i.ma_hang,
+            lines={(lines ?? []).map((l) => ({
+              ma_vt: l.ma_vt,
+              ten_vt: l.ten_vt,
+              dvt: l.dvt,
+              unit_price: l.unit_price,
+              print_name: l.print_name,
+              print_dvt: l.print_dvt,
+              note: l.note,
             }))}
-            excluded={(excluded ?? []).map((e) => e.ma_hang)}
-            addCodes={parseCodeList(add)}
+            addCodes={canEdit ? parseCodeList(add) : []}
+            misa={misaFor(catalog, [...(lines ?? []).map((l) => l.ma_vt), ...parseCodeList(add)])}
+            readOnly={!canEdit}
           />
         </CardBody>
       </Card>
@@ -136,7 +142,7 @@ export default async function BillingContractPage({
             <CardTitle>{t("contractInfo")}</CardTitle>
           </CardHeader>
           <CardBody>
-            <ContractForm contract={contract} />
+            <ContractForm contract={contract} readOnly={!canEdit} />
           </CardBody>
         </Card>
 
@@ -146,11 +152,13 @@ export default async function BillingContractPage({
             <p className="mt-1 text-sm text-slate-500">{t("contractRangesSubtitle")}</p>
           </CardHeader>
           <CardBody className="p-0">
-            <RangesTable ranges={ranges ?? []} />
+            <RangesTable ranges={ranges ?? []} canDelete={canEdit} />
           </CardBody>
-          <CardBody className="border-t border-slate-100">
-            <RangeForm contractId={contract.id} />
-          </CardBody>
+          {canEdit && (
+            <CardBody className="border-t border-slate-100">
+              <RangeForm contractId={contract.id} />
+            </CardBody>
+          )}
         </Card>
       </div>
 
@@ -175,4 +183,15 @@ export default async function BillingContractPage({
       </Card>
     </div>
   );
+}
+
+/** MISA name/unit of the given codes only (the full catalog stays on the server). */
+function misaFor(
+  catalog: Awaited<ReturnType<typeof loadActiveCatalog>>["catalog"],
+  codes: string[],
+): Record<string, { name: string; dvt: string }> | null {
+  if (!catalog) return null;
+  const out: Record<string, { name: string; dvt: string }> = {};
+  for (const c of codes.map(normalizeCode)) if (catalog.items[c]) out[c] = catalog.items[c];
+  return out;
 }

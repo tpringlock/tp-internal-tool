@@ -123,7 +123,7 @@ export async function setUserRole(
   const userId = String(formData.get("user_id"));
   const raw = String(formData.get("role"));
   const role =
-    raw === "admin" || raw === "manager" || raw === "accountant"
+    raw === "admin" || raw === "manager" || raw === "accountant" || raw === "billing_viewer"
       ? raw
       : "employee";
 

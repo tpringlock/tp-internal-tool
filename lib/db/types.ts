@@ -5,8 +5,19 @@
  */
 
 import type { ContractConfig, DateRange, RentResult } from "@/lib/billing/types";
+import type { MisaCatalog } from "@/lib/billing/misa-catalog";
+import type {
+  PriceImportChange,
+  PriceImportCounts,
+  PriceImportPayload,
+  PriceLinePayload,
+} from "@/lib/billing/price-import";
 
-export type UserRole = "admin" | "employee" | "manager" | "accountant";
+/**
+ * billing_viewer ("Chỉ xem", 0033): read-only access to /billing; elsewhere
+ * the same as an employee.
+ */
+export type UserRole = "admin" | "employee" | "manager" | "accountant" | "billing_viewer";
 
 export type DocType =
   | "contract"
@@ -331,6 +342,8 @@ export type BillingContract = {
   active: boolean;
   /** Seeded "giả định" contract (Excel tool prices), for comparison only. */
   is_demo: boolean;
+  /** Warehouse name as on MISA (0036); '' until known. */
+  misa_kho_name: string;
   created_by: string | null;
   created_at: string;
   updated_at: string;
@@ -403,6 +416,67 @@ export type BillingRentCalculation = {
   confirmed_at: string | null;
   voided_by: string | null;
   voided_at: string | null;
+};
+
+/** One price row per (warehouse contract, MISA code) (0036). */
+export type BillingPriceLine = {
+  id: string;
+  contract_id: string;
+  ma_vt: string;
+  /** MISA name / unit ('' = not known yet). */
+  ten_vt: string;
+  dvt: string;
+  /** Integer VND per day; 0 = not billed. */
+  unit_price: number;
+  /** HSTT overrides; null = use the MISA value. */
+  print_name: string | null;
+  print_dvt: string | null;
+  note: string;
+  sort_order: number;
+  updated_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+/** Audit row of a confirmed Excel import (0036). */
+export type BillingPriceImport = {
+  id: string;
+  mode: "upsert" | "replace";
+  file_name: string;
+  size_bytes: number;
+  sha256: string;
+  storage_path: string;
+  row_count: number;
+  columns: string[];
+  contracts_created: number;
+  contracts_updated: number;
+  lines_inserted: number;
+  lines_updated: number;
+  lines_deleted: number;
+  lines_unchanged: number;
+  warnings: string[];
+  changes: PriceImportChange[];
+  created_by: string;
+  created_at: string;
+};
+
+export type BillingMonthFileStatus = "active" | "superseded";
+
+/** A MISA upload registered as one version of a data month (0035). */
+export type BillingMisaMonthFile = {
+  id: string;
+  upload_id: string;
+  /** "YYYY-MM". */
+  month: string;
+  version: number;
+  status: BillingMonthFileStatus;
+  /** null for rows backfilled by 0037 until the file is read again. */
+  voucher_count: number | null;
+  catalog: MisaCatalog | null;
+  created_by: string;
+  created_at: string;
+  superseded_by: string | null;
+  superseded_at: string | null;
 };
 
 type Insert<T, Optional extends keyof T> = Omit<T, Optional> &
@@ -625,6 +699,7 @@ export interface Database {
           | "contract_start"
           | "active"
           | "is_demo"
+          | "misa_kho_name"
           | "created_by"
           | "created_at"
           | "updated_at"
@@ -668,6 +743,49 @@ export interface Database {
         >,
         Partial<BillingRentCalculation>
       >;
+      billing_price_lines: Table<
+        BillingPriceLine,
+        Insert<
+          BillingPriceLine,
+          | "id"
+          | "ten_vt"
+          | "dvt"
+          | "print_name"
+          | "print_dvt"
+          | "note"
+          | "sort_order"
+          | "updated_by"
+          | "created_at"
+          | "updated_at"
+        >,
+        Partial<BillingPriceLine>
+      >;
+      billing_price_imports: Table<
+        BillingPriceImport,
+        Insert<
+          BillingPriceImport,
+          | "id"
+          | "columns"
+          | "contracts_created"
+          | "contracts_updated"
+          | "lines_inserted"
+          | "lines_updated"
+          | "lines_deleted"
+          | "lines_unchanged"
+          | "warnings"
+          | "changes"
+          | "created_at"
+        >,
+        Record<string, never>
+      >;
+      billing_misa_month_files: Table<
+        BillingMisaMonthFile,
+        Insert<
+          BillingMisaMonthFile,
+          "id" | "status" | "voucher_count" | "catalog" | "created_at" | "superseded_by" | "superseded_at"
+        >,
+        Partial<Pick<BillingMisaMonthFile, "status" | "voucher_count" | "catalog">>
+      >;
     };
     Views: {
       // Service-role only (see 0020_user_emails_view.sql).
@@ -685,6 +803,34 @@ export interface Database {
         Args: { p_client_id: string };
         Returns: { project_id: string; doc_count: number; byte_sum: number }[];
       };
+      billing_save_price_lines: {
+        Args: { p_contract_id: string; p_lines: PriceLinePayload[] };
+        Returns: undefined;
+      };
+      billing_import_price_lines: {
+        Args: { p_import: PriceImportPayload };
+        Returns: PriceImportCounts & { import_id: string };
+      };
+      billing_add_month_file: {
+        Args: {
+          p_upload: {
+            id: string;
+            storage_path: string;
+            file_name: string;
+            size_bytes: number;
+            sha256: string;
+            file_from: string;
+            file_to: string;
+            layout: string;
+            warehouse_count: number;
+            warnings: string[];
+          };
+          p_voucher_count: number;
+          p_catalog: MisaCatalog;
+        };
+        Returns: { month: string; version: number; replaced_upload_id: string | null };
+      };
+      /** Revoked from the app by 0037 (old price tables frozen); kept for the revert path. */
       billing_save_contract_config: {
         Args: {
           p_contract_id: string;

@@ -10,6 +10,7 @@ import {
   FileText,
   History,
   Info,
+  Tags,
 } from "lucide-react";
 import { setShowDemo } from "@/app/actions/billing";
 import { cn } from "@/lib/utils";
@@ -23,12 +24,15 @@ export function BillingNav({
   draftCount,
   showDemo,
   isAdmin,
+  canEdit,
 }: {
   contractCount: number;
   uploadCount: number;
   draftCount: number;
   showDemo: boolean;
   isAdmin: boolean;
+  /** false for "Chỉ xem": the heading says so. */
+  canEdit: boolean;
 }) {
   const pathname = usePathname();
   const t = useTranslations("BillingNav");
@@ -73,6 +77,12 @@ export function BillingNav({
           meta: String(contractCount),
         },
         {
+          href: "/billing/prices",
+          label: t("prices"),
+          icon: <Tags aria-hidden />,
+          active: under("/billing/prices"),
+        },
+        {
           href: "/billing/excluded-ranges",
           label: t("excludedRanges"),
           icon: <CalendarOff aria-hidden />,
@@ -107,7 +117,10 @@ export function BillingNav({
     >
       {({ close }) => (
         <>
-          <AsideHeading title={tm("billing.name")} subtitle={t("subtitle")} />
+          <AsideHeading
+            title={tm("billing.name")}
+            subtitle={canEdit ? t("subtitle") : `${t("subtitle")} · ${t("readOnlyBadge")}`}
+          />
           <SidebarNav
             label={tm("billing.name")}
             sections={sections}

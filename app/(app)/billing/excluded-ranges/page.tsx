@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
-import { requireBillingUser } from "@/lib/auth/dal";
+import { requireBillingViewer } from "@/lib/auth/dal";
+import { canEditBilling } from "@/lib/auth/roles";
 import { contractLabel, getContractsWithCounts, getShowDemo } from "@/lib/billing/queries";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { ModuleEyebrow, pageTitleClass } from "@/components/page-title";
@@ -9,7 +10,8 @@ import { RangesTable } from "./ranges";
 import { RangeForm } from "./range-form";
 
 export default async function ExcludedRangesPage() {
-  await requireBillingUser();
+  const user = await requireBillingViewer();
+  const canEdit = canEditBilling(user.profile.role);
   const t = await getTranslations("Billing");
   const supabase = await createClient();
 
@@ -30,9 +32,17 @@ export default async function ExcludedRangesPage() {
           <h1 className={pageTitleClass}>{t("rangesTitle")}</h1>
           <p className="mt-1.5 text-sm text-slate-500">{t("rangesSubtitle")}</p>
         </div>
-        <DialogButton label={t("addRange")}>
-          <RangeForm contracts={contracts.map((c) => ({ id: c.id, label: contractLabel(c) }))} />
-        </DialogButton>
+        {canEdit && (
+          <DialogButton label={t("addRange")}>
+            <RangeForm
+              contracts={contracts.map((c) => ({
+                id: c.id,
+                label: contractLabel(c),
+                keywords: [c.misa_kho, c.misa_kho_name, c.customer_name, c.contract_no, c.project_name],
+              }))}
+            />
+          </DialogButton>
+        )}
       </div>
 
       <Card>
@@ -40,7 +50,7 @@ export default async function ExcludedRangesPage() {
           <CardTitle>{t("rangeCount", { count: data?.length ?? 0 })}</CardTitle>
         </CardHeader>
         <CardBody className="p-0">
-          <RangesTable ranges={data ?? []} contractLabels={labels} />
+          <RangesTable ranges={data ?? []} contractLabels={labels} canDelete={canEdit} />
         </CardBody>
       </Card>
     </div>

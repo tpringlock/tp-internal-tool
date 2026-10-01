@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
-import { requireBillingUser } from "@/lib/auth/dal";
+import { requireBillingViewer } from "@/lib/auth/dal";
+import { canEditBilling } from "@/lib/auth/roles";
+import { uploadsForPicker } from "@/lib/billing/month-files";
 import {
   contractPeriod,
   defaultBillingMonth,
@@ -16,6 +18,7 @@ import {
   getShowDemo,
   todayIct,
 } from "@/lib/billing/queries";
+import { Alert } from "@/components/ui/alert";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { ModuleEyebrow, pageTitleClass } from "@/components/page-title";
 import { CalculateForm } from "./calculate-form";
@@ -31,7 +34,8 @@ export default async function BillingCalculatePage({
 }: {
   searchParams: Promise<{ contract?: string; month?: string }>;
 }) {
-  await requireBillingUser();
+  const user = await requireBillingViewer();
+  const canEdit = canEditBilling(user.profile.role);
   const sp = await searchParams;
   const t = await getTranslations("Billing");
   const supabase = await createClient();
@@ -44,7 +48,7 @@ export default async function BillingCalculatePage({
     .limit(5);
   if (!showDemo) recentQuery = recentQuery.eq("is_demo", false);
 
-  const [contracts, { data: uploads }, { data: recent }] = await Promise.all([
+  const [contracts, { data: uploadRows }, { data: recent }, { data: monthRows }] = await Promise.all([
     getContractsWithCounts(supabase, showDemo),
     supabase
       .from("billing_misa_uploads")
@@ -53,7 +57,10 @@ export default async function BillingCalculatePage({
       .order("created_at", { ascending: false })
       .limit(200),
     recentQuery,
+    supabase.from("billing_misa_month_files").select("upload_id, month, version, status").limit(1000),
   ]);
+  // Active month versions + legacy files; replaced versions are not offered.
+  const uploads = uploadsForPicker(uploadRows ?? [], monthRows ?? []);
 
   const active = contracts.filter((c) => c.active);
   const suggested = defaultBillingMonth(todayIct());
@@ -82,6 +89,9 @@ export default async function BillingCalculatePage({
 
       <ScopeNotice />
 
+      {!canEdit && <Alert tone="info">{t("readOnlyNotice")}</Alert>}
+
+      {canEdit && (
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
         <Card>
           <CardHeader>
@@ -96,8 +106,9 @@ export default async function BillingCalculatePage({
                 period_start_day: c.period_start_day,
                 contract_start: c.contract_start,
                 item_count: c.item_count,
+                keywords: [c.misa_kho, c.misa_kho_name, c.customer_name, c.contract_no, c.project_name],
               }))}
-              uploads={(uploads ?? []).map((u) => ({
+              uploads={uploads.map((u) => ({
                 id: u.id,
                 file_name: u.file_name,
                 file_from: u.file_from,
@@ -105,6 +116,8 @@ export default async function BillingCalculatePage({
                 layout: u.layout,
                 created_at: u.created_at,
                 warning_count: u.warnings.length,
+                month: u.month,
+                version: u.version,
               }))}
               months={months}
               defaultContractId={defaultContractId}
@@ -130,6 +143,7 @@ export default async function BillingCalculatePage({
           </CardBody>
         </Card>
       </div>
+      )}
 
       <Card>
         <CardHeader className="flex items-center justify-between gap-3">

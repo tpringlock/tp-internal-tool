@@ -28,8 +28,8 @@ describe("messages", () => {
       messages: messages as Tree,
       onError: (e) => errors.push(e.message),
     });
-    const values = { count: 2, name: "x", codes: "x", kho: "x", month: "x", from: "x", to: "x", total: "x", no: "x", price: "x", unit: "x", days: 1, layout: "x", size: "x", warehouses: 1, start: 26, end: 25, date: "x", message: "x", errors: 0, fileFrom: "x", fileTo: "x" };
-    for (const ns of ["Billing", "BillingNav"] as const) {
+    const values = { count: 2, name: "x", codes: "x", kho: "x", month: "x", from: "x", to: "x", total: "x", no: "x", price: "x", unit: "x", days: 1, layout: "x", size: "x", warehouses: 1, start: 26, end: 25, date: "x", message: "x", errors: 0, fileFrom: "x", fileTo: "x", version: 1, old: 1, row: 2, other: 3, code: "x", value: "x", max: 12, inserted: 1, updated: 1, deleted: 1, unchanged: 1, contracts: 1, created: 1, contractsUpdated: 1, columns: "x", months: "x", vouchers: 1, field: "x" };
+    for (const ns of ["Billing", "BillingNav", "BillingFiles", "BillingPrices"] as const) {
       for (const key of leaves((messages as Tree)[ns] as Tree)) {
         if (key === "scopeNotice") t.rich(`${ns}.${key}` as never, { b: (c: unknown) => c } as never);
         else t(`${ns}.${key}` as never, values as never);

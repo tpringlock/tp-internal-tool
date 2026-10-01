@@ -5,12 +5,15 @@ import { daysInclusive, formatVnDate } from "@/lib/billing/dates";
 import type { BillingExcludedRange } from "@/lib/db/types";
 import { ActionButton } from "../action-button";
 
-/** Non-billable date ranges with a delete button per row. */
+/** Non-billable date ranges, with a delete button per row when `canDelete`. */
 export async function RangesTable({
   ranges,
   contractLabels,
+  canDelete,
 }: {
   ranges: BillingExcludedRange[];
+  /** false for "Chỉ xem". */
+  canDelete: boolean;
   /** Pass to show which contract each range belongs to ("all" when null). */
   contractLabels?: Map<string, string>;
 }) {
@@ -25,7 +28,7 @@ export async function RangesTable({
           <th className="px-5 py-3 font-medium">{t("dateRange")}</th>
           <th className="px-5 py-3 font-medium">{t("reason")}</th>
           {contractLabels && <th className="px-5 py-3 font-medium">{t("appliesTo")}</th>}
-          <th className="px-5 py-3" />
+          {canDelete && <th className="px-5 py-3" />}
         </tr>
       </thead>
       <tbody>
@@ -45,7 +48,7 @@ export async function RangesTable({
                 {r.contract_id ? (contractLabels.get(r.contract_id) ?? "—") : t("allContracts")}
               </td>
             )}
-            <td className="px-5 py-3 text-right">
+            {canDelete && <td className="px-5 py-3 text-right">
               <ActionButton
                 action={deleteExcludedRange}
                 id={r.id}
@@ -60,7 +63,7 @@ export async function RangesTable({
                 icon={<Trash2 className="h-4 w-4" aria-hidden />}
                 iconOnly
               />
-            </td>
+            </td>}
           </tr>
         ))}
       </tbody>

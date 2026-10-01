@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { canUseBilling } from "@/lib/auth/roles";
+import { canEditBilling, canViewBilling } from "@/lib/auth/roles";
 import type { Profile } from "@/lib/db/types";
 
 export interface SessionUser {
@@ -66,11 +66,23 @@ export async function requireContentManager(): Promise<SessionUser> {
 }
 
 /**
- * Require a billing user (admin or accountant) or redirect home. Guards the
- * whole /billing app and every billing action / route handler.
+ * Require read access to the billing app (admin, accountant or "Chỉ xem") or
+ * redirect home. Guards every /billing page and the read-only route handlers
+ * (Excel and source file downloads).
+ */
+export async function requireBillingViewer(): Promise<SessionUser> {
+  const user = await requireUser();
+  if (!canViewBilling(user.profile.role)) redirect("/");
+  return user;
+}
+
+/**
+ * Require a billing user who may CHANGE data (admin or accountant). Guards
+ * every billing server action that writes. A "Chỉ xem" account is sent back
+ * to /billing, anyone else home.
  */
 export async function requireBillingUser(): Promise<SessionUser> {
   const user = await requireUser();
-  if (!canUseBilling(user.profile.role)) redirect("/");
+  if (!canEditBilling(user.profile.role)) redirect(canViewBilling(user.profile.role) ? "/billing" : "/");
   return user;
 }

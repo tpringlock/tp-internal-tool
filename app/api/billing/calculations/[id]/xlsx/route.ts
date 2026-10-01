@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { requireBillingUser } from "@/lib/auth/dal";
+import { requireBillingViewer } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { logActivity } from "@/lib/activity";
 import { exportRentXlsx } from "@/lib/billing/export-xlsx";
@@ -17,10 +17,11 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  await requireBillingUser();
+  await requireBillingViewer();
+  // Read-only: "Chỉ xem" accounts may export too (section 3 of the plan).
   const { id } = await params;
 
-  // RLS: only billing users can read calculations.
+  // RLS: only billing users and viewers can read calculations.
   const supabase = await createClient();
   const { data: calc } = await supabase
     .from("billing_rent_calculations")

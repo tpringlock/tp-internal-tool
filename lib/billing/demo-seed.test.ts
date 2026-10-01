@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import seed from "./seed/gia-dinh-excel-contracts.json";
-import { billingContractSchema, billingItemSchema } from "@/lib/validation";
+import { billingContractSchema, billingPriceLineSchema } from "@/lib/validation";
 import { buildDemoContracts, DEMO_PREFIX, slugifyCode } from "./demo-seed";
 import type { ContractConfig } from "./types";
 
@@ -24,7 +24,7 @@ describe("demo seed (Excel tool prices)", () => {
     for (const r of rows) {
       const c = billingContractSchema.safeParse({ ...r, contract_start: "" });
       expect(c.success, r.code).toBe(true);
-      for (const i of r.items) expect(billingItemSchema.safeParse(i).success, `${r.code} ${i.name}`).toBe(true);
+      for (const l of r.lines) expect(billingPriceLineSchema.safeParse(l).success, `${r.code} ${l.ma_vt}`).toBe(true);
     }
   });
 

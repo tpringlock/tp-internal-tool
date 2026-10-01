@@ -1,8 +1,9 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { BillingContract, BillingContractItem, BillingMisaUpload, Database } from "@/lib/db/types";
-import { toContractConfig } from "./contract-config";
+import type { BillingContract, BillingMisaUpload, BillingPriceLine, Database } from "@/lib/db/types";
+import { PriceLinesError, toContractConfigFromLines } from "./price-lines";
+import { getAllPriceLines } from "./queries";
 import { mergeLedgers } from "./merge-ledgers";
 import { parseMisaLedger } from "./misa-parser";
 import type { ContractConfig, Ledger } from "./types";
@@ -13,24 +14,32 @@ export const BILLING_BUCKET = "billing";
 export const MAX_MISA_FILE_SIZE = 10 * 1024 * 1024;
 export const XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
+export type LoadedContract =
+  | { contract: BillingContract; lines: BillingPriceLine[]; config: ContractConfig; configError: null }
+  | { contract: BillingContract; lines: BillingPriceLine[]; config: null; configError: string };
+
 /**
- * Load a contract with its price lines and excluded codes, via the RLS-bound
- * client (so it doubles as an access check). Null if missing or not visible.
+ * Load a contract with its flat price rows (billing_price_lines, 0036) and the
+ * engine config built from them, via the RLS-bound client (so it doubles as
+ * an access check). Null if missing or not visible. When rows printed as one
+ * HSTT line disagree on price/unit, `config` is null and `configError` says
+ * why (calculating must stop).
  */
 export async function loadContract(
   supabase: SupabaseClient<Database>,
   contractId: string,
-): Promise<{ contract: BillingContract; config: ContractConfig } | null> {
-  const [{ data: contract }, { data: items }, { data: excluded }] = await Promise.all([
+): Promise<LoadedContract | null> {
+  const [{ data: contract }, { data: lines }] = await Promise.all([
     supabase.from("billing_contracts").select("*").eq("id", contractId).maybeSingle(),
-    supabase.from("billing_contract_items").select("*").eq("contract_id", contractId),
-    supabase.from("billing_excluded_codes").select("ma_hang").eq("contract_id", contractId),
+    supabase.from("billing_price_lines").select("*").eq("contract_id", contractId).order("sort_order"),
   ]);
   if (!contract) return null;
-  return {
-    contract,
-    config: toContractConfig(contract, items ?? [], (excluded ?? []).map((e) => e.ma_hang)),
-  };
+  try {
+    return { contract, lines: lines ?? [], config: toContractConfigFromLines(contract, lines ?? []), configError: null };
+  } catch (e) {
+    if (!(e instanceof PriceLinesError)) throw e;
+    return { contract, lines: lines ?? [], config: null, configError: e.message };
+  }
 }
 
 /**
@@ -55,8 +64,9 @@ export async function loadMergedLedger(
 
 /**
  * Every demo ("giả định") contract as an engine config, for the Excel
- * comparison page. Price lines are paged: the seed has ~1500 of them, over
- * PostgREST's 1000-row default.
+ * comparison page. Price rows are paged (the seed has ~1500, over
+ * PostgREST's 1000-row default). A demo contract whose rows conflict is
+ * left out.
  */
 export async function loadDemoConfigs(supabase: SupabaseClient<Database>): Promise<ContractConfig[]> {
   const { data: contracts } = await supabase
@@ -66,33 +76,14 @@ export async function loadDemoConfigs(supabase: SupabaseClient<Database>): Promi
     .order("misa_kho");
   if (!contracts || contracts.length === 0) return [];
 
-  const PAGE = 1000;
-  const items: BillingContractItem[] = [];
-  for (let from = 0; ; from += PAGE) {
-    const { data } = await supabase
-      .from("billing_contract_items")
-      .select("*, billing_contracts!inner(is_demo)")
-      .eq("billing_contracts.is_demo", true)
-      .order("id")
-      .range(from, from + PAGE - 1)
-      .overrideTypes<BillingContractItem[], { merge: false }>();
-    items.push(...(data ?? []));
-    if (!data || data.length < PAGE) break;
-  }
   // Joined filter instead of .in(209 ids), which would make a very long URL.
-  const { data: excluded } = await supabase
-    .from("billing_excluded_codes")
-    .select("contract_id, ma_hang, billing_contracts!inner(is_demo)")
-    .eq("billing_contracts.is_demo", true)
-    .overrideTypes<{ contract_id: string; ma_hang: string }[], { merge: false }>();
-
-  const itemsBy = Map.groupBy(items, (i) => i.contract_id);
-  const excludedBy = Map.groupBy(excluded ?? [], (e) => e.contract_id);
-  return contracts.map((c) =>
-    toContractConfig(
-      c,
-      itemsBy.get(c.id) ?? [],
-      (excludedBy.get(c.id) ?? []).map((e) => e.ma_hang),
-    ),
-  );
+  const linesBy = Map.groupBy(await getAllPriceLines(supabase, { demo: true }), (l) => l.contract_id);
+  return contracts.flatMap((c) => {
+    try {
+      return [toContractConfigFromLines(c, linesBy.get(c.id) ?? [])];
+    } catch (e) {
+      if (e instanceof PriceLinesError) return [];
+      throw e;
+    }
+  });
 }

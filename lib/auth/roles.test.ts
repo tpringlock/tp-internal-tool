@@ -1,16 +1,24 @@
 import { describe, expect, it } from "vitest";
-import { canManageContent, canUseBilling } from "./roles";
+import type { UserRole } from "@/lib/db/types";
+import { canEditBilling, canManageContent, canViewBilling } from "./roles";
+
+const ROLES: UserRole[] = ["admin", "manager", "accountant", "billing_viewer", "employee"];
 
 describe("role helpers", () => {
-  it("billing is for admins and accountants only", () => {
-    expect(canUseBilling("admin")).toBe(true);
-    expect(canUseBilling("accountant")).toBe(true);
-    expect(canUseBilling("manager")).toBe(false);
-    expect(canUseBilling("employee")).toBe(false);
+  it("billing: who may view and who may change (plan section 3)", () => {
+    const matrix = Object.fromEntries(ROLES.map((r) => [r, [canViewBilling(r), canEditBilling(r)]]));
+    expect(matrix).toEqual({
+      admin: [true, true],
+      manager: [false, false],
+      accountant: [true, true],
+      billing_viewer: [true, false],
+      employee: [false, false],
+    });
   });
 
-  it("accountants do not manage content", () => {
+  it("accountants and viewers do not manage content", () => {
     expect(canManageContent("accountant")).toBe(false);
+    expect(canManageContent("billing_viewer")).toBe(false);
     expect(canManageContent("manager")).toBe(true);
   });
 });

@@ -1,5 +1,6 @@
 import { Suspense } from "react";
-import { requireBillingUser } from "@/lib/auth/dal";
+import { requireBillingViewer } from "@/lib/auth/dal";
+import { canEditBilling } from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/server";
 import { getShowDemo } from "@/lib/billing/queries";
 import { WorkspaceContent } from "@/components/workspace-content";
@@ -8,14 +9,16 @@ import { ClientMessages } from "@/components/client-messages";
 
 /**
  * "Tính hóa đơn tự động" workspace shell. Guards every /billing route:
- * admins and accountants only, everyone else is sent home.
+ * admins, accountants and "Chỉ xem" accounts; everyone else is sent home.
+ * Pages hide their edit controls for "Chỉ xem"; the server actions refuse
+ * them regardless (requireBillingUser).
  */
 export default async function BillingLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const user = await requireBillingUser();
+  const user = await requireBillingViewer();
   const supabase = await createClient();
   const showDemo = await getShowDemo();
 
@@ -49,6 +52,7 @@ export default async function BillingLayout({
             draftCount={drafts.count ?? 0}
             showDemo={showDemo}
             isAdmin={user.profile.role === "admin"}
+            canEdit={canEditBilling(user.profile.role)}
           />
         </Suspense>
         <WorkspaceContent>{children}</WorkspaceContent>
