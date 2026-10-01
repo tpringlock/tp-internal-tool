@@ -109,3 +109,33 @@ Lint hiện có sẵn 6 lỗi cũ (`react-hooks/set-state-in-effect` ở admin/c
 - Việc lớn (nhiều file, đụng DB/RLS): lên kế hoạch trước, liệt kê file sẽ sửa và migration cần có, chờ duyệt rồi mới code.
 - Không tự `git push`, không chạy `supabase db push` lên project thật. Migration để người dùng tự apply.
 - Cuối việc: tóm tắt file đã sửa, những chỗ kiểm tra quyền đã thêm, và các lệnh kiểm tra đã chạy.
+
+## Billing – quy tắc bắt buộc
+
+- ⚠ `.env.local` trỏ tới **PRODUCTION** (`surnokungqebqzzlyrsz`). Không có môi trường dev. `npm run dev`, mọi script và `supabase db query --linked` đều chạm dữ liệu thật: **mọi lệnh ghi lên DB phải hỏi trước** (đọc thì được).
+- Migration:
+  - gửi SQL cho chủ dự án duyệt trước;
+  - backup (`supabase/revert/backup-billing.sql`, `backup-billing-gd1.sql`) và `check-real-contracts.sql` (so MD5) **trước và sau** khi apply;
+  - `npx supabase db push` do chủ dự án tự chạy; `--dry-run` phải chỉ liệt kê đúng file mới.
+- Không sửa 4 file lõi: `lib/billing/engine.ts`, `misa-parser.ts`, `dates.ts`, `merge-ledgers.ts`.
+- Không chạy `supabase/revert/0032_billing_demo_and_decimal.revert.sql`. Dọn dữ liệu giả định chỉ bằng `npm run seed:gia-dinh:xoa -- --project=surnokungqebqzzlyrsz`.
+- Không sửa giá hợp đồng Việt Panel thật (`vietpanel-senci`, kho `VIETPANEL-01`). Số chuẩn: kỳ 08/2026 (26/07→25/08) = **806.342.923đ**. Sau mọi thay đổi đụng giá/tính tiền: `npx tsx scripts/billing-verify-recalc.mts --project=surnokungqebqzzlyrsz` phải ra **0 khác biệt**.
+- Không tự `git push`. Dữ liệu tạo khi test đặt tiền tố **"TEST"** và liệt kê lại để xóa.
+
+### Trạng thái: GĐ1 (nền dữ liệu) đã xong
+
+Migration 0033–0037 đã apply trên production (0037 = cutover, bảng giá cũ khóa ghi). Kế hoạch: `docs/ke-hoach-feedback-tp-2026-10.md`; triển khai/quay lại: `docs/billing-gd1-trien-khai.md`. Code GĐ1 nằm ở nhánh `feature/billing-gd1` (merge vào `main` để deploy).
+
+- **Vai trò:** `billing_viewer` ("Chỉ xem"). `canViewBilling` / `canEditBilling` (`lib/auth/roles.ts`); `requireBillingViewer` (trang, route tải) / `requireBillingUser` (mọi action ghi) (`lib/auth/dal.ts`); RLS `private.is_billing_viewer()` / `is_billing_user()`; `lib/auth/billing-guards.test.ts`.
+- **File nguồn theo tháng:**
+  - Bảng `billing_misa_month_files` (tháng, phiên bản, 1 bản `active`/tháng, `catalog` MISA), RPC `billing_add_month_file`.
+  - `lib/billing/month-files.ts` (`checkMonthFile`, `pickMonthFiles`, `planMonthUpload`, `uploadsForPicker`), `month-files-server.ts`, `misa-catalog.ts`, `misa-title.ts`.
+  - Actions `app/actions/billing-files.ts`; trang `/billing/uploads`; route tải `/api/billing/uploads/[id]`.
+- **Bảng giá phẳng:**
+  - Bảng `billing_price_lines` (1 dòng = kho + mã VT; `ten_vt`/`dvt` theo MISA, `print_name`/`print_dvt` ghi đè khi in HSTT, giá 0 = không tính tiền) và `billing_price_imports` (nhật ký). RPC `billing_save_price_lines`, `billing_import_price_lines`.
+  - Gộp thành `ContractConfig`: `lib/billing/price-lines.ts` (`toContractConfigFromLines`, `groupPriceLines`), dùng trong `loadContract` (`lib/billing/server.ts`).
+  - Nhập/xuất Excel: `price-import.ts` (cột vắng = giữ, ô trống = xóa), `price-export.ts`, `price-sheet.ts` (bố cục cột), `price-template.ts` + `scripts/make-price-template.mts` (sinh `docs/mau-nhap-don-gia.xlsx`), `price-table.ts`.
+  - Actions `app/actions/billing-prices.ts`; trang `/billing/prices`, `/billing/prices/import`; editor `billing/contracts/price-lines-editor.tsx`.
+- **Ô chọn có tìm kiếm:** `components/ui/combobox.tsx` + `lib/search.ts`.
+- **Kiểm tra/quay lại:** `scripts/billing-verify-recalc.mts`; `supabase/revert/check-price-lines-migration.sql`, `check-month-files.sql`, `list-month-files.sql`, các file `003x_*.revert.sql`.
+- **Chưa làm (GĐ2+):** màn tính tiền tự lấy file theo tháng (`pickMonthFiles` đã có, chưa gắn), mẫu kỳ, báo cáo nhiều dự án, trung tâm cảnh báo, HSTT 4 biểu.
