@@ -1,7 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { BillingContract, BillingMisaUpload, Database } from "@/lib/db/types";
+import type { BillingContract, BillingContractItem, BillingMisaUpload, Database } from "@/lib/db/types";
 import { toContractConfig } from "./contract-config";
 import { mergeLedgers } from "./merge-ledgers";
 import { parseMisaLedger } from "./misa-parser";
@@ -51,4 +51,48 @@ export async function loadMergedLedger(
     }),
   );
   return mergeLedgers(ledgers);
+}
+
+/**
+ * Every demo ("giả định") contract as an engine config, for the Excel
+ * comparison page. Price lines are paged: the seed has ~1500 of them, over
+ * PostgREST's 1000-row default.
+ */
+export async function loadDemoConfigs(supabase: SupabaseClient<Database>): Promise<ContractConfig[]> {
+  const { data: contracts } = await supabase
+    .from("billing_contracts")
+    .select("*")
+    .eq("is_demo", true)
+    .order("misa_kho");
+  if (!contracts || contracts.length === 0) return [];
+
+  const PAGE = 1000;
+  const items: BillingContractItem[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data } = await supabase
+      .from("billing_contract_items")
+      .select("*, billing_contracts!inner(is_demo)")
+      .eq("billing_contracts.is_demo", true)
+      .order("id")
+      .range(from, from + PAGE - 1)
+      .overrideTypes<BillingContractItem[], { merge: false }>();
+    items.push(...(data ?? []));
+    if (!data || data.length < PAGE) break;
+  }
+  // Joined filter instead of .in(209 ids), which would make a very long URL.
+  const { data: excluded } = await supabase
+    .from("billing_excluded_codes")
+    .select("contract_id, ma_hang, billing_contracts!inner(is_demo)")
+    .eq("billing_contracts.is_demo", true)
+    .overrideTypes<{ contract_id: string; ma_hang: string }[], { merge: false }>();
+
+  const itemsBy = Map.groupBy(items, (i) => i.contract_id);
+  const excludedBy = Map.groupBy(excluded ?? [], (e) => e.contract_id);
+  return contracts.map((c) =>
+    toContractConfig(
+      c,
+      itemsBy.get(c.id) ?? [],
+      (excludedBy.get(c.id) ?? []).map((e) => e.ma_hang),
+    ),
+  );
 }

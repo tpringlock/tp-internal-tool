@@ -41,3 +41,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Windows Git Bash crash dumps
+*.stackdump
+
+# drop folders for incoming code (copied into the repo, then deleted)
+_incoming-billing*/

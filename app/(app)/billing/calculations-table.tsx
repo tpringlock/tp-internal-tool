@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { formatVnDate } from "@/lib/billing/dates";
 import { formatBillingMonth } from "@/lib/billing/periods";
+import { toAmount } from "@/lib/billing/amounts";
 import { formatDateTime, formatNumber } from "@/lib/format";
 import type { BillingRentCalculation } from "@/lib/db/types";
 import { StatusBadge } from "./status-badge";
@@ -63,7 +64,7 @@ export async function CalculationsTable({
               data-label={t("rentTotal")}
               className="px-5 py-3 font-semibold tabular-nums text-slate-900 md:text-right"
             >
-              {formatNumber(r.total_amount)}đ
+              {formatNumber(toAmount(r.total_amount))}đ
             </td>
             <td data-label={t("statusLabel")} className="px-5 py-3">
               <StatusBadge status={r.status} />

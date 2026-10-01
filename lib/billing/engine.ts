@@ -1,4 +1,5 @@
 import { daysInclusive, formatVnDate, overlapDays } from "./dates";
+import { normalizeCode } from "./misa-parser";
 import type { ContractConfig, Ledger, Period, RentInput, RentItemResult, RentLine, RentResult } from "./types";
 
 /**
@@ -27,9 +28,16 @@ export function buildRentInput(ledger: Ledger, contract: ContractConfig, period:
   }
 
   const warnings: string[] = [];
+  const kho = normalizeCode(contract.misaKho);
+  if (!(kho in ledger.warehouses)) {
+    throw new BillingError(
+      `Không tìm thấy kho "${contract.misaKho}" trong file MISA. Kiểm tra lại mã kho của hợp đồng, ` +
+        `hoặc tải sổ chi tiết với Kho: <<Tất cả>>.`,
+    );
+  }
   const byCode = new Map<string, { name: string }>();
-  for (const it of contract.items) for (const code of it.maHang) byCode.set(code, it);
-  const excluded = new Set(contract.excludedMaHang);
+  for (const it of contract.items) for (const code of it.maHang) byCode.set(normalizeCode(code), it);
+  const excluded = new Set(contract.excludedMaHang.map(normalizeCode));
 
   const opening = new Map<string, number>(contract.items.map((i) => [i.name, 0]));
   const moves = new Map<string, Map<string, { date: string; qty: number; ref: string }>>(
@@ -45,12 +53,12 @@ export function buildRentInput(ledger: Ledger, contract: ContractConfig, period:
   };
 
   for (const o of ledger.openings) {
-    if (o.kho !== contract.misaKho) continue;
+    if (o.kho !== kho) continue;
     const name = itemOf(o.maHang, o.tenHang, o.qty !== 0);
     if (name) opening.set(name, opening.get(name)! + o.qty);
   }
   for (const m of ledger.movements) {
-    if (m.kho !== contract.misaKho || m.date > period.to) continue;
+    if (m.kho !== kho || m.date > period.to) continue;
     const name = itemOf(m.maHang, m.tenHang, true);
     if (!name) continue;
     const delta = m.nhap - m.xuat;
@@ -110,7 +118,10 @@ export function calculateRent(input: RentInput): RentResult {
     const excludedDays = excluded.reduce((s, r) => s + overlapDays(date, period.to, r.from, r.to), 0);
     const days = fullDays - excludedDays;
     const amount = qty * days * price;
-    if (!Number.isSafeInteger(amount)) throw new BillingError(`Thành tiền vượt giới hạn số nguyên: ${ref}`);
+    if (!Number.isFinite(amount) || Math.abs(amount) > Number.MAX_SAFE_INTEGER) {
+      throw new BillingError(`Thành tiền không hợp lệ: ${ref}`);
+    }
+    if (!Number.isInteger(qty)) warnings.push(`Phiếu ${ref}: số lượng lẻ (${qty}), thành tiền không phải số nguyên.`);
     const explain =
       `${fmt(qty)} ${unit.toLowerCase()} × ${days} ngày` +
       (excludedDays ? ` (${fullDays} − ${excludedDays} ngày miễn tính)` : "") +

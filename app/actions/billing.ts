@@ -1,6 +1,7 @@
 "use server";
 
 import { createHash } from "node:crypto";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
@@ -12,25 +13,31 @@ import {
   billingContractConfigSchema,
   billingContractSchema,
   billingExcludedRangeSchema,
+  compareDemoSchema,
   computeRentSchema,
   translateFieldErrors,
 } from "@/lib/validation";
 import { BillingError, computeRentFromLedger } from "@/lib/billing/engine";
 import { MisaParseError, parseMisaLedger } from "@/lib/billing/misa-parser";
+import { findDuplicateCodes } from "@/lib/billing/contract-config";
 import {
-  findDuplicateCodes,
   findUnknownCodes,
   warningsForWarehouse,
   type UnknownCode,
-} from "@/lib/billing/contract-config";
+} from "@/lib/billing/ledger-checks";
 import { contractPeriod, rangesForPeriod } from "@/lib/billing/periods";
+import { amountForDb, hasFractionalQuantities } from "@/lib/billing/amounts";
 import {
   BILLING_BUCKET,
   MAX_MISA_FILE_SIZE,
   XLSX_MIME,
   loadContract,
+  loadDemoConfigs,
   loadMergedLedger,
 } from "@/lib/billing/server";
+import { compareContracts, type CompareSummary } from "@/lib/billing/compare";
+import { formatVnDate } from "@/lib/billing/dates";
+import { SHOW_DEMO_COOKIE } from "@/lib/billing/queries";
 import type { FormState } from "@/app/actions/auth";
 
 /** Postgres unique-violation error code. */
@@ -276,6 +283,8 @@ export async function computeRent(
       };
     }
     result = computeRentFromLedger(ledger, config, period, excludedRanges);
+    // Stored at 4 decimals (numeric(20,4)); keep the saved result consistent.
+    result.totalAmount = Number(amountForDb(result.totalAmount));
     // Surface file-level warnings for this warehouse next to the engine's own.
     result.warnings.unshift(...warningsForWarehouse(ledger.warnings, contract.misa_kho));
   } catch (e) {
@@ -295,7 +304,7 @@ export async function computeRent(
       upload_ids: uploadIds,
       contract_snapshot: config,
       excluded_ranges: excludedRanges,
-      total_amount: result.totalAmount,
+      total_amount: amountForDb(result.totalAmount),
       result,
       created_by: user.id,
     })
@@ -329,6 +338,23 @@ export async function confirmCalculation(
   const id = String(formData.get("id") ?? "");
 
   const supabase = await createClient();
+  const { data: calc } = await supabase
+    .from("billing_rent_calculations")
+    .select("contract_id, result")
+    .eq("id", id)
+    .maybeSingle();
+  if (!calc) return { error: t("errNotFound") };
+  const { data: contract } = await supabase
+    .from("billing_contracts")
+    .select("is_demo")
+    .eq("id", calc.contract_id)
+    .maybeSingle();
+  // Demo prices are for comparison only (also enforced by a DB trigger).
+  if (!contract || contract.is_demo) return { error: t("errDemoNotConfirmable") };
+  // Fractional quantities usually mean a raw material is in a rental
+  // warehouse: the accountant must fix the codes and recalculate first.
+  if (hasFractionalQuantities(calc.result)) return { error: t("errFractionalNotConfirmable") };
+
   // confirmed_by / confirmed_at are stamped by the billing_calc_guard trigger.
   // Only billing-month calculations can be confirmed (also a DB constraint).
   const { data, error } = await supabase
@@ -586,6 +612,102 @@ export async function deleteBillingContract(
   });
   revalidateBilling();
   redirect("/billing/contracts");
+}
+
+// ---------------------------------------------------------------------------
+// Excel comparison (admin only)
+// ---------------------------------------------------------------------------
+
+export interface CompareState extends FormState {
+  result?: CompareSummary & { from: string; to: string; contractCount: number };
+}
+
+/**
+ * Calculate every demo contract (Excel tool prices) over one date range from
+ * the chosen MISA files, to compare with the Excel "BÁO CÁO TIỀN THUÊ"
+ * sheet. Read-only: nothing is saved. Admin only.
+ */
+export async function compareDemoContracts(
+  _prev: CompareState,
+  formData: FormData,
+): Promise<CompareState> {
+  const user = await requireBillingUser();
+  const t = await getTranslations("Billing");
+  if (user.profile.role !== "admin") return { error: t("errAdminOnly") };
+
+  const parsed = compareDemoSchema.safeParse({
+    upload_ids: formData.getAll("upload_ids").map(String),
+    date_from: formData.get("date_from"),
+    date_to: formData.get("date_to"),
+  });
+  if (!parsed.success) {
+    const tv = await getTranslations("Validation");
+    return { fieldErrors: translateFieldErrors(tv, parsed.error) };
+  }
+  const { upload_ids: uploadIds, date_from: from, date_to: to } = parsed.data;
+
+  const supabase = await createClient();
+  const [{ data: uploads }, contracts] = await Promise.all([
+    supabase
+      .from("billing_misa_uploads")
+      .select("id, storage_path, file_name, file_from")
+      .in("id", uploadIds),
+    loadDemoConfigs(supabase),
+  ]);
+  if (!uploads || uploads.length !== uploadIds.length) return { error: t("errUploadNotFound") };
+  if (contracts.length === 0) return { error: t("errNoDemoContracts") };
+
+  let summary: CompareSummary;
+  try {
+    const ledger = await loadMergedLedger(
+      [...uploads].sort((a, b) => (a.file_from < b.file_from ? -1 : 1)),
+    );
+    // The file must cover the range, same rule as the engine (checked once
+    // here so the page shows one clear message instead of 209 copies).
+    if (ledger.from > from || ledger.to < to) {
+      return {
+        error: t("errCompareNotCovered", {
+          fileFrom: formatVnDate(ledger.from),
+          fileTo: formatVnDate(ledger.to),
+        }),
+      };
+    }
+    summary = compareContracts(ledger, contracts, { from, to });
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : t("errComputeFailed") };
+  }
+
+  await logActivity(supabase, {
+    action: "billing.compared",
+    entityType: "billing_upload",
+    metadata: { from, to, uploads: uploadIds, contracts: contracts.length, total: summary.positiveTotal },
+  });
+  return { result: { ...summary, from, to, contractCount: contracts.length } };
+}
+
+// ---------------------------------------------------------------------------
+// "Hiện dữ liệu giả định" switch
+// ---------------------------------------------------------------------------
+
+/**
+ * Show or hide demo ("giả định") contracts and their calculations. Only a
+ * view preference: demo data stays unconfirmable either way.
+ */
+export async function setShowDemo(formData: FormData): Promise<void> {
+  await requireBillingUser();
+  const on = formData.get("show") === "1";
+  const store = await cookies();
+  if (on) {
+    store.set(SHOW_DEMO_COOKIE, "1", {
+      path: "/billing",
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 30,
+    });
+  } else {
+    store.delete({ name: SHOW_DEMO_COOKIE, path: "/billing" });
+  }
+  revalidateBilling();
 }
 
 // ---------------------------------------------------------------------------

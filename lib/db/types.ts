@@ -329,6 +329,8 @@ export type BillingContract = {
   period_start_day: number;
   contract_start: string | null;
   active: boolean;
+  /** Seeded "giả định" contract (Excel tool prices), for comparison only. */
+  is_demo: boolean;
   created_by: string | null;
   created_at: string;
   updated_at: string;
@@ -389,8 +391,11 @@ export type BillingRentCalculation = {
   /** The contract config the engine ran with (prices may change later). */
   contract_snapshot: ContractConfig;
   excluded_ranges: DateRange[];
-  total_amount: number;
+  /** numeric(20,4): may arrive as a string; normalise with toAmount(). */
+  total_amount: number | string;
   result: RentResult;
+  /** Copied from the contract by a trigger (0032); demo calculations can't be confirmed. */
+  is_demo: boolean;
   status: BillingCalcStatus;
   created_by: string;
   created_at: string;
@@ -619,6 +624,7 @@ export interface Database {
           | "period_start_day"
           | "contract_start"
           | "active"
+          | "is_demo"
           | "created_by"
           | "created_at"
           | "updated_at"
@@ -651,6 +657,7 @@ export interface Database {
           BillingRentCalculation,
           | "id"
           | "period_month"
+          | "is_demo"
           | "excluded_ranges"
           | "status"
           | "created_at"
