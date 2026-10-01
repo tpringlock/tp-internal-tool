@@ -38,6 +38,9 @@ export interface CalcUploadOption {
   layout: string;
   created_at: string;
   warning_count: number;
+  /** Month file: its month ("YYYY-MM") and version; null for a legacy (non-month) file. */
+  month: string | null;
+  version: number | null;
 }
 
 type Mode = "month" | "range";
@@ -278,10 +281,17 @@ export function CalculateForm({
                     className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300"
                   />
                   <span className="min-w-0 flex-1">
-                    <span className="block break-words text-sm font-medium text-slate-900">
-                      {u.file_name}
+                    <span className="block text-sm font-medium text-slate-900">
+                      {u.month
+                        ? t("fileMonthLabel", { month: formatBillingMonth(u.month), version: u.version ?? 1 })
+                        : t("fileLegacyLabel", {
+                            from: formatVnDate(u.file_from).slice(0, 5),
+                            to: formatVnDate(u.file_to).slice(0, 5),
+                          })}
                     </span>
-                    <span className="block text-xs text-slate-500">
+                    <span className="block break-words text-xs text-slate-500">
+                      {u.file_name}
+                      {" · "}
                       {t("fileSpan", {
                         from: formatVnDate(u.file_from),
                         to: formatVnDate(u.file_to),

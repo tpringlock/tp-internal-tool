@@ -8,6 +8,7 @@ import {
   countVouchers,
   missingMonths,
   planMonthUpload,
+  uploadsForPicker,
   fullMonthOf,
   monthsCovering,
   pickMonthFiles,
@@ -76,6 +77,23 @@ describe("uploading a new version", () => {
     expect(missingMonths(["2026-09", "2026-06", "2026-08"])).toEqual(["2026-07"]);
     expect(missingMonths(["2026-11", "2027-02"])).toEqual(["2026-12", "2027-01"]);
     expect(missingMonths([])).toEqual([]);
+  });
+});
+
+describe("files offered on the calculate form", () => {
+  it("keeps the active version of each month and legacy files, hides replaced versions, keeps the order", () => {
+    const uploads = [{ id: "u8v3" }, { id: "legacy" }, { id: "u8v1" }, { id: "u6v3" }, { id: "u6v1" }];
+    const rows = [
+      { upload_id: "u8v3", month: "2026-08", version: 3, status: "active" as const },
+      { upload_id: "u8v1", month: "2026-08", version: 1, status: "superseded" as const },
+      { upload_id: "u6v3", month: "2026-06", version: 3, status: "active" as const },
+      { upload_id: "u6v1", month: "2026-06", version: 1, status: "superseded" as const },
+    ];
+    expect(uploadsForPicker(uploads, rows)).toEqual([
+      { id: "u8v3", month: "2026-08", version: 3 },
+      { id: "legacy", month: null, version: null },
+      { id: "u6v3", month: "2026-06", version: 3 },
+    ]);
   });
 });
 

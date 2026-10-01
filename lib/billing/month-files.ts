@@ -94,6 +94,31 @@ export function missingMonths(months: readonly string[]): string[] {
   return out;
 }
 
+export interface PickerMonthRow {
+  upload_id: string;
+  month: string;
+  version: number;
+  status: "active" | "superseded";
+}
+
+/**
+ * Files offered on the calculate form: the ACTIVE version of each month and
+ * the legacy uploads (not month files); replaced versions are left out.
+ * Each file gets its month/version (null for a legacy file) for its label.
+ * Order is kept.
+ */
+export function uploadsForPicker<T extends { id: string }>(
+  uploads: readonly T[],
+  monthRows: readonly PickerMonthRow[],
+): (T & { month: string | null; version: number | null })[] {
+  const byUpload = new Map(monthRows.map((m) => [m.upload_id, m]));
+  return uploads.flatMap((u) => {
+    const m = byUpload.get(u.id);
+    if (m && m.status !== "active") return [];
+    return [{ ...u, month: m?.month ?? null, version: m?.version ?? null }];
+  });
+}
+
 /** Distinct voucher numbers (Số chứng từ) in a parsed file. */
 export function countVouchers(ledger: Pick<Ledger, "movements">): number {
   return new Set(ledger.movements.map((m) => m.soCt.trim()).filter(Boolean)).size;

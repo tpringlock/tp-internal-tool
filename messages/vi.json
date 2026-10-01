@@ -862,6 +862,8 @@
     "historyTitle": "Lịch sử bản tính",
     "historySubtitle": "Các bản tính đã lưu theo hợp đồng và kỳ.",
     "allContracts": "Tất cả hợp đồng",
+    "fileMonthLabel": "Tháng {month} · v{version}",
+    "fileLegacyLabel": "File cũ {from}→{to}",
     "noContractMatch": "Không có hợp đồng nào khớp.",
     "searchContract": "Gõ mã kho, tên kho, khách hàng hoặc số HĐ…",
     "allStatuses": "Tất cả trạng thái",

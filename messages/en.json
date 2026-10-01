@@ -862,6 +862,8 @@
     "historyTitle": "Calculation history",
     "historySubtitle": "Saved calculations by contract and period.",
     "allContracts": "All contracts",
+    "fileMonthLabel": "Month {month} · v{version}",
+    "fileLegacyLabel": "Older file {from}→{to}",
     "noContractMatch": "No contract matches.",
     "searchContract": "Type a warehouse code, name, customer or contract no.…",
     "allStatuses": "All statuses",
