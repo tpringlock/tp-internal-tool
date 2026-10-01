@@ -135,8 +135,8 @@ export async function readPriceSheet(data: ArrayBuffer | Buffer | Uint8Array): P
 // Values
 // ---------------------------------------------------------------------------
 
-/** Largest value of the Postgres integer column. */
-const MAX_PRICE = 2_147_483_647;
+/** Same cap as the price editor (MAX_UNIT_PRICE in lib/validation.ts). */
+const MAX_PRICE = 10_000_000;
 
 export type PriceParse = { ok: true; value: number } | { ok: false; error: string };
 

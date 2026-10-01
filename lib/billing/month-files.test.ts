@@ -6,6 +6,8 @@ import {
   checkMisaScope,
   checkMonthFile,
   countVouchers,
+  missingMonths,
+  planMonthUpload,
   fullMonthOf,
   monthsCovering,
   pickMonthFiles,
@@ -24,7 +26,7 @@ describe("month file checks (upload)", () => {
       expect(title).toMatch(/^Kho: <<Tất cả>>/);
       expect(checkMonthFile({ title, from: ledger.from, to: ledger.to })).toEqual({ ok: true, month });
     }
-  });
+  }, 30_000); // parses two real MISA files
 
   it("refuses a file filtered to one warehouse", () => {
     expect(checkMisaScope("Kho: VIETPANEL-01, Tháng 9 năm 2026")).toMatch(/chỉ có kho "VIETPANEL-01"/);
@@ -54,6 +56,26 @@ describe("month file checks (upload)", () => {
     expect(n).toBeGreaterThan(0);
     expect(n).toBeLessThanOrEqual(l.movements.length);
     expect(countVouchers({ movements: [{ soCt: "A" }, { soCt: " A " }, { soCt: "" }, { soCt: "B" }] as never })).toBe(2);
+  });
+});
+
+describe("uploading a new version", () => {
+  it("first file of a month is version 1, replacing nothing", () => {
+    expect(planMonthUpload([])).toEqual({ version: 1, replaces: null, needsAdmin: false });
+  });
+  it("next version replaces the active one; admin needed only when a confirmed calculation uses it", () => {
+    const versions = [
+      { version: 1, status: "superseded" as const, confirmedUses: 2 },
+      { version: 2, status: "active" as const, confirmedUses: 0 },
+    ];
+    expect(planMonthUpload(versions)).toEqual({ version: 3, replaces: 2, needsAdmin: false });
+    versions[1].confirmedUses = 1;
+    expect(planMonthUpload(versions).needsAdmin).toBe(true);
+  });
+  it("lists the months missing between the first and the last", () => {
+    expect(missingMonths(["2026-09", "2026-06", "2026-08"])).toEqual(["2026-07"]);
+    expect(missingMonths(["2026-11", "2027-02"])).toEqual(["2026-12", "2027-01"]);
+    expect(missingMonths([])).toEqual([]);
   });
 });
 

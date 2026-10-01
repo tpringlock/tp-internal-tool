@@ -8,7 +8,7 @@ Portal nội bộ của Ringlock TP (ringlocktp.vn). Một app Next.js duy nhấ
 | --------------------- | ------------ | ------------------------------------------------------ |
 | Quản lí tài liệu      | `/documents` | mọi người (employee chỉ thấy dự án mình là thành viên) |
 | TP Academy            | `/academy`   | mọi người                                              |
-| Tính hóa đơn tự động  | `/billing`   | admin + accountant (trang `/billing/compare`: chỉ admin) |
+| Tính hóa đơn tự động  | `/billing`   | admin + accountant; billing_viewer chỉ xem (trang `/billing/compare`: chỉ admin) |
 | Admin Panel           | `/admin/*`   | admin + manager (users, activity, docs: chỉ admin)     |
 
 ## Stack
@@ -39,7 +39,7 @@ Lint hiện có sẵn 6 lỗi cũ (`react-hooks/set-state-in-effect` ở admin/c
   - `AppMain` (`components/app-main.tsx`): `/documents/*` full-width, không breadcrumb. Các module khác nằm trong container `max-w-6xl` và có `PageHeader` (breadcrumb).
   - `documents/layout.tsx`: sidebar khách hàng (`client-sidebar.tsx`). `documents/document-table.tsx` là bảng hồ sơ dùng chung.
   - `admin/layout.tsx`: guard `requireContentManager()` + `AdminNav`.
-  - `billing/layout.tsx`: guard `requireBillingUser()` + `BillingNav`. Chi tiết module ở `docs/billing-module.md`, quy tắc nghiệp vụ ở `docs/billing-rules.md`.
+  - `billing/layout.tsx`: guard `requireBillingViewer()` + `BillingNav`. Trang billing dùng `requireBillingViewer()` và ẩn nút sửa theo `canEditBilling()`; mọi action ghi dùng `requireBillingUser()` (admin + kế toán), `lib/auth/billing-guards.test.ts` kiểm tra điều này. Chi tiết module ở `docs/billing-module.md`, quy tắc nghiệp vụ ở `docs/billing-rules.md`.
 - `app/(auth)/`: login, quên mật khẩu, đặt lại mật khẩu.
 - `app/actions/*.ts`: server actions (mỗi domain 1 file). `app/api/*`: route handlers (tải file, stream video, share link, MISA sync).
 - `lib/auth/dal.ts`: `getSessionUser`, `requireUser`, `requireContentManager`, `requireBillingUser`, `requireAdmin` (server-only). `lib/auth/roles.ts`: `canManageContent`, `canUseBilling` (client-safe).
@@ -52,10 +52,10 @@ Lint hiện có sẵn 6 lỗi cũ (`react-hooks/set-state-in-effect` ở admin/c
 
 - `clients` (khách hàng, = "công ty" trên UI) → `projects` (dự án, = "thư mục") → `documents` (PDF đã ký).
 - `project_members`: employee chỉ thấy dự án/tài liệu của dự án mình là thành viên. RLS `project_members` chỉ cho admin đọc toàn bộ.
-- `profiles.role`: `employee` | `manager` | `accountant` | `admin`. Role ban đầu lấy từ `app_metadata` (xem migration 0023). `accountant` (kế toán, 0026) chỉ mở thêm `/billing`, không vào Admin Panel; mỗi người chỉ có 1 role.
+- `profiles.role`: `employee` | `manager` | `accountant` | `billing_viewer` | `admin`. `billing_viewer` ("Chỉ xem", 0033/0034) xem được toàn bộ `/billing`, tải file và xuất Excel, không sửa gì; ngoài billing như employee. Role ban đầu lấy từ `app_metadata` (xem migration 0023). `accountant` (kế toán, 0026) chỉ mở thêm `/billing`, không vào Admin Panel; mỗi người chỉ có 1 role.
 - Academy: `courses` → `chapters` → `lessons` (+ quiz, notes, files, progress).
 - `misa_*`: cache dữ liệu từ MISA AMIS (read-only), xem `docs/misa-integration.md`.
-- Billing: `billing_contracts` (1 hợp đồng = 1 kho MISA) → `billing_contract_items` (đơn giá/ngày, mã MISA gộp), `billing_excluded_codes`, `billing_excluded_ranges`, `billing_misa_uploads` (file ở bucket private `billing`), `billing_rent_calculations` (nháp → xác nhận → hủy; `total_amount numeric(20,4)`). RLS: `private.is_billing_user()`.
+- Billing: `billing_contracts` (1 hợp đồng = 1 kho MISA) → `billing_price_lines` (0036: 1 dòng = 1 mã VT; `ten_vt`/`dvt` theo MISA, `print_name`/`print_dvt` ghi đè khi in HSTT, đơn giá 0 = không tính tiền; gộp thành `ContractConfig` bằng `lib/billing/price-lines.ts`), `billing_price_imports` (nhật ký nhập Excel), `billing_excluded_ranges`, `billing_misa_uploads` (file ở bucket private `billing`) + `billing_misa_month_files` (0035: file theo tháng, phiên bản, 1 bản đang dùng/tháng), `billing_rent_calculations` (nháp → xác nhận → hủy; `total_amount numeric(20,4)`). `billing_contract_items` / `billing_excluded_codes` đã **khóa ghi** từ 0037, chỉ giữ để quay lại. RLS: đọc `private.is_billing_viewer()`, ghi `private.is_billing_user()`.
 - **Dữ liệu giả định** (`is_demo = true`, tên "[GIẢ ĐỊNH] ", đơn giá Excel, chỉ để đối chiếu): ẩn trừ khi bật công tắc, không bao giờ xác nhận được. Seed/xóa: `npm run seed:gia-dinh -- --project=<ref>` / `npm run seed:gia-dinh:xoa -- --project=<ref>`. Kiểm tra hợp đồng thật trước/sau: `supabase/revert/check-real-contracts.sql`.
 
 ## Quy tắc bắt buộc

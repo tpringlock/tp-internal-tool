@@ -30,7 +30,7 @@ export const MODULE_NAMESPACES = {
     "MisaSync",
     "MisaTest",
   ],
-  billing: ["Billing", "BillingNav", "DocWorkspace"],
+  billing: ["Billing", "BillingFiles", "BillingNav", "BillingPrices", "DocWorkspace"],
 } as const satisfies Record<string, readonly string[]>;
 
 export type ClientModule = keyof typeof MODULE_NAMESPACES;

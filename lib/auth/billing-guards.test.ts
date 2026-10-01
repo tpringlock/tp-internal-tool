@@ -40,15 +40,18 @@ function firstGuards(src: string): Map<string, string | null> {
 }
 
 describe("billing server-side guards", () => {
-  const actions = firstGuards(read("app/actions/billing.ts"));
+  // Every billing actions file (billing.ts, billing-files.ts, billing-prices.ts…).
+  const actionFiles = files("app/actions", /^billing.*.ts$/);
+  const actions = new Map(actionFiles.flatMap((f) => [...firstGuards(read(f))].map(([n, g]) => [`${f}:${n}`, g] as const)));
 
   it("finds the billing actions", () => {
-    expect(actions.size).toBeGreaterThanOrEqual(10);
+    expect(actionFiles.length).toBeGreaterThanOrEqual(3);
+    expect(actions.size).toBeGreaterThanOrEqual(15);
   });
 
   it("every billing action starts with a guard: requireBillingUser, or the viewer guard for read-only ones", () => {
     const wrong = [...actions]
-      .filter(([name, guard]) => guard !== (VIEWER_ACTIONS.has(name) ? "requireBillingViewer" : "requireBillingUser"))
+      .filter(([key, guard]) => guard !== (VIEWER_ACTIONS.has(key.split(":")[1]) ? "requireBillingViewer" : "requireBillingUser"))
       .map(([name, guard]) => `${name}: ${guard ?? "no guard on the first line"}`);
     expect(wrong).toEqual([]);
   });

@@ -125,24 +125,20 @@ async function seed() {
   const idByCode = new Map((contracts ?? []).map((c: { id: string; code: string }) => [c.code, c.id]));
   const ids = [...idByCode.values()];
 
-  // Replace price lines and excluded codes.
+  // Replace the flat price rows (billing_price_lines, 0036; the old
+  // billing_contract_items / billing_excluded_codes are frozen since 0037).
   for (let i = 0; i < ids.length; i += 100) {
     const chunk = ids.slice(i, i + 100);
-    await must(supabase.from("billing_contract_items").delete().in("contract_id", chunk).select("id"), "Xóa dòng giá cũ");
-    await must(supabase.from("billing_excluded_codes").delete().in("contract_id", chunk).select("ma_hang"), "Xóa mã loại trừ cũ");
+    await must(supabase.from("billing_price_lines").delete().in("contract_id", chunk).select("id"), "Xóa dòng giá cũ");
   }
-  const items = rows.flatMap((r) => r.items.map((it) => ({ ...it, contract_id: idByCode.get(r.code)! })));
-  for (let i = 0; i < items.length; i += 500) {
-    await must(supabase.from("billing_contract_items").insert(items.slice(i, i + 500)).select("id"), "Ghi dòng giá");
-  }
-  const excluded = rows.flatMap((r) => r.excluded.map((ma_hang) => ({ contract_id: idByCode.get(r.code)!, ma_hang })));
-  if (excluded.length > 0) {
-    await must(supabase.from("billing_excluded_codes").insert(excluded).select("ma_hang"), "Ghi mã loại trừ");
+  const lines = rows.flatMap((r) => r.lines.map((l) => ({ ...l, contract_id: idByCode.get(r.code)! })));
+  for (let i = 0; i < lines.length; i += 500) {
+    await must(supabase.from("billing_price_lines").insert(lines.slice(i, i + 500)).select("id"), "Ghi dòng giá");
   }
 
-  const zero = rows.reduce((n, r) => n + r.items.filter((i) => i.unit_price === 0).length, 0);
+  const zero = lines.filter((l) => l.unit_price === 0).length;
   console.log(
-    `Đã seed ${rows.length} hợp đồng GIẢ ĐỊNH, ${items.length} dòng giá (${zero} dòng 0đ giống Excel) vào ${host}.`,
+    `Đã seed ${rows.length} hợp đồng GIẢ ĐỊNH, ${lines.length} dòng giá (${zero} dòng 0đ = không tính tiền) vào ${host}.`,
   );
 }
 

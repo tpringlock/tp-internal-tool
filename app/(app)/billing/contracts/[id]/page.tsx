@@ -11,7 +11,9 @@ import { contractLabel, getProfileNames } from "@/lib/billing/queries";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { ModuleEyebrow, pageTitleClass } from "@/components/page-title";
 import { ContractForm } from "../contract-form";
-import { ContractConfigEditor } from "../config-editor";
+import { PriceLinesEditor } from "../price-lines-editor";
+import { loadActiveCatalog } from "@/lib/billing/month-files-server";
+import { normalizeCode } from "@/lib/billing/text";
 import { RangesTable } from "../../excluded-ranges/ranges";
 import { RangeForm } from "../../excluded-ranges/range-form";
 import { CalculationsTable } from "../../calculations-table";
@@ -38,19 +40,15 @@ export default async function BillingContractPage({
     .maybeSingle();
   if (!contract) notFound();
 
-  const [{ data: items }, { data: excluded }, { data: ranges }, { data: calcs }] =
+  const [{ data: lines }, { catalog }, { data: ranges }, { data: calcs }] =
     await Promise.all([
       supabase
-        .from("billing_contract_items")
+        .from("billing_price_lines")
         .select("*")
         .eq("contract_id", id)
         .order("sort_order")
-        .order("name"),
-      supabase
-        .from("billing_excluded_codes")
-        .select("ma_hang")
-        .eq("contract_id", id)
-        .order("ma_hang"),
+        .order("ma_vt"),
+      loadActiveCatalog(supabase, { fill: false }),
       supabase
         .from("billing_excluded_ranges")
         .select("*")
@@ -119,17 +117,20 @@ export default async function BillingContractPage({
         </CardHeader>
         <CardBody>
           {/* Remount when "?add=" changes so the pre-added lines refresh. */}
-          <ContractConfigEditor
+          <PriceLinesEditor
             key={add}
             contractId={contract.id}
-            items={(items ?? []).map((i) => ({
-              name: i.name,
-              unit: i.unit,
-              unit_price: i.unit_price,
-              ma_hang: i.ma_hang,
+            lines={(lines ?? []).map((l) => ({
+              ma_vt: l.ma_vt,
+              ten_vt: l.ten_vt,
+              dvt: l.dvt,
+              unit_price: l.unit_price,
+              print_name: l.print_name,
+              print_dvt: l.print_dvt,
+              note: l.note,
             }))}
-            excluded={(excluded ?? []).map((e) => e.ma_hang)}
             addCodes={canEdit ? parseCodeList(add) : []}
+            misa={misaFor(catalog, [...(lines ?? []).map((l) => l.ma_vt), ...parseCodeList(add)])}
             readOnly={!canEdit}
           />
         </CardBody>
@@ -182,4 +183,15 @@ export default async function BillingContractPage({
       </Card>
     </div>
   );
+}
+
+/** MISA name/unit of the given codes only (the full catalog stays on the server). */
+function misaFor(
+  catalog: Awaited<ReturnType<typeof loadActiveCatalog>>["catalog"],
+  codes: string[],
+): Record<string, { name: string; dvt: string }> | null {
+  if (!catalog) return null;
+  const out: Record<string, { name: string; dvt: string }> = {};
+  for (const c of codes.map(normalizeCode)) if (catalog.items[c]) out[c] = catalog.items[c];
+  return out;
 }

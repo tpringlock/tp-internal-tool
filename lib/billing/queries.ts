@@ -1,7 +1,7 @@
 import "server-only";
 import { cookies } from "next/headers";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { BillingContract, Database } from "@/lib/db/types";
+import type { BillingContract, BillingPriceLine, Database } from "@/lib/db/types";
 
 type Client = SupabaseClient<Database>;
 
@@ -38,33 +38,62 @@ export async function getContractsWithCounts(supabase: Client, includeDemo = fal
     .order("customer_name")
     .order("project_name");
   if (!includeDemo) contractQuery = contractQuery.eq("is_demo", false);
-  const [{ data: contracts }, items] = await Promise.all([
+  const [{ data: contracts }, lines] = await Promise.all([
     contractQuery,
-    getAllItemContractIds(supabase),
+    getPriceLineContractIds(supabase, includeDemo),
   ]);
   const counts = new Map<string, number>();
-  for (const i of items) {
-    counts.set(i.contract_id, (counts.get(i.contract_id) ?? 0) + 1);
+  for (const l of lines) {
+    counts.set(l.contract_id, (counts.get(l.contract_id) ?? 0) + 1);
   }
   return (contracts ?? []).map((c) => ({ ...c, item_count: counts.get(c.id) ?? 0 }));
 }
 
+const PAGE = 1000;
+
 /**
- * contract_id of every price line. Paged: the demo seed alone has thousands
- * of lines, over PostgREST's default 1000-row limit.
+ * Every row of a query, fetched in pages of 1000 (PostgREST's default row
+ * limit would silently cut longer results). `page` builds the query for one
+ * range; it must have a stable order.
  */
-async function getAllItemContractIds(supabase: Client): Promise<{ contract_id: string }[]> {
-  const PAGE = 1000;
-  const out: { contract_id: string }[] = [];
+async function fetchAll<T>(
+  page: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>,
+): Promise<T[]> {
+  const out: T[] = [];
   for (let from = 0; ; from += PAGE) {
-    const { data } = await supabase
-      .from("billing_contract_items")
-      .select("contract_id")
-      .order("id")
-      .range(from, from + PAGE - 1);
+    const { data, error } = await page(from, from + PAGE - 1);
+    if (error) throw new Error(error.message);
     out.push(...(data ?? []));
     if (!data || data.length < PAGE) return out;
   }
+}
+
+/** contract_id of every price row (real contracts, plus demo ones when asked). */
+async function getPriceLineContractIds(supabase: Client, includeDemo: boolean): Promise<{ contract_id: string }[]> {
+  return fetchAll((from, to) => {
+    let q = supabase
+      .from("billing_price_lines")
+      .select("contract_id, billing_contracts!inner(is_demo)")
+      .order("id")
+      .range(from, to);
+    if (!includeDemo) q = q.eq("billing_contracts.is_demo", false);
+    return q.overrideTypes<{ contract_id: string }[], { merge: false }>();
+  });
+}
+
+/** Every price row of real (`demo: false`) or demo contracts, in table order. */
+export async function getAllPriceLines(supabase: Client, opts: { demo: boolean }): Promise<BillingPriceLine[]> {
+  return fetchAll((from, to) =>
+    supabase
+      .from("billing_price_lines")
+      .select("*, billing_contracts!inner(is_demo)")
+      .eq("billing_contracts.is_demo", opts.demo)
+      .order("contract_id")
+      .order("sort_order")
+      .order("ma_vt")
+      .range(from, to)
+      .overrideTypes<BillingPriceLine[], { merge: false }>(),
+  );
 }
 
 /** id -> full name for the given profile ids (profiles are readable by all users). */

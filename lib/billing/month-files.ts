@@ -58,6 +58,42 @@ export function checkMonthFile(file: { title: string; from: IsoDate; to: IsoDate
   return fullMonthOf(file.from, file.to);
 }
 
+export interface MonthVersion {
+  version: number;
+  status: "active" | "superseded";
+  /** Confirmed calculations that use this version's file. */
+  confirmedUses: number;
+}
+
+export interface MonthUploadPlan {
+  /** Version number the new file will get. */
+  version: number;
+  /** Version it replaces as the active one, or null for a new month. */
+  replaces: number | null;
+  /** The active version backs a confirmed calculation: only an admin may replace it. */
+  needsAdmin: boolean;
+}
+
+/** What uploading one more file for a month does (mirrors billing_add_month_file, 0035). */
+export function planMonthUpload(versions: readonly MonthVersion[]): MonthUploadPlan {
+  const active = versions.find((v) => v.status === "active");
+  return {
+    version: Math.max(0, ...versions.map((v) => v.version)) + 1,
+    replaces: active?.version ?? null,
+    needsAdmin: !!active && active.confirmedUses > 0,
+  };
+}
+
+/** Months between the first and last given month that have no file, oldest first. */
+export function missingMonths(months: readonly string[]): string[] {
+  if (months.length === 0) return [];
+  const sorted = [...new Set(months)].sort();
+  const have = new Set(sorted);
+  const out: string[] = [];
+  for (let m = sorted[0]; m <= sorted[sorted.length - 1]; m = nextMonth(m)) if (!have.has(m)) out.push(m);
+  return out;
+}
+
 /** Distinct voucher numbers (Số chứng từ) in a parsed file. */
 export function countVouchers(ledger: Pick<Ledger, "movements">): number {
   return new Set(ledger.movements.map((m) => m.soCt.trim()).filter(Boolean)).size;

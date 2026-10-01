@@ -26,8 +26,21 @@ export interface DemoContractRow {
   period_start_day: number;
   active: boolean;
   is_demo: true;
-  items: { name: string; unit: string; unit_price: number; ma_hang: string[]; sort_order: number }[];
-  excluded: string[];
+  /**
+   * Flat price rows (billing_price_lines, 0036): one per code. The Excel
+   * tool's names/units are stored as the MISA name/unit; excluded codes are
+   * price-0 rows (not billed).
+   */
+  lines: {
+    ma_vt: string;
+    ten_vt: string;
+    dvt: string;
+    unit_price: number;
+    print_name: string | null;
+    print_dvt: string | null;
+    note: string;
+    sort_order: number;
+  }[];
 }
 
 /**
@@ -51,15 +64,31 @@ export function buildDemoContracts(contracts: ContractConfig[]): DemoContractRow
       period_start_day: 26,
       active: true,
       is_demo: true,
-      items: c.items.map((i, idx) => ({
-        name: i.name,
-        // 56 Excel rows have no unit; the app requires one (display only).
-        unit: i.unit.trim() || "—",
-        unit_price: i.unitPrice,
-        ma_hang: i.maHang.map(collapse),
-        sort_order: idx + 1,
-      })),
-      excluded: c.excludedMaHang.map(collapse),
+      lines: [
+        ...c.items.flatMap((i, idx) =>
+          i.maHang.map((code, j) => ({
+            ma_vt: collapse(code),
+            ten_vt: i.name,
+            dvt: i.unit.trim(),
+            unit_price: i.unitPrice,
+            // Lines merging several codes keep printing as one HSTT line.
+            print_name: i.maHang.length > 1 ? i.name : null,
+            print_dvt: null,
+            note: "",
+            sort_order: (idx + 1) * 1000 + j + 1,
+          })),
+        ),
+        ...c.excludedMaHang.map((code, k) => ({
+          ma_vt: collapse(code),
+          ten_vt: "",
+          dvt: "",
+          unit_price: 0,
+          print_name: null,
+          print_dvt: null,
+          note: "Không tính tiền",
+          sort_order: 999000 + k + 1,
+        })),
+      ],
     };
   });
 }

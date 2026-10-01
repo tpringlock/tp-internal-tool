@@ -12,6 +12,7 @@ import type { BillingCalcStatus } from "@/lib/db/types";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/input";
+import { Combobox } from "@/components/ui/combobox";
 import { Pagination } from "@/components/ui/pagination";
 import { ModuleEyebrow, pageTitleClass } from "@/components/page-title";
 import { CalculationsTable } from "../calculations-table";
@@ -89,14 +90,18 @@ export default async function BillingHistoryPage({
               <label htmlFor="h-contract" className="mb-1 block text-xs font-medium text-slate-500">
                 {t("contract")}
               </label>
-              <Select id="h-contract" name="contract" defaultValue={contractId}>
-                <option value="">{t("allContracts")}</option>
-                {contracts.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {contractLabel(c)}
-                  </option>
-                ))}
-              </Select>
+              <Combobox
+                id="h-contract"
+                name="contract"
+                defaultValue={contractId}
+                allLabel={t("allContracts")}
+                emptyText={t("noContractMatch")}
+                options={contracts.map((c) => ({
+                  value: c.id,
+                  label: contractLabel(c),
+                  keywords: [c.misa_kho, c.misa_kho_name, c.customer_name, c.contract_no, c.project_name],
+                }))}
+              />
             </div>
             <div className="w-full sm:w-44">
               <label htmlFor="h-status" className="mb-1 block text-xs font-medium text-slate-500">

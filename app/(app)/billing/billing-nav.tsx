@@ -10,6 +10,7 @@ import {
   FileText,
   History,
   Info,
+  Tags,
 } from "lucide-react";
 import { setShowDemo } from "@/app/actions/billing";
 import { cn } from "@/lib/utils";
@@ -74,6 +75,12 @@ export function BillingNav({
           icon: <FileText aria-hidden />,
           active: under("/billing/contracts"),
           meta: String(contractCount),
+        },
+        {
+          href: "/billing/prices",
+          label: t("prices"),
+          icon: <Tags aria-hidden />,
+          active: under("/billing/prices"),
         },
         {
           href: "/billing/excluded-ranges",

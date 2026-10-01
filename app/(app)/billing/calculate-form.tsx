@@ -16,6 +16,7 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input, Select } from "@/components/ui/input";
+import { Combobox } from "@/components/ui/combobox";
 import { cn } from "@/lib/utils";
 
 export interface CalcContractOption {
@@ -25,6 +26,8 @@ export interface CalcContractOption {
   period_start_day: number;
   contract_start: string | null;
   item_count: number;
+  /** Searchable text: warehouse code first, then warehouse name, customer, contract no. */
+  keywords: (string | null)[];
 }
 
 export interface CalcUploadOption {
@@ -174,17 +177,14 @@ export function CalculateForm({
           htmlFor="calc-contract"
           error={state.fieldErrors?.contract_id?.[0]}
         >
-          <Select
+          <Combobox
             id="calc-contract"
             value={contractId}
-            onChange={(e) => setContractId(e.target.value)}
-          >
-            {contracts.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.label}
-              </option>
-            ))}
-          </Select>
+            onChange={(v) => v && setContractId(v)}
+            options={contracts.map((c) => ({ value: c.id, label: c.label, keywords: c.keywords }))}
+            placeholder={t("searchContract")}
+            emptyText={t("noContractMatch")}
+          />
         </Field>
         {mode === "month" ? (
           <Field

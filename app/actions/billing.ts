@@ -1,6 +1,5 @@
 "use server";
 
-import { createHash } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -10,7 +9,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requireBillingUser, requireBillingViewer } from "@/lib/auth/dal";
 import { logActivity } from "@/lib/activity";
 import {
-  billingContractConfigSchema,
   billingContractSchema,
   billingExcludedRangeSchema,
   compareDemoSchema,
@@ -18,8 +16,7 @@ import {
   translateFieldErrors,
 } from "@/lib/validation";
 import { BillingError, computeRentFromLedger } from "@/lib/billing/engine";
-import { MisaParseError, parseMisaLedger } from "@/lib/billing/misa-parser";
-import { findDuplicateCodes } from "@/lib/billing/contract-config";
+import { MisaParseError } from "@/lib/billing/misa-parser";
 import {
   findUnknownCodes,
   warningsForWarehouse,
@@ -29,8 +26,6 @@ import { contractPeriod, rangesForPeriod } from "@/lib/billing/periods";
 import { amountForDb, hasFractionalQuantities } from "@/lib/billing/amounts";
 import {
   BILLING_BUCKET,
-  MAX_MISA_FILE_SIZE,
-  XLSX_MIME,
   loadContract,
   loadDemoConfigs,
   loadMergedLedger,
@@ -54,119 +49,12 @@ function revalidateBilling() {
 // MISA uploads
 // ---------------------------------------------------------------------------
 
-export interface UploadState extends FormState {
-  /** One line per file that could not be stored. */
-  fileErrors?: string[];
-}
+// New uploads are month files only: see app/actions/billing-files.ts.
 
 /**
- * Store one or more MISA "Sổ chi tiết vật tư hàng hóa" exports. Each file is
- * parsed before it is stored, so only readable files are kept; identical
- * files (same sha256) are rejected as duplicates.
+ * Delete an uploaded MISA file (admin only; blocked if a confirmed calculation
+ * uses it). For a month file, its version row goes too.
  */
-export async function uploadMisaFiles(
-  _prev: UploadState,
-  formData: FormData,
-): Promise<UploadState> {
-  const user = await requireBillingUser();
-  const t = await getTranslations("Billing");
-
-  const files = formData
-    .getAll("files")
-    .filter((f): f is File => f instanceof File && f.size > 0);
-  if (files.length === 0) return { error: t("errChooseFile") };
-  if (files.length > 6) return { error: t("errTooManyFiles") };
-
-  const supabase = await createClient();
-  const admin = createAdminClient();
-  const fileErrors: string[] = [];
-  let stored = 0;
-
-  for (const file of files) {
-    const name = file.name;
-    if (!name.toLowerCase().endsWith(".xlsx")) {
-      fileErrors.push(t("errFileType", { name }));
-      continue;
-    }
-    if (file.size > MAX_MISA_FILE_SIZE) {
-      fileErrors.push(t("errFileSize", { name }));
-      continue;
-    }
-
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const sha256 = createHash("sha256").update(buffer).digest("hex");
-
-    const { data: existing } = await supabase
-      .from("billing_misa_uploads")
-      .select("id")
-      .eq("sha256", sha256)
-      .maybeSingle();
-    if (existing) {
-      fileErrors.push(t("errDuplicate", { name }));
-      continue;
-    }
-
-    let ledger;
-    try {
-      ledger = await parseMisaLedger(buffer);
-    } catch (e) {
-      const message = e instanceof MisaParseError ? e.message : t("errUnreadable");
-      fileErrors.push(`${name}: ${message}`);
-      continue;
-    }
-
-    const id = crypto.randomUUID();
-    const storagePath = `misa/${ledger.from.slice(0, 7)}/${id}.xlsx`;
-    const { error: uploadError } = await admin.storage
-      .from(BILLING_BUCKET)
-      .upload(storagePath, buffer, { contentType: XLSX_MIME, upsert: false });
-    if (uploadError) {
-      fileErrors.push(t("errUploadFailed", { name, message: uploadError.message }));
-      continue;
-    }
-
-    const { error: insertError } = await supabase.from("billing_misa_uploads").insert({
-      id,
-      storage_path: storagePath,
-      file_name: name,
-      size_bytes: file.size,
-      sha256,
-      file_from: ledger.from,
-      file_to: ledger.to,
-      layout: ledger.layout,
-      warehouse_count: Object.keys(ledger.warehouses).length,
-      warnings: ledger.warnings,
-      uploaded_by: user.id,
-    });
-    if (insertError) {
-      // Keep storage consistent with the table.
-      await admin.storage.from(BILLING_BUCKET).remove([storagePath]);
-      fileErrors.push(
-        insertError.code === UNIQUE_VIOLATION
-          ? t("errDuplicate", { name })
-          : t("errUploadFailed", { name, message: insertError.message }),
-      );
-      continue;
-    }
-
-    stored++;
-    await logActivity(supabase, {
-      action: "billing.upload_created",
-      entityType: "billing_upload",
-      entityId: id,
-      metadata: { file_name: name, from: ledger.from, to: ledger.to, layout: ledger.layout },
-    });
-  }
-
-  if (stored > 0) revalidateBilling();
-  return {
-    success: stored > 0 ? t("uploaded", { count: stored }) : undefined,
-    error: fileErrors.length > 0 ? t("someFilesFailed") : undefined,
-    fileErrors: fileErrors.length > 0 ? fileErrors : undefined,
-  };
-}
-
-/** Delete an uploaded MISA file (admin only; blocked if a confirmed calculation uses it). */
 export async function deleteMisaUpload(
   _prev: FormState,
   formData: FormData,
@@ -177,6 +65,11 @@ export async function deleteMisaUpload(
 
   const id = String(formData.get("id") ?? "");
   const supabase = await createClient();
+  // A month version must go first (FK). Its own trigger refuses when a
+  // confirmed calculation uses it, and re-activates the newest remaining
+  // version when the active one is deleted (0035).
+  const { error: monthError } = await supabase.from("billing_misa_month_files").delete().eq("upload_id", id);
+  if (monthError) return { error: monthError.message };
   const { data, error } = await supabase
     .from("billing_misa_uploads")
     .delete()
@@ -240,6 +133,8 @@ export async function computeRent(
   const loaded = await loadContract(supabase, contractId);
   if (!loaded) return { error: t("errContractNotFound") };
   const { contract, config } = loaded;
+  // Rows printed as one HSTT line disagree on price/unit: stop, say why.
+  if (!config) return { error: loaded.configError, contractId };
   if (config.items.length === 0) {
     return { error: t("errNoItems"), contractId };
   }
@@ -446,6 +341,7 @@ function parseContractForm(formData: FormData) {
     project_name: formData.get("project_name"),
     contract_no: formData.get("contract_no") ?? "",
     misa_kho: formData.get("misa_kho"),
+    misa_kho_name: formData.get("misa_kho_name") ?? "",
     period_start_day: formData.get("period_start_day") ?? 26,
     contract_start: formData.get("contract_start") ?? "",
     active: formData.get("active") !== "off",
@@ -526,62 +422,8 @@ export async function updateBillingContract(
   return { success: t("contractSaved") };
 }
 
-/**
- * Replace a contract's price lines and excluded codes in one transaction
- * (billing_save_contract_config, 0030). The editor posts both lists as JSON.
- */
-export async function saveBillingContractConfig(
-  _prev: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  await requireBillingUser();
-  const t = await getTranslations("Billing");
-  const id = String(formData.get("id") ?? "");
-
-  let raw: unknown;
-  try {
-    raw = {
-      items: JSON.parse(String(formData.get("items") ?? "[]")),
-      excluded: JSON.parse(String(formData.get("excluded") ?? "[]")),
-    };
-  } catch {
-    return { error: t("errBadConfig") };
-  }
-  const parsed = billingContractConfigSchema.safeParse(raw);
-  if (!parsed.success) {
-    const tv = await getTranslations("Validation");
-    const first = parsed.error.issues[0];
-    return { error: first && tv.has(first.message) ? tv(first.message) : t("errBadConfig") };
-  }
-  const { items, excluded } = parsed.data;
-
-  const names = items.map((i) => i.name.toLocaleLowerCase("vi"));
-  if (new Set(names).size !== names.length) return { error: t("errDuplicateNames") };
-  const duplicates = findDuplicateCodes(
-    items.map((i) => i.ma_hang),
-    excluded,
-  );
-  if (duplicates.length > 0) {
-    return { error: t("errDuplicateCodes", { codes: duplicates.join(", ") }) };
-  }
-
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("billing_save_contract_config", {
-    p_contract_id: id,
-    p_items: items,
-    p_excluded: [...new Set(excluded)],
-  });
-  if (error) return { error: error.message };
-
-  await logActivity(supabase, {
-    action: "billing.contract_config_saved",
-    entityType: "billing_contract",
-    entityId: id,
-    metadata: { items: items.length, excluded: excluded.length },
-  });
-  revalidateBilling();
-  return { success: t("configSaved") };
-}
+// Price rows are edited with savePriceLines / the Excel import:
+// app/actions/billing-prices.ts.
 
 /** Delete a contract (admin only). Contracts with saved calculations can only be deactivated. */
 export async function deleteBillingContract(

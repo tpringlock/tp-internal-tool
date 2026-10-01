@@ -102,6 +102,7 @@ export default async function BillingCalculatePage({
                 period_start_day: c.period_start_day,
                 contract_start: c.contract_start,
                 item_count: c.item_count,
+                keywords: [c.misa_kho, c.misa_kho_name, c.customer_name, c.contract_no, c.project_name],
               }))}
               uploads={(uploads ?? []).map((u) => ({
                 id: u.id,

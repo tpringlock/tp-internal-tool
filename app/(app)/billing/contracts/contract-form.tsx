@@ -47,6 +47,9 @@ export function ContractForm({ contract, readOnly = false }: { contract?: Billin
         >
           <Input id="misa_kho" name="misa_kho" defaultValue={contract?.misa_kho} required className="font-mono" />
         </Field>
+        <Field label={t("misaKhoName")} htmlFor="misa_kho_name" error={err("misa_kho_name")} hint={t("misaKhoNameHint")}>
+          <Input id="misa_kho_name" name="misa_kho_name" defaultValue={contract?.misa_kho_name} />
+        </Field>
         <Field label={t("contractNo")} htmlFor="contract_no" error={err("contract_no")}>
           <Input id="contract_no" name="contract_no" defaultValue={contract?.contract_no} />
         </Field>

@@ -34,7 +34,13 @@ export default async function ExcludedRangesPage() {
         </div>
         {canEdit && (
           <DialogButton label={t("addRange")}>
-            <RangeForm contracts={contracts.map((c) => ({ id: c.id, label: contractLabel(c) }))} />
+            <RangeForm
+              contracts={contracts.map((c) => ({
+                id: c.id,
+                label: contractLabel(c),
+                keywords: [c.misa_kho, c.misa_kho_name, c.customer_name, c.contract_no, c.project_name],
+              }))}
+            />
           </DialogButton>
         )}
       </div>
