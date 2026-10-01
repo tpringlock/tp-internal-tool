@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
   Calculator,
+  Building2,
   CalendarOff,
   FileCheck2,
   FileSpreadsheet,
@@ -75,6 +76,12 @@ export function BillingNav({
           icon: <FileText aria-hidden />,
           active: under("/billing/contracts"),
           meta: String(contractCount),
+        },
+        {
+          href: "/billing/customers",
+          label: t("customers"),
+          icon: <Building2 aria-hidden />,
+          active: under("/billing/customers"),
         },
         {
           href: "/billing/prices",

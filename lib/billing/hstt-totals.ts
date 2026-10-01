@@ -72,7 +72,7 @@ export function closingDebt(d: { opening: number; incurred: number; paid: number
 }
 
 /** "2026-12" -> "2026-11". */
-function previousMonth(month: string): string {
+export function previousMonth(month: string): string {
   const [y, m] = month.split("-").map(Number);
   return m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, "0")}`;
 }

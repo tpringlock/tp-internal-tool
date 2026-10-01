@@ -18,18 +18,21 @@ import { RangesTable } from "../../excluded-ranges/ranges";
 import { RangeForm } from "../../excluded-ranges/range-form";
 import { CalculationsTable } from "../../calculations-table";
 import { ActionButton } from "../../action-button";
+import { ContractHsttTab } from "../hstt/contract-hstt-tab";
+import { cn } from "@/lib/utils";
 
 export default async function BillingContractPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ add?: string }>;
+  searchParams: Promise<{ add?: string; tab?: string }>;
 }) {
   const user = await requireBillingViewer();
   const canEdit = canEditBilling(user.profile.role);
   const { id } = await params;
-  const { add = "" } = await searchParams;
+  const { add = "", tab } = await searchParams;
+  const hsttTab = tab === "hstt";
   const t = await getTranslations("Billing");
   const supabase = await createClient();
 
@@ -110,6 +113,29 @@ export default async function BillingContractPage({
         </div>
       )}
 
+      <nav aria-label={t("contractTabs")} className="flex gap-1 border-b border-slate-200">
+        {[
+          { href: `/billing/contracts/${contract.id}`, label: t("tabGeneral"), active: !hsttTab },
+          { href: `/billing/contracts/${contract.id}?tab=hstt`, label: t("tabHstt"), active: hsttTab },
+        ].map((x) => (
+          <Link
+            key={x.href}
+            href={x.href}
+            aria-current={x.active ? "page" : undefined}
+            className={cn(
+              "-mb-px border-b-2 px-4 py-2 text-sm font-medium",
+              x.active ? "border-primary text-primary" : "border-transparent text-slate-500 hover:text-slate-900",
+            )}
+          >
+            {x.label}
+          </Link>
+        ))}
+      </nav>
+
+      {hsttTab ? (
+        <ContractHsttTab contract={contract} canEdit={canEdit} />
+      ) : (
+      <>
       <Card>
         <CardHeader>
           <CardTitle>{t("pricesTitle")}</CardTitle>
@@ -181,6 +207,8 @@ export default async function BillingContractPage({
           />
         </CardBody>
       </Card>
+      </>
+      )}
     </div>
   );
 }

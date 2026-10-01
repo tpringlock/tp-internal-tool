@@ -22,7 +22,10 @@ import {
   type HsttTransport,
 } from "./hstt-totals";
 import { amountInWords } from "./number-to-words";
+import { canCuText, dmy, hsttFileName, monthLabel } from "./hstt-text";
 import type { IsoDate, RentItemResult, RentLine } from "./types";
+
+export { canCuText, hsttFileName } from "./hstt-text";
 
 export type HsttCompany = Pick<
   CompanyProfile,
@@ -96,25 +99,7 @@ export interface HsttResult {
 
 // ───────────── Text helpers ─────────────
 
-const dmy = (iso: IsoDate) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
-const monthLabel = (month: string) => `${month.slice(5, 7)}/${month.slice(0, 4)}`;
 const excelDate = (iso: IsoDate) => new Date(Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)));
-
-/** "- Căn cứ Hợp đồng kinh tế số ... ký ngày dd/mm/yyyy giữa {A} và {B} về việc cho thuê thiết bị xây dựng." */
-export function canCuText(input: Pick<HsttInput, "contract" | "customer" | "company">): string {
-  const c = input.contract;
-  if (c.canCuOverride) return c.canCuOverride;
-  const date = c.date ? dmy(c.date) : "……";
-  return (
-    `- Căn cứ ${c.type} số ${c.no} ký ngày ${date} giữa ${input.customer.ten_thuong} và ` +
-    `${input.company.ten_thuong} về việc cho thuê thiết bị xây dựng.`
-  );
-}
-
-/** "HSTT T08.2026 - Việt Panel - TP.xlsx" */
-export function hsttFileName(month: string, customerShortName: string): string {
-  return `HSTT T${month.slice(5, 7)}.${month.slice(0, 4)} - ${customerShortName.trim()} - TP.xlsx`;
-}
 
 function exemptNote(days: number, reason: string): string {
   return `Đã giảm ${days} ngày nghỉ${reason.trim() ? ` ${reason.trim()}` : ""}`;

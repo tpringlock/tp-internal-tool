@@ -269,6 +269,160 @@ export const computeRentSchema = z.discriminatedUnion("mode", [
     ),
 ]);
 
+// --- HSTT (0038) ----------------------------------------------------------
+
+/** Largest amount accepted in HSTT money fields (VND); far below 2^53. */
+export const MAX_HSTT_AMOUNT = 1_000_000_000_000_000;
+
+/** Optional text: null/absent -> "", trimmed, max length. */
+const hsttText = (max: number) =>
+  z
+    .string()
+    .nullish()
+    .transform((v) => (v ?? "").trim())
+    .pipe(z.string().max(max, "textTooLong"));
+
+/** Whole VND typed in a form ("1.550.000.000"); empty -> null. Same rule as parseMoney. */
+const moneyField = z
+  .string()
+  .nullish()
+  .transform((v, ctx) => {
+    const s = (v ?? "").replace(/[\s.,]/g, "");
+    if (s === "") return null;
+    if (!/^-?\d+$/.test(s) || Math.abs(Number(s)) > MAX_HSTT_AMOUNT) {
+      ctx.addIssue({ code: "custom", message: "moneyInvalid" });
+      return z.NEVER;
+    }
+    return Number(s);
+  });
+
+const wholeAmount = z
+  .number()
+  .int("moneyInvalid")
+  .min(-MAX_HSTT_AMOUNT, "moneyInvalid")
+  .max(MAX_HSTT_AMOUNT, "moneyInvalid");
+
+/** Bên B (company_profile, 0038). */
+export const companyProfileSchema = z.object({
+  ten_in_hoa: z.string().trim().min(1, "nameRequired").max(300, "textTooLong"),
+  ten_2_dong: hsttText(300),
+  ten_thuong: hsttText(300),
+  ten_thu_huong: hsttText(300),
+  dia_chi: hsttText(500),
+  dia_chi_ngan: hsttText(300),
+  dien_thoai: hsttText(100),
+  so_tk: hsttText(100),
+  ngan_hang: hsttText(300),
+  mst: hsttText(50),
+  dai_dien: hsttText(200),
+  chuc_vu: hsttText(200),
+  noi_lap: hsttText(100),
+});
+
+/** Bên A (billing_customers, 0038). */
+export const billingCustomerSchema = z.object({
+  ten_in_hoa: z.string().trim().min(1, "nameRequired").max(300, "textTooLong"),
+  ten_thuong: hsttText(300),
+  ten_rut_gon: hsttText(100),
+  dia_chi: hsttText(500),
+  dien_thoai: hsttText(100),
+  so_tk: hsttText(100),
+  ngan_hang: hsttText(300),
+  mst: hsttText(50),
+  dai_dien: hsttText(200),
+  chuc_vu: hsttText(200),
+  note: hsttText(1000),
+});
+
+const monthOrEmpty = z
+  .union([z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "monthInvalid"), z.literal("")])
+  .nullish()
+  .transform((v) => (v ? v : null));
+
+/** HSTT fields of a contract (billing_contract_hstt, 0038). */
+export const contractHsttSchema = z
+  .object({
+    contract_id: z.string().uuid(),
+    customer_id: z
+      .union([z.string().uuid(), z.literal("")])
+      .nullish()
+      .transform((v) => (v ? v : null)),
+    contract_type: z.string().trim().min(1, "contractTypeRequired").max(100, "textTooLong"),
+    contract_date: z
+      .union([isoDate, z.literal("")])
+      .nullish()
+      .transform((v) => (v ? v : null)),
+    du_an_ten: hsttText(200),
+    du_an_dia_chi: hsttText(300),
+    can_cu_override: hsttText(1000).transform((v) => (v ? v : null)),
+    vat_percent: z.coerce.number().min(0, "vatRange").max(100, "vatRange"),
+    opening_debt: moneyField,
+    opening_debt_month: monthOrEmpty,
+  })
+  .refine((v) => (v.opening_debt === null) === (v.opening_debt_month === null), {
+    message: "openingPair",
+    path: ["opening_debt_month"],
+  });
+
+/** Transport price list of a contract (JSON from the editor). */
+export const transportPricesSchema = z
+  .array(
+    z.object({
+      id: z.string().uuid().nullish(),
+      name: z.string().trim().min(1, "nameRequired").max(200, "textTooLong"),
+      unit: z.string().trim().min(1, "unitRequired").max(30, "textTooLong"),
+      unit_price: z.number().int("moneyInvalid").min(0, "moneyInvalid").max(MAX_HSTT_AMOUNT, "moneyInvalid"),
+      active: z.boolean(),
+    }),
+  )
+  .max(50);
+
+/** Advances of a contract + the note of the ĐCCN line (JSON from the editor). */
+export const advancesSchema = z.object({
+  note: hsttText(300),
+  items: z
+    .array(
+      z.object({
+        id: z.string().uuid().nullish(),
+        amount: wholeAmount.refine((v) => v !== 0, "moneyInvalid"),
+        paid_on: z
+          .union([isoDate, z.literal("")])
+          .nullish()
+          .transform((v) => (v ? v : null)),
+      }),
+    )
+    .max(100),
+});
+
+/** Per-period inputs of a billing month (JSON from the calculation page). */
+export const periodInputsSchema = z.object({
+  calc_id: z.string().uuid(),
+  paid_in_period: wholeAmount,
+  opening_debt_override: wholeAmount.nullable(),
+  note: hsttText(500),
+  transport: z
+    .array(
+      z.object({
+        transport_price_id: z.string().uuid(),
+        trips: z.number().int("tripsInvalid").min(0, "tripsInvalid").max(100_000, "tripsInvalid").nullable(),
+        cumulative_trips: z.number().int("tripsInvalid").min(0, "tripsInvalid").max(100_000, "tripsInvalid").nullable(),
+        charge_mode: z.enum(["now", "end_of_term"]),
+        note: hsttText(500),
+      }),
+    )
+    .max(50),
+  deductions: z
+    .array(
+      z.object({
+        label: z.string().trim().min(1, "labelRequired").max(300, "textTooLong"),
+        amount: wholeAmount.refine((v) => v > 0, "moneyInvalid"),
+      }),
+    )
+    .max(20),
+});
+
+export type PeriodInputsInput = z.infer<typeof periodInputsSchema>;
+
 /** Minimal shape of a next-intl translator (from useTranslations/getTranslations). */
 type Translator = ((key: string) => string) & { has: (key: string) => boolean };
 
