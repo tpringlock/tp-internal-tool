@@ -113,6 +113,22 @@ describe("openingDebtFor", () => {
     expect(openingDebtFor({ month: "2026-09", opening: null, confirmed: [] })).toEqual({ ok: false, missingMonth: null });
   });
 
+  it("ignores confirmed calculations of hand-made months (<= the opening month)", () => {
+    const confirmed = [
+      // T08 confirmed on the web (closing 2.908.392.120) but done by hand: ignored.
+      { month: "2026-08", afterTax: 892_450_357, paid: 1_550_000_000, openingOverride: 3_565_941_763 },
+      { month: "2026-07", afterTax: 1, paid: 0, openingOverride: 5 },
+      { month: "2026-09", afterTax: 800_000_000, paid: 0, openingOverride: null },
+    ];
+    expect(openingDebtFor({ month: "2026-09", opening, confirmed })).toEqual({ ok: true, value: 2_906_447_532 });
+    expect(openingDebtFor({ month: "2026-10", opening, confirmed })).toEqual({ ok: true, value: 3_706_447_532 });
+  });
+
+  it("has no opening debt for a hand-made month itself", () => {
+    const confirmed = [{ month: "2026-07", afterTax: 1, paid: 0, openingOverride: 5 }];
+    expect(openingDebtFor({ month: "2026-08", opening, confirmed })).toEqual({ ok: false, missingMonth: null });
+  });
+
   it("crosses year boundaries", () => {
     const dec = { amount: 10, month: "2026-12" };
     expect(openingDebtFor({ month: "2027-01", opening: dec, confirmed: [] })).toEqual({ ok: true, value: 10 });

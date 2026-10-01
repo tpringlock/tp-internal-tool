@@ -158,6 +158,7 @@ export async function loadHsttContext(
     customer,
     openingValue: opening.value,
     openingSource: opening.source,
+    openingMonth: hstt?.opening_debt_month ?? null,
   });
 
   return {

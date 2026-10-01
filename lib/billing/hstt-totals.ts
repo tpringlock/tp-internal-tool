@@ -97,16 +97,22 @@ export type OpeningDebtResult =
  * opening balance (debt at the END of opening.month) or a confirmed period
  * whose opening debt was typed by hand. Every month in between must be
  * confirmed. A typed opening debt for `month` itself is the caller's business.
+ *
+ * Months up to opening.month were done by hand: their calculations (even
+ * confirmed on the web) are ignored, the first month after it starts from
+ * opening.amount, and a hand-made month itself has no opening debt here.
  */
 export function openingDebtFor(input: {
   month: string;
   opening: { amount: number; month: string } | null;
   confirmed: readonly ConfirmedPeriodDebt[];
 }): OpeningDebtResult {
-  const byMonth = new Map(input.confirmed.map((p) => [p.month, p]));
+  const handMade = (m: string) => input.opening !== null && m <= input.opening.month;
+  if (handMade(input.month)) return { ok: false, missingMonth: null };
+  const confirmed = input.confirmed.filter((p) => !handMade(p.month));
+  const byMonth = new Map(confirmed.map((p) => [p.month, p]));
   const hasBase =
-    (input.opening !== null && input.opening.month < input.month) ||
-    input.confirmed.some((p) => p.month < input.month && p.openingOverride !== null);
+    input.opening !== null || confirmed.some((p) => p.month < input.month && p.openingOverride !== null);
   if (!hasBase) return { ok: false, missingMonth: null };
 
   // Walk back to the base, collecting the periods to replay.

@@ -144,7 +144,9 @@ export type OpeningDebtSource =
   /** The contract's opening balance, at the end of `month`. */
   | { kind: "initial"; month: string }
   /** `month` = first unconfirmed month of the chain; null = no starting balance. */
-  | { kind: "missing"; month: string | null };
+  | { kind: "missing"; month: string | null }
+  /** A month done by hand (up to the contract's opening month `month`): no HSTT. */
+  | { kind: "manual"; month: string };
 
 export function openingDebtInfo(p: {
   month: string;
@@ -153,12 +155,17 @@ export function openingDebtInfo(p: {
   confirmed: readonly ConfirmedPeriodDebt[];
 }): { value: number | null; source: OpeningDebtSource } {
   if (p.override !== null) return { value: p.override, source: { kind: "override" } };
+  if (p.opening && p.month <= p.opening.month) {
+    return { value: null, source: { kind: "manual", month: p.opening.month } };
+  }
   const r = openingDebtFor({ month: p.month, opening: p.opening, confirmed: p.confirmed });
   if (!r.ok) return { value: null, source: { kind: "missing", month: r.missingMonth } };
+  // The month after the opening month always starts from the opening balance.
   const prev = previousMonth(p.month);
+  const afterOpening = !p.opening || prev > p.opening.month;
   return {
     value: r.value,
-    source: p.confirmed.some((c) => c.month === prev)
+    source: afterOpening && p.confirmed.some((c) => c.month === prev)
       ? { kind: "previous", month: prev }
       : { kind: "initial", month: p.opening!.month },
   };
@@ -174,6 +181,8 @@ export interface HsttContextData {
   customer: { ten_in_hoa: string; ten_thuong: string; mst: string } | null;
   openingValue: number | null;
   openingSource: OpeningDebtSource;
+  /** The contract's opening_debt_month: months up to it were done by hand. */
+  openingMonth: string | null;
 }
 
 /** A missing piece, as a key of the "Hstt.missing" messages (+ values). */
@@ -187,6 +196,10 @@ const CUSTOMER_REQUIRED = ["ten_in_hoa", "ten_thuong"] as const;
 
 /** Everything that stops an HSTT from being generated, in display order. */
 export function hsttMissing(d: HsttContextData): HsttMissing[] {
+  // A month done by hand already has its HSTT: nothing else matters.
+  if (d.periodMonth && d.openingMonth && d.periodMonth <= d.openingMonth) {
+    return [{ key: "manualPeriod", values: { month: d.periodMonth } }];
+  }
   const out: HsttMissing[] = [];
   if (d.calcStatus !== "confirmed") out.push({ key: "notConfirmed" });
   if (!d.periodMonth) out.push({ key: "notMonth" });

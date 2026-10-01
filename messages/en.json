@@ -1293,7 +1293,8 @@
       "initial": "Contract opening debt (end of {month})",
       "missing": "Cannot compute: no confirmed calculation for {month}",
       "none": "Cannot compute: the contract has no opening debt",
-      "override": "Typed by hand"
+      "override": "Typed by hand",
+      "manual": "Hand-made period (up to {month}): debt is not computed on the web"
     },
     "overrideOpening": "Override the opening debt",
     "periodNote": "Period note",
@@ -1312,6 +1313,7 @@
     "openContractHstt": "Open the contract's HSTT tab",
     "missingTitle": "The dossier cannot be generated yet. Missing:",
     "missing": {
+      "manualPeriod": "The {month} dossier was made by hand (before the web app)",
       "notConfirmed": "The calculation is not confirmed",
       "notMonth": "Custom-range calculation (dossiers are per billing month)",
       "demo": "Demo contract",

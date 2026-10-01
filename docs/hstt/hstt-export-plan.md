@@ -118,3 +118,8 @@ Sinh HSTT **tháng 08/2026 của Việt Panel** từ: các dòng trong `vietpane
   Mỗi dòng lệch = 1 ngày × SL × đơn giá; tổng đúng 1.800.544đ.
 - **Quyết định (02/10/2026):** giữ **MISA là nguồn đúng**, không đổi engine. Nếu ngày trả thực tế khác, kế toán sửa ngày phiếu trong MISA rồi tải lại file tháng.
 - Golden test (mục 6) dựng từ các dòng của kỳ "08/2026" trong `lib/billing/__fixtures__/vietpanel-senci-golden.json` (= số làm tay), nên không bị ảnh hưởng.
+
+## 9. Việc còn nợ
+
+- **0040 – lưu dữ liệu kỳ trong 1 transaction + khóa ở DB.** Hiện `savePeriodInputs` (app/actions/billing-hstt.ts) chạy nhiều lệnh nối tiếp (upsert kỳ, xóa/chèn vận chuyển, xóa/chèn giảm trừ) và chỉ kiểm khóa "kỳ đã có bản tính xác nhận" ở server action. Nếu lỗi giữa chừng có thể lưu dở; nếu có người xác nhận đúng lúc người khác đang lưu thì vẫn lọt. Cần: RPC `billing_save_period_inputs` (một transaction) + trigger trên `billing_period_inputs` / `billing_period_transport` / `billing_period_deductions` từ chối khi kỳ đã xác nhận. Gửi SQL cho chủ dự án duyệt trước khi làm.
+- **Quy tắc kỳ làm tay (02/10/2026):** các tháng <= `opening_debt_month` của hợp đồng đã làm HSTT bằng tay: không tải HSTT trên web, bản tính xác nhận của các tháng đó không tham gia chuỗi nợ; kỳ đầu tiên sau đó lấy `opening_debt`.

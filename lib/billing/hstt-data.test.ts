@@ -111,6 +111,26 @@ describe("confirmedDebts + openingDebtInfo", () => {
     expect(confirmed).toEqual([{ month: "2026-09", afterTax: 117_800_000, paid: 50_000_000, openingOverride: null }]);
   });
 
+  it("starts the chain after the opening month even when that month is confirmed on the web", () => {
+    const withT08 = [
+      { month: "2026-08", afterTax: 892_450_357, paid: 1_550_000_000, openingOverride: 3_565_941_763 },
+      ...confirmed,
+    ];
+    // T08's closing on the web would be 2.908.392.120: it must not be used.
+    expect(openingDebtInfo({ month: "2026-09", override: null, opening, confirmed: withT08 })).toEqual({
+      value: 2_906_447_532,
+      source: { kind: "initial", month: "2026-08" },
+    });
+    expect(openingDebtInfo({ month: "2026-08", override: null, opening, confirmed: withT08 })).toEqual({
+      value: null,
+      source: { kind: "manual", month: "2026-08" },
+    });
+    expect(openingDebtInfo({ month: "2026-10", override: null, opening, confirmed: withT08 })).toEqual({
+      value: 2_906_447_532 + 117_800_000 - 50_000_000,
+      source: { kind: "previous", month: "2026-09" },
+    });
+  });
+
   it("says where the opening debt comes from", () => {
     expect(openingDebtInfo({ month: "2026-09", override: null, opening, confirmed: [] })).toEqual({
       value: 2_906_447_532,
@@ -146,6 +166,7 @@ describe("hsttMissing", () => {
     customer: { ten_in_hoa: "VIỆT PANEL", ten_thuong: "Việt Panel", mst: "1" },
     openingValue: 1,
     openingSource: { kind: "initial", month: "2026-08" },
+    openingMonth: null,
   };
 
   it("is empty when everything needed is there", () => {
@@ -170,6 +191,13 @@ describe("hsttMissing", () => {
       openingSource: { kind: "missing", month: "2026-08" },
     }).map((m) => m.key);
     expect(keys).toEqual(["company", "contractHstt", "contractNo", "customer", "openingMissingMonth"]);
+  });
+
+  it("refuses months done by hand (<= the contract's opening month)", () => {
+    const manual = { ...ok, periodMonth: "2026-08", openingMonth: "2026-08", openingValue: null };
+    expect(hsttMissing(manual)).toEqual([{ key: "manualPeriod", values: { month: "2026-08" } }]);
+    expect(hsttMissing({ ...manual, periodMonth: "2026-07" }).map((m) => m.key)).toEqual(["manualPeriod"]);
+    expect(hsttMissing({ ...ok, openingMonth: "2026-08" })).toEqual([]);
   });
 
   it("names the incomplete fields", () => {

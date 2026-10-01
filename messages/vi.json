@@ -1293,7 +1293,8 @@
       "initial": "Nợ ban đầu của hợp đồng (cuối {month})",
       "missing": "Chưa tính được: thiếu bản tính đã xác nhận kỳ {month}",
       "none": "Chưa tính được: hợp đồng chưa có nợ ban đầu",
-      "override": "Nhập tay"
+      "override": "Nhập tay",
+      "manual": "Kỳ làm HSTT bằng tay (đến hết {month}): không tính nợ trên web"
     },
     "overrideOpening": "Ghi đè nợ đầu kỳ",
     "periodNote": "Ghi chú kỳ",
@@ -1312,6 +1313,7 @@
     "openContractHstt": "Mở tab HSTT của hợp đồng",
     "missingTitle": "Chưa tạo được HSTT, còn thiếu:",
     "missing": {
+      "manualPeriod": "Kỳ {month} đã làm HSTT bằng tay (trước khi chạy trên web)",
       "notConfirmed": "Bản tính chưa được xác nhận",
       "notMonth": "Bản tính theo khoảng ngày (HSTT chỉ theo kỳ)",
       "demo": "Hợp đồng giả định",

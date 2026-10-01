@@ -94,6 +94,8 @@ export function PeriodInputsForm({
         return t("openingFrom.initial", { month: fmtMonth(s.month) });
       case "missing":
         return s.month ? t("openingFrom.missing", { month: fmtMonth(s.month) }) : t("openingFrom.none");
+      case "manual":
+        return t("openingFrom.manual", { month: fmtMonth(s.month) });
       default:
         return t("openingFrom.override");
     }
