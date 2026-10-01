@@ -106,7 +106,8 @@ function routeFiles(dir: string): string[] {
 }
 
 function areaOf(file: string): ClientModule | "shell" {
-  const rel = relative(ROOT, file);
+  // path.relative uses "\\" on Windows; MODULE_DIRS keys use "/".
+  const rel = relative(ROOT, file).replaceAll("\\", "/");
   for (const [dir, module] of Object.entries(MODULE_DIRS)) {
     if (rel === dir || rel.startsWith(`${dir}/`)) return module;
   }
