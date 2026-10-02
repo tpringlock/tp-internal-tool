@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { AlertTriangle, CheckCircle2, Download, Trash2, Undo2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Download, FileCheck2, Trash2, Undo2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { requireBillingViewer } from "@/lib/auth/dal";
 import { canEditBilling } from "@/lib/auth/roles";
@@ -22,6 +22,10 @@ import { ModuleEyebrow, pageTitleClass } from "@/components/page-title";
 import { ActionButton } from "../../action-button";
 import { StatusBadge } from "../../status-badge";
 import { ScopeNotice } from "../../scope-notice";
+import { loadHsttContext } from "@/lib/billing/hstt-server";
+import { missingMessage, periodEditBlock } from "@/lib/billing/hstt-data";
+import { hsttFileName } from "@/lib/billing/hstt-text";
+import { PeriodInputsForm } from "./period-inputs-form";
 
 export default async function CalculationPage({
   params,
@@ -32,6 +36,7 @@ export default async function CalculationPage({
   const canEdit = canEditBilling(user.profile.role);
   const { id } = await params;
   const t = await getTranslations("Billing");
+  const th = await getTranslations("Hstt");
   const supabase = await createClient();
 
   const { data: calc } = await supabase
@@ -65,6 +70,17 @@ export default async function CalculationPage({
   const fractional = hasFractionalQuantities(result);
   // Only a billing-month draft of a real contract with whole quantities.
   const confirmable = !!monthLabel && !isDemo && !fractional;
+  // HSTT block: billing months only (custom ranges never get an HSTT).
+  const hstt = calc.period_month ? await loadHsttContext(supabase, calc.id) : null;
+  const block = hstt
+    ? periodEditBlock({
+        canEdit,
+        status: calc.status,
+        periodMonth: calc.period_month,
+        isDemo,
+        confirmedForPeriod: hstt.confirmedForPeriod,
+      })
+    : null;
 
   return (
     <div className="space-y-6">
@@ -189,6 +205,69 @@ export default async function CalculationPage({
               </li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {hstt && calc.period_month && (
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
+          <PeriodInputsForm
+            key={hstt.periodInput?.updated_at ?? "new"}
+            calcId={calc.id}
+            month={calc.period_month}
+            block={block}
+            isAdmin={isAdmin}
+            equipment={result.totalAmount}
+            vatPercent={hstt.vatPercent}
+            advancesTotal={hstt.advances.reduce((sum, a) => sum + a.amount, 0)}
+            transport={hstt.transport}
+            deductions={hstt.deductions.map((d) => ({ label: d.label, amount: d.amount }))}
+            paid={hstt.periodInput ? Number(hstt.periodInput.paid_in_period) : 0}
+            override={
+              hstt.periodInput?.opening_debt_override === null || hstt.periodInput?.opening_debt_override === undefined
+                ? null
+                : Number(hstt.periodInput.opening_debt_override)
+            }
+            note={hstt.periodInput?.note ?? ""}
+            chainOpening={hstt.chainOpening}
+          />
+          <Card className="h-fit">
+            <CardHeader>
+              <CardTitle>{th("hsttTitle")}</CardTitle>
+            </CardHeader>
+            <CardBody className="space-y-3 text-sm">
+              {hstt.missing.length === 0 ? (
+                <>
+                  <DownloadLink
+                    href={`/api/billing/calculations/${calc.id}/hstt`}
+                    className="h-10 justify-center rounded-lg bg-primary px-4 font-medium text-white hover:bg-primary-hover"
+                  >
+                    <FileCheck2 className="h-4 w-4" aria-hidden />
+                    {th("downloadHstt")}
+                  </DownloadLink>
+                  <p className="break-words text-xs text-slate-500">
+                    {hsttFileName(calc.period_month, hstt.customer?.ten_rut_gon || hstt.customer?.ten_in_hoa || "")}
+                  </p>
+                </>
+              ) : (
+                <div className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-amber-900">
+                  <p className="font-semibold">{th("missingTitle")}</p>
+                  <ul className="mt-1.5 list-disc space-y-1 pl-5">
+                    {hstt.missing.map((m) => (
+                      <li key={m.key + JSON.stringify(m.values ?? {})}>{missingMessage(th, m)}</li>
+                    ))}
+                  </ul>
+                  {canEdit && !isDemo && (
+                    <Link
+                      href={`/billing/contracts/${calc.contract_id}?tab=hstt`}
+                      className="mt-2 inline-block font-medium text-primary hover:underline"
+                    >
+                      {th("openContractHstt")}
+                    </Link>
+                  )}
+                </div>
+              )}
+            </CardBody>
+          </Card>
         </div>
       )}
 

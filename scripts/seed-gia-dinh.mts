@@ -103,27 +103,66 @@ async function seed() {
     throw new Error(`Mã đã dùng cho hợp đồng thật: ${clash.map((c: { code: string }) => c.code).join(", ")}`);
   }
 
-  const contracts = await must(
+  // No upsert: an upsert by code could flip a real contract created after the
+  // clash check into a demo one. Existing demo contracts are updated with an
+  // is_demo = true filter; new codes are plain inserts, so a code taken by a
+  // real contract in the meantime fails on the unique constraint instead.
+  const header = (r: (typeof rows)[number]) => ({
+    customer_name: r.customer_name,
+    project_name: r.project_name,
+    contract_no: r.contract_no,
+    misa_kho: r.misa_kho,
+    period_start_day: r.period_start_day,
+    active: r.active,
+  });
+  const existing = await must(
     supabase
       .from("billing_contracts")
-      .upsert(
-        rows.map((r) => ({
-          code: r.code,
-          customer_name: r.customer_name,
-          project_name: r.project_name,
-          contract_no: r.contract_no,
-          misa_kho: r.misa_kho,
-          period_start_day: r.period_start_day,
-          active: r.active,
-          is_demo: r.is_demo,
-        })),
-        { onConflict: "code" },
-      )
-      .select("id, code"),
-    "Ghi hợp đồng",
+      .select("id, code")
+      .eq("is_demo", true)
+      .in("code", rows.map((r) => r.code)),
+    "Đọc hợp đồng giả định đã có",
   );
-  const idByCode = new Map((contracts ?? []).map((c: { id: string; code: string }) => [c.code, c.id]));
+  const idByCode = new Map((existing ?? []).map((c: { id: string; code: string }) => [c.code, c.id]));
+
+  for (const r of rows.filter((r) => idByCode.has(r.code))) {
+    const updated = await must(
+      supabase
+        .from("billing_contracts")
+        .update(header(r))
+        .eq("id", idByCode.get(r.code)!)
+        .eq("is_demo", true)
+        .select("id"),
+      `Cập nhật hợp đồng ${r.code}`,
+    );
+    if (!updated || updated.length !== 1) throw new Error(`Hợp đồng ${r.code} không còn là giả định, dừng.`);
+  }
+
+  const fresh = rows.filter((r) => !idByCode.has(r.code));
+  if (fresh.length > 0) {
+    const inserted = await must(
+      supabase
+        .from("billing_contracts")
+        .insert(fresh.map((r) => ({ code: r.code, ...header(r), is_demo: r.is_demo })))
+        .select("id, code"),
+      "Ghi hợp đồng mới",
+    );
+    for (const c of (inserted ?? []) as { id: string; code: string }[]) idByCode.set(c.code, c.id);
+  }
   const ids = [...idByCode.values()];
+
+  // Last guard before touching price rows: every target must be a demo contract.
+  let demoCount = 0;
+  for (let i = 0; i < ids.length; i += 100) {
+    const chunk = await must(
+      supabase.from("billing_contracts").select("id").eq("is_demo", true).in("id", ids.slice(i, i + 100)),
+      "Kiểm tra lại hợp đồng giả định",
+    );
+    demoCount += chunk?.length ?? 0;
+  }
+  if (demoCount !== ids.length) {
+    throw new Error("Có hợp đồng không phải giả định trong danh sách ghi giá, dừng (chưa đụng dòng giá).");
+  }
 
   // Replace the flat price rows (billing_price_lines, 0036; the old
   // billing_contract_items / billing_excluded_codes are frozen since 0037).

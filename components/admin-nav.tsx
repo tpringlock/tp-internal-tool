@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import {
   Activity,
   Briefcase,
+  Building2,
   FileCode,
   FolderKanban,
   GraduationCap,
@@ -17,7 +18,7 @@ import { AsideHeading, WorkspaceAside } from "@/components/workspace-aside";
 import { SidebarNav, type SidebarNavSection } from "@/components/sidebar-nav";
 
 type Key =
-  "clients" | "projects" | "misa" | "courses" | "users" | "activity" | "docs";
+  "clients" | "projects" | "misa" | "courses" | "users" | "activity" | "docs" | "company";
 
 const SECTIONS: {
   title: "sectionData" | "sectionTraining" | "sectionSystem";
@@ -56,6 +57,7 @@ const SECTIONS: {
     title: "sectionSystem",
     items: [
       { href: "/admin/users", key: "users", adminOnly: true, Icon: Users },
+      { href: "/admin/company", key: "company", adminOnly: true, Icon: Building2 },
       {
         href: "/admin/activity",
         key: "activity",

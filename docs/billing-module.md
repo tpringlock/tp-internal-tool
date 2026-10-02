@@ -2,7 +2,7 @@
 
 Tải file *Sổ chi tiết vật tư hàng hóa* từ MISA → upload lên hệ thống → tính tiền thuê thiết bị của một dự án trong một kỳ (hoặc một khoảng ngày). Quy tắc nghiệp vụ nằm ở `docs/billing-rules.md`.
 
-**Giai đoạn 1 chỉ tính TIỀN THUÊ THIẾT BỊ** (mục I của BB đối chiếu giá trị). Chưa có vận chuyển, VAT, giảm trừ, BB công nợ, giấy đề nghị thanh toán. Giao diện ghi rõ điều này ở sidebar, trang tính và trang kết quả.
+Engine tính **tiền thuê thiết bị** (mục I của BB đối chiếu giá trị). Từ GĐ3, vận chuyển, VAT, giảm trừ, công nợ được nhập ở khối **Dữ liệu kỳ** và app xuất **HSTT 4 biểu** (ĐNTT, ĐCCN, Giá trị, Khối lượng) từ bản tính đã xác nhận: xem phần [Hồ sơ thanh toán (HSTT)](#hồ-sơ-thanh-toán-hstt-gđ3).
 
 ## Quyền
 
@@ -22,6 +22,9 @@ Tải file *Sổ chi tiết vật tư hàng hóa* từ MISA → upload lên hệ
 | `/billing/contracts`, `/billing/contracts/[id]` | Hợp đồng, đơn giá theo ngày, mã MISA gộp vào từng dòng, mã không tính tiền, ngày miễn tính riêng. Mã chưa khai báo khi tính → link "Thêm các mã này vào hợp đồng". |
 | `/billing/excluded-ranges` | Ngày miễn tính chung (Tết…) hoặc riêng hợp đồng. |
 | `/billing/compare` | **Chỉ admin.** Đối chiếu với tool Excel (xem dưới). |
+| `/billing/customers`, `/billing/customers/[id]` | Khách hàng (Bên A) của HSTT. Xóa: chỉ admin, không xóa được khi còn hợp đồng dùng. |
+| `/billing/contracts/[id]?tab=hstt` | Tab **HSTT** của hợp đồng: Bên A, loại/ngày ký HĐ, dự án, câu "Căn cứ…", VAT, nợ ban đầu, bảng giá vận chuyển, tạm ứng. |
+| `/admin/company` | **Chỉ admin.** Thông tin công ty (Bên B). |
 
 **Vòng đời bản tính:** nháp → đã xác nhận → đã hủy. Bản đã xác nhận bị khóa (trigger `billing_calc_guard`); mỗi hợp đồng + kỳ chỉ có một bản xác nhận. **Không xác nhận được** khi:
 - tính theo khoảng ngày (chỉ để tra cứu);
@@ -59,6 +62,34 @@ file .xlsx MISA ──parseMisaLedger──▶ Ledger ──(mergeLedgers nếu 
 
 **Không sửa logic** `engine.ts`, `misa-parser.ts`, `dates.ts`, `merge-ledgers.ts` nếu chưa hỏi chủ dự án. Bản cập nhật của module được so sánh từng file rồi mới chép đè.
 
+## Hồ sơ thanh toán (HSTT, GĐ3)
+
+Kế hoạch và khảo sát file làm tay: `docs/hstt/hstt-export-plan.md` (mục 8 "Đã biết", mục 9 "Việc còn nợ").
+
+**Luồng:** tính tiền (kỳ 26 → 25) → nhập **Dữ liệu kỳ** trên trang bản tính → **xác nhận** → **Tải HSTT (4 biểu)**.
+
+- **Dữ liệu kỳ** (bảng `billing_period_*`, theo hợp đồng + ngày đầu kỳ, dùng chung cho mọi bản tính của kỳ): số chuyến G, lũy kế F, "Tính ngay"/"Tính cuối kỳ" từng loại xe; giảm trừ sau thuế; Bên A đã thanh toán; nợ đầu kỳ (tự tính, có thể ghi đè). Tổng xem trước ngay trên trang: trước thuế, VAT, sau thuế, nợ cuối kỳ, bằng chữ.
+- **Khóa:** kỳ đã có bản tính **xác nhận** thì không sửa được dữ liệu kỳ (`periodEditBlock` trong `savePeriodInputs`, kiểm từ DB trước mọi lệnh ghi; test `hstt-lock.test.ts`). Muốn sửa: admin hủy xác nhận. Chỉ xem: xem và tải HSTT, không sửa gì.
+- **Nợ đầu kỳ** (`openingDebtFor` / `openingDebtInfo`): các tháng **≤ `opening_debt_month`** của hợp đồng là tháng làm tay → bản tính của các tháng đó (kể cả đã xác nhận) bị bỏ qua và **không tải được HSTT** ("Kỳ … đã làm HSTT bằng tay"). Kỳ đầu tiên sau đó lấy `opening_debt`; các kỳ sau lấy nợ cuối của kỳ trước **đã xác nhận** (thiếu kỳ nào thì báo kỳ đó). Ghi đè nợ đầu kỳ ở một kỳ thì chuỗi bắt đầu lại từ số ghi đè.
+- **Tải HSTT** chỉ khi: bản tính đã xác nhận, theo kỳ, không phải hợp đồng giả định, đủ Bên A/Bên B/ngày ký/số HĐ/dự án, tính được nợ đầu kỳ. Thiếu thì trang và route (`/api/billing/calculations/[id]/hstt`, 409) liệt kê từng thứ thiếu, không sinh file.
+- **Sinh file** (`hstt-export.ts`): điền `docs/hstt/hstt-template.xlsx` (đi kèm bundle qua `outputFileTracingIncludes` trong `next.config.ts`): nhân bản dòng theo cột Z, dựng lại merge, công thức kèm giá trị tính sẵn + `fullCalcOnLoad`, vùng in đúng khối, chiều cao dòng theo số dòng chữ. Tên file `HSTT T09.2026 - Việt Panel - TP.xlsx`.
+
+| File | Vai trò |
+|---|---|
+| `number-to-words.ts` | Số tiền bằng chữ theo văn phong HSTT. |
+| `hstt-totals.ts` | Vận chuyển, VAT (`ROUND` như Excel), giảm trừ, nợ cuối kỳ, chuỗi nợ đầu kỳ. |
+| `hstt-data.ts` | Quy tắc khóa, nguồn nợ đầu kỳ, dòng vận chuyển in ra, danh sách còn thiếu (client-safe). |
+| `hstt-server.ts` | Nạp toàn bộ dữ liệu HSTT của một bản tính qua RLS (trang + route). |
+| `hstt-export.ts`, `hstt-text.ts` | Điền file mẫu; câu "Căn cứ…" và tên file. |
+| `app/actions/billing-hstt.ts` | Action: công ty, khách hàng, tab HSTT hợp đồng, dữ liệu kỳ. |
+
+**Thêm một hợp đồng mới cho HSTT:**
+1. **Khách hàng** → thêm Bên A (tên in hoa, tên viết thường dùng trong câu "Căn cứ", tên rút gọn cho tên file, MST, TK, đại diện).
+2. Hợp đồng → **tab HSTT**: chọn Bên A, loại HĐ, ngày ký, tên + địa chỉ dự án (số HĐ sửa ở tab Chung), VAT; kiểm tra câu "Căn cứ" xem trước (sửa tay nếu cần).
+3. **Nợ ban đầu** = nợ cuối kỳ của tháng cuối cùng làm tay + tháng đó. Các tháng đến hết tháng đó không xuất HSTT trên web.
+4. Bảng giá vận chuyển (mỗi loại xe một dòng; xe đã dùng ở kỳ nào thì chỉ "Ngừng dùng", không xóa) và các khoản tạm ứng + ghi chú.
+5. Tháng web đầu tiên: tính → nhập dữ liệu kỳ → xác nhận → tải HSTT, so với bản tay một kỳ trước khi gửi khách.
+
 ## Nguyên tắc an toàn (đừng bỏ)
 
 - **Dừng hẳn, không tính tiếp** khi: file không phủ trọn kỳ, **không tìm thấy kho** của hợp đồng trong file, hoặc kho có mã hàng chưa có đơn giá và chưa nằm trong danh sách loại trừ. Thông báo lỗi của engine hiện nguyên văn trên giao diện. Tính thiếu tiền một cách âm thầm còn tệ hơn báo lỗi.
@@ -80,6 +111,9 @@ Migration (tạo file mới, không sửa file cũ):
 | `0030_billing_save_contract_config.sql` | RPC lưu đơn giá + mã loại trừ trong 1 transaction. |
 | `0031_billing_custom_range.sql` | Tính theo khoảng ngày (`period_month` null, không xác nhận được). |
 | `0032_billing_demo_and_decimal.sql` | `is_demo`, unique (`misa_kho`, `is_demo`), `total_amount numeric(20,4)`, trigger chặn xác nhận hợp đồng giả định. |
+| `0033`–`0037` | GĐ1: role "Chỉ xem", file MISA theo tháng, bảng giá phẳng, cutover (xem `docs/billing-gd1-trien-khai.md`). |
+| `0038_billing_hstt.sql` | GĐ3, chỉ thêm bảng: `company_profile` (Bên B, 1 dòng, chỉ admin sửa), `billing_customers` (Bên A), `billing_contract_hstt` (1:1 hợp đồng, bảng phụ để không đổi `billing_contracts`), `billing_transport_prices`, `billing_contract_advances`, `billing_period_inputs` / `_transport` / `_deductions`. RLS: đọc `is_billing_viewer`, ghi `is_billing_user`. Quay lại: `supabase/revert/0038_billing_hstt.revert.sql`. |
+| `0039_billing_hstt_seed_vietpanel.sql` | Seed TP + Việt Panel từ HSTT T08/2026 (nợ ban đầu 2.906.447.532 cuối 08/2026). |
 
 Không cần biến môi trường mới: dùng `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` sẵn có. `exceljs` chạy ở runtime Node (server action, route `/api/billing/calculations/[id]/xlsx`).
 
@@ -118,6 +152,8 @@ npx tsc --noEmit
 - `compare.test.ts`: tổng theo kho của trang đối chiếu khớp Excel.
 - `seed.test.ts`, `demo-seed.test.ts`: seed Việt Panel (0029) và seed giả định khớp dữ liệu nguồn, qua được validation của app.
 - `export-xlsx.test.ts`, `amounts.test.ts`: định dạng số nguyên/số lẻ, làm tròn 4 số lẻ.
+- `number-to-words.test.ts` (18 ca thật), `hstt-totals.test.ts`, `hstt-data.test.ts`, `hstt-lock.test.ts`.
+- `hstt-export.test.ts`: **golden HSTT T08/2026** so từng ô (giá trị, merge, font, viền, định dạng số, độ rộng cột) với khối T08 của `docs/hstt/hstt-t08-2026-vietpanel.xlsx`.
 
 **Thêm một hợp đồng thật:** lấy 1–2 HSTT đã gửi khách, tạo fixture giống `vietpanel-senci-golden.json`, viết test tương tự để chắc engine ra đúng từng đồng.
 
@@ -138,5 +174,5 @@ Cả bản 13 cột lẫn 16 cột (có cột Giá trị) đều đọc được
 ## Chưa làm (theo thứ tự ưu tiên)
 
 1. Ngày Tết chính xác từ kế toán (giao diện nhập ngày miễn tính đã có).
-2. Vận chuyển, VAT, giảm trừ, BB công nợ, giấy đề nghị thanh toán: ngoài phạm vi giai đoạn này.
+2. HSTT: lưu dữ liệu kỳ trong 1 transaction + khóa ở DB (0040, xem plan mục 9); xuất file cộng dồn nhiều tháng.
 3. Phiếu bị sót của kỳ đã chốt: cần cơ chế "dòng điều chỉnh" nhập tay. Engine đã tính đúng số ngày nếu truyền phiếu có ngày trước kỳ.

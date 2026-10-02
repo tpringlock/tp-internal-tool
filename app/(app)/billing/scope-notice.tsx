@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { Info } from "lucide-react";
 
-/** States the phase-1 scope: equipment rent only. */
+/** States what the app calculates and where the HSTT data is entered. */
 export async function ScopeNotice() {
   const t = await getTranslations("Billing");
   return (
