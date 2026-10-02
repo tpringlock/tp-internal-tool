@@ -1194,7 +1194,8 @@
     "compare": "Đối chiếu Excel",
     "customers": "Khách hàng (Bên A)",
     "periods": "Mẫu kỳ",
-    "reports": "Báo cáo tiền thuê"
+    "reports": "Báo cáo tiền thuê",
+    "alerts": "Cảnh báo"
   },
   "Hstt": {
     "companyTitle": "Thông tin công ty",
@@ -1468,6 +1469,59 @@
     "demoProject": "HỢP ĐỒNG GIẢ ĐỊNH: đơn giá giả định, chỉ để đối chiếu, không phải tiền thuê thật.",
     "detailNote": "Tính lại từ file tháng đang dùng, chỉ để xem, không lưu. Muốn lưu, xác nhận hoặc lập HSTT thì tính ở màn Tính tiền thuê.",
     "openCalculate": "Mở màn Tính tiền thuê",
-    "summaryTitle": "Tổng hợp theo thiết bị"
+    "summaryTitle": "Tổng hợp theo thiết bị",
+    "exportFailed": "Không xuất được file Excel. Hãy thử lại."
+  },
+  "BillingAlerts": {
+    "title": "Trung tâm cảnh báo",
+    "subtitle": "Kiểm tra dữ liệu MISA và bảng giá của một kỳ: tồn âm, thiếu đơn giá, kho chưa có hợp đồng, mã không còn trên MISA, lệch tên/ĐVT. Chỉ đọc, không sửa gì.",
+    "periodMode": "Cách chọn kỳ",
+    "modePreset": "Theo mẫu kỳ",
+    "modeRange": "Khoảng ngày",
+    "preset": "Mẫu kỳ",
+    "endMonth": "Tháng kết thúc kỳ",
+    "dateFrom": "Từ ngày",
+    "dateTo": "Đến ngày",
+    "check": "Kiểm tra",
+    "badPeriod": "Kỳ không hợp lệ. Hãy chọn lại.",
+    "periodLine": "Kỳ {from} – {to} · File MISA: {files} · {seconds} giây",
+    "demoOn": "Đang bật \"Hiện dữ liệu giả định\": kho có hợp đồng GIẢ ĐỊNH được coi là đã có hợp đồng, nên cảnh báo \"Kho chưa có hợp đồng\" có thể bị che. Tắt công tắc để xem cảnh báo thật.",
+    "search": "Tìm mã kho, tên kho, hợp đồng, mã VT…",
+    "kindFilter": "Loại cảnh báo",
+    "allKinds": "Mọi loại",
+    "showCompany": "Gồm kho công ty",
+    "exportExcel": "Xuất Excel",
+    "exportFailed": "Không xuất được file Excel. Hãy thử lại.",
+    "empty": "Không có cảnh báo nào.",
+    "colKind": "Loại",
+    "colKho": "Kho / hợp đồng",
+    "colItem": "Mã VT",
+    "colDetail": "Chi tiết",
+    "companyBadge": "Kho công ty",
+    "demoPrefix": "[GIẢ ĐỊNH]",
+    "negativeMeta": "Âm từ {date}, thấp nhất {balance}",
+    "truncated": "Đang hiện {shown}/{total} cảnh báo. Lọc thêm hoặc xuất Excel để xem hết.",
+    "rulesTitle": "Cách kiểm tra",
+    "companyTitle": "Kho công ty (tách riêng, không cần hợp đồng)",
+    "companyNote": "Chỉ nhận diện theo danh sách trên (lib/billing/company-warehouses.ts), không đoán theo tên kho. Muốn thêm/bớt thì sửa danh sách đó.",
+    "kind": {
+      "negative_stock": "Tồn âm",
+      "missing_price": "Thiếu đơn giá",
+      "no_contract": "Kho chưa có hợp đồng",
+      "not_in_misa": "Không còn trên MISA",
+      "name_mismatch": "Lệch tên / ĐVT"
+    },
+    "rule": {
+      "negative_stock": "tồn cuối ngày của (kho, mã) dưới 0 vào một ngày trong kỳ (kể cả tồn đầu kỳ); ghi ngày âm đầu tiên, các phiếu xuất ngày đó và tồn thấp nhất. Kho công ty được tách riêng.",
+      "missing_price": "kho của hợp đồng có mã có tồn hoặc phát sinh nhưng không có dòng đơn giá nào (kể cả 0đ): tính tiền sẽ dừng.",
+      "no_contract": "kho có tồn hoặc phát sinh nhưng không có hợp đồng; bỏ qua kho công ty; hợp đồng giả định chỉ được tính khi bật công tắc giả định.",
+      "not_in_misa": "mã kho của hợp đồng hoặc mã VT trong bảng giá không có trong file MISA nào đang dùng (thường do MISA đổi mã).",
+      "name_mismatch": "tên VT / ĐVT trong bảng giá, hoặc tên kho của hợp đồng, khác MISA."
+    },
+    "match": {
+      "exact": "trùng mã",
+      "suffix": "mã kết thúc bằng",
+      "prefix": "mã bắt đầu bằng"
+    }
   }
 }

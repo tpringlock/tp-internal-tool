@@ -320,6 +320,18 @@ export const rentReportSchema = z.discriminatedUnion("mode", [
     ),
 ]);
 
+/** Alert center period: a preset + month, or a date range (read-only, from the URL). */
+export const alertsPeriodSchema = z.discriminatedUnion("mode", [
+  z.object({ ...periodPresetFields, mode: z.literal("preset"), month: billingMonth }),
+  z
+    .object({ mode: z.literal("range"), date_from: isoDate, date_to: isoDate })
+    .refine((v) => v.date_to >= v.date_from, { message: "rangeOrder", path: ["date_to"] })
+    .refine(
+      (v) => (Date.parse(v.date_to) - Date.parse(v.date_from)) / 86_400_000 < MAX_RANGE_DAYS,
+      { message: "rangeTooLong", path: ["date_to"] },
+    ),
+]);
+
 /** Add or edit a period preset (admin). */
 export const periodPresetSchema = z.object({
   ...periodPresetFields,

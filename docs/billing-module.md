@@ -22,6 +22,7 @@ Engine tính **tiền thuê thiết bị** (mục I của BB đối chiếu giá
 | `/billing/contracts`, `/billing/contracts/[id]` | Hợp đồng, đơn giá theo ngày, mã MISA gộp vào từng dòng, mã không tính tiền, ngày miễn tính riêng. Mã chưa khai báo khi tính → link "Thêm các mã này vào hợp đồng". |
 | `/billing/excluded-ranges` | Ngày miễn tính chung (Tết…) hoặc riêng hợp đồng. |
 | `/billing/reports` | **Báo cáo tiền thuê nhiều dự án** (GĐ2, chỉ tính và xem, không ghi DB; cả "Chỉ xem" dùng được): chọn nhiều dự án (tìm kiếm, lọc trạng thái, chọn tất cả), mẫu kỳ + tháng hoặc khoảng ngày. Tự lấy file tháng đang dùng phủ kỳ, thiếu tháng thì dừng. Kết quả: tổng hợp theo mã VT (đơn giá khác nhau → "Theo dự án"), danh sách dự án giảm dần + tổng, dự án lỗi ở cuối kèm lý do; bấm dự án → `/billing/reports/project/[id]` (từng phiếu). Xuất Excel (`POST /api/billing/reports/xlsx`): Tổng hợp, Danh sách dự án, mỗi dự án 1 sheet, công thức H=E−D+1, J=I×H×G, SUBTOTAL + giá trị tính sẵn. Hợp đồng giả định chỉ hiện khi bật công tắc, có băng đỏ. Code: `rent-report.ts` (thuần), `rent-report-server.ts`, `rent-report-export.ts`, action `app/actions/billing-reports.ts`. Đo 02/10/2026 trên file T08+T09 thật + 209 cấu hình giả định (211 kho): đọc file ~1,1s, tính 0,05s, Excel 199 sheet 0,7s, tổng ~2,2s (`maxDuration = 60`). |
+| `/billing/alerts` | **Trung tâm cảnh báo** (GĐ2, chỉ đọc, mọi vai trò billing): chọn mẫu kỳ + tháng ("Tháng dương lịch" = 1 tháng dữ liệu) hoặc khoảng ngày (URL chia sẻ được). 5 loại: tồn âm (tồn cuối ngày < 0, ngày âm đầu tiên + phiếu xuất ngày đó + tồn thấp nhất; kho công ty tách riêng), thiếu đơn giá (giống engine, `findUnknownCodes`), kho chưa có hợp đồng (bỏ kho công ty; hợp đồng giả định chỉ tính khi bật công tắc), kho/mã trong bảng giá không có trong file tháng nào đang dùng, lệch tên/ĐVT (bảng giá + tên kho hợp đồng, so với danh mục MISA đã lưu như `/billing/prices`). Lọc loại, tìm kho/hợp đồng/mã, bật/tắt kho công ty, xuất Excel (`/api/billing/alerts/xlsx`, cùng bộ lọc). Code: `alerts.ts` (quy tắc), `alert-list.ts` (client-safe), `alerts-server.ts` (dùng lại `loadBillingContracts` + `loadPeriodLedger` của báo cáo), `alerts-export.ts`, `company-warehouses.ts`. |
 | `/billing/periods` | **Mẫu kỳ** (0040): ngày bắt đầu 1–28 + 1/3/6/12 tháng. Mọi người xem, chỉ admin thêm/sửa/xóa. Hợp đồng gán **mẫu kỳ mặc định** ở tab Chung. |
 | `/billing/compare` | **Chỉ admin.** Đối chiếu với tool Excel (xem dưới). |
 | `/billing/customers`, `/billing/customers/[id]` | Khách hàng (Bên A) của HSTT. Xóa: chỉ admin, không xóa được khi còn hợp đồng dùng. |
@@ -172,8 +173,24 @@ Mở **Sổ chi tiết vật tư hàng hóa**, chọn Kho `<<Tất cả>>`, kỳ
 
 Cả bản 13 cột lẫn 16 cột (có cột Giá trị) đều đọc được.
 
+## Kho công ty (trung tâm cảnh báo)
+
+Kho của TP hoặc kho TP đi thuê, không phải dự án của khách: tồn âm được tách nhóm riêng, không bị báo "chưa có hợp đồng". **Chỉ nhận diện theo danh sách** `COMPANY_WAREHOUSE_RULES` trong `lib/billing/company-warehouses.ts` (so mã kho sau `normalizeCode`, không phân biệt hoa thường), không đoán theo tên kho. Sửa danh sách thì sửa cả bảng này và `company-warehouses.test.ts`.
+
+| Quy tắc | Giá trị | Ý nghĩa |
+|---|---|---|
+| trùng mã | `TP/PHÚ THỌ` | Kho tổng TP (Phú Thọ) |
+| trùng mã | `TP/ĐAN PHƯỢNG` | Kho tổng TP (Đan Phượng) |
+| trùng mã | `KHO068` | Kho CCDC văn phòng |
+| mã kết thúc bằng | `dithue` | Kho đi thuê (`TEC-dithue`, `HÀ MINH dithue`, `Vinagroup-dithue`, `ZUHANG-dithue`) |
+| mã bắt đầu bằng | `NCC ` | Kho nhà cung cấp (`NCC LINH CƯỜNG`) |
+
+Kho `…chothue` (ZUHANG-chothue, HÀ MINH chothue…) là kho cho khách thuê, **không** phải kho công ty.
+
 ## Chưa làm (theo thứ tự ưu tiên)
 
 1. Ngày Tết chính xác từ kế toán (giao diện nhập ngày miễn tính đã có).
 2. HSTT: lưu dữ liệu kỳ trong 1 transaction + khóa ở DB (migration số trống tiếp theo, xem plan mục 9); xuất file cộng dồn nhiều tháng.
 3. Phiếu bị sót của kỳ đã chốt: cần cơ chế "dòng điều chỉnh" nhập tay. Engine đã tính đúng số ngày nếu truyền phiếu có ngày trước kỳ.
+4. Báo cáo tiền thuê: **nhóm dự án đã lưu** (plan mục 4) – bỏ qua ở GĐ2, cần bảng DB mới.
+5. Kho công ty: hiện là danh sách trong code (`lib/billing/company-warehouses.ts`); nếu cần admin tự sửa trên web thì phải có bảng DB + trang quản lý.

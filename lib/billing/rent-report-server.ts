@@ -1,6 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { BillingContract, Database } from "@/lib/db/types";
+import type { BillingContract, BillingPriceLine, Database } from "@/lib/db/types";
 import { loadActiveMonthUploads } from "./month-files-server";
 import { monthsCovering, pickMonthFiles } from "./month-files";
 import { presetPeriodFor, type PresetSpec } from "./period-presets";
@@ -9,7 +9,7 @@ import { contractLabel, getAllPriceLines } from "./queries";
 import { loadMergedLedger } from "./server";
 import { buildRentReport, type RentReport, type ReportContract } from "./rent-report";
 import { formatVnDate } from "./dates";
-import { formatBillingMonth } from "./periods";
+import { formatBillingMonth, type RangeRow } from "./periods";
 import type { Ledger, Period } from "./types";
 
 type Client = SupabaseClient<Database>;
@@ -49,6 +49,55 @@ export function reportPeriodFor(
     : { from: input.from, to: input.to };
 }
 
+export interface BillingContractsData {
+  /** Real contracts, + demo ones when asked, by MISA warehouse. */
+  contracts: BillingContract[];
+  linesBy: Map<string, BillingPriceLine[]>;
+  ranges: (RangeRow & { contract_id: string | null })[];
+}
+
+/**
+ * Every contract (demo ones only when `includeDemo`) with its price rows and
+ * the non-billable ranges, through RLS. Shared by the rent report and the
+ * alert center.
+ */
+export async function loadBillingContracts(supabase: Client, includeDemo: boolean): Promise<BillingContractsData> {
+  // All contracts, filtered by the caller: 200+ ids in .in() would make a very long URL.
+  let contractQuery = supabase.from("billing_contracts").select("*").order("misa_kho");
+  if (!includeDemo) contractQuery = contractQuery.eq("is_demo", false);
+  const [{ data: contracts, error }, realLines, demoLines, { data: rangeRows, error: rangeError }] = await Promise.all([
+    contractQuery,
+    getAllPriceLines(supabase, { demo: false }),
+    includeDemo ? getAllPriceLines(supabase, { demo: true }) : Promise.resolve([]),
+    supabase.from("billing_excluded_ranges").select("date_from, date_to, reason, contract_id"),
+  ]);
+  if (error) throw new Error(error.message);
+  if (rangeError) throw new Error(rangeError.message);
+  return {
+    contracts: contracts ?? [],
+    linesBy: Map.groupBy([...realLines, ...demoLines], (l) => l.contract_id),
+    ranges: rangeRows ?? [],
+  };
+}
+
+export type PeriodLedger =
+  | { ok: false; error: string }
+  | { ok: true; ledger: Ledger; files: ReportSourceFile[] };
+
+/**
+ * The merged ledger of the ACTIVE month files covering `period` (oldest
+ * first, mergeLedgers). A missing month stops: "Thiếu file tháng ...".
+ */
+export async function loadPeriodLedger(supabase: Client, period: Period): Promise<PeriodLedger> {
+  const pick = pickMonthFiles(period, await loadActiveMonthUploads(supabase, monthsCovering(period)));
+  if (pick.error) return { ok: false, error: pick.error };
+  return {
+    ok: true,
+    ledger: await loadMergedLedger(pick.files),
+    files: pick.files.map(({ month, version, upload_id, file_name }) => ({ month, version, upload_id, file_name })),
+  };
+}
+
 /**
  * Everything a rent report needs, read through RLS (the caller has checked
  * the billing read guard): the chosen contracts (demo ones only when
@@ -61,26 +110,16 @@ export async function loadReportInput(
   opts: { contractIds: readonly string[]; period: ReportPeriodInput; includeDemo: boolean },
 ): Promise<LoadedReport> {
   const started = Date.now();
-  // All contracts, filtered here: 200+ ids in .in() would make a very long URL.
-  let contractQuery = supabase.from("billing_contracts").select("*").order("misa_kho");
-  if (!opts.includeDemo) contractQuery = contractQuery.eq("is_demo", false);
-  const [{ data: allContracts, error }, realLines, demoLines, { data: rangeRows }] = await Promise.all([
-    contractQuery,
-    getAllPriceLines(supabase, { demo: false }),
-    opts.includeDemo ? getAllPriceLines(supabase, { demo: true }) : Promise.resolve([]),
-    supabase.from("billing_excluded_ranges").select("date_from, date_to, reason, contract_id"),
-  ]);
-  if (error) return { ok: false, error: error.message };
+  const data = await loadBillingContracts(supabase, opts.includeDemo);
   const wanted = new Set(opts.contractIds);
-  const rows = (allContracts ?? []).filter((c) => wanted.has(c.id));
+  const rows = data.contracts.filter((c) => wanted.has(c.id));
   if (rows.length === 0) return { ok: false, error: "Chưa chọn dự án nào (hoặc không xem được các dự án đã chọn)." };
 
-  const linesBy = Map.groupBy([...realLines, ...demoLines], (l) => l.contract_id);
   const contracts: ReportContract[] = rows.map((c) => {
     let config = null;
     let configError = null;
     try {
-      config = toContractConfigFromLines(c, linesBy.get(c.id) ?? []);
+      config = toContractConfigFromLines(c, data.linesBy.get(c.id) ?? []);
     } catch (e) {
       if (!(e instanceof PriceLinesError)) throw e;
       configError = e.message;
@@ -93,7 +132,7 @@ export async function loadReportInput(
       config,
       configError,
       period: reportPeriodFor(opts.period, c),
-      ranges: (rangeRows ?? []).filter((r) => r.contract_id === null || r.contract_id === c.id),
+      ranges: data.ranges.filter((r) => r.contract_id === null || r.contract_id === c.id),
     };
   });
 
@@ -101,17 +140,9 @@ export async function loadReportInput(
     from: contracts.reduce((m, c) => (c.period.from < m ? c.period.from : m), contracts[0].period.from),
     to: contracts.reduce((m, c) => (c.period.to > m ? c.period.to : m), contracts[0].period.to),
   };
-  const pick = pickMonthFiles(period, await loadActiveMonthUploads(supabase, monthsCovering(period)));
-  if (pick.error) return { ok: false, error: pick.error };
-  const ledger = await loadMergedLedger(pick.files);
-  return {
-    ok: true,
-    contracts,
-    period,
-    files: pick.files.map(({ month, version, upload_id, file_name }) => ({ month, version, upload_id, file_name })),
-    ledger,
-    loadMs: Date.now() - started,
-  };
+  const loaded = await loadPeriodLedger(supabase, period);
+  if (!loaded.ok) return loaded;
+  return { ok: true, contracts, period, files: loaded.files, ledger: loaded.ledger, loadMs: Date.now() - started };
 }
 
 /** Parsed report form (rentReportSchema). */

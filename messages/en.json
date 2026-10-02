@@ -1194,7 +1194,8 @@
     "compare": "Excel comparison",
     "customers": "Customers (Party A)",
     "periods": "Period presets",
-    "reports": "Rent report"
+    "reports": "Rent report",
+    "alerts": "Alerts"
   },
   "Hstt": {
     "companyTitle": "Company information",
@@ -1468,6 +1469,59 @@
     "demoProject": "DEMO CONTRACT: assumed prices, for comparison only, not real rent.",
     "detailNote": "Recalculated from the active month files, view only, nothing saved. To save, confirm or make an HSTT, calculate it on the calculate page.",
     "openCalculate": "Open the calculate page",
-    "summaryTitle": "Summary per item"
+    "summaryTitle": "Summary per item",
+    "exportFailed": "Could not export the Excel file. Please try again."
+  },
+  "BillingAlerts": {
+    "title": "Alert center",
+    "subtitle": "Checks the MISA data and price table of a period: negative stock, missing prices, warehouses without a contract, codes gone from MISA, name/unit differences. Read-only.",
+    "periodMode": "Period",
+    "modePreset": "By preset",
+    "modeRange": "Date range",
+    "preset": "Preset",
+    "endMonth": "Ending month",
+    "dateFrom": "From",
+    "dateTo": "To",
+    "check": "Check",
+    "badPeriod": "Invalid period. Choose again.",
+    "periodLine": "Period {from} – {to} · MISA files: {files} · {seconds}s",
+    "demoOn": "\"Show demo data\" is on: warehouses with a DEMO contract count as having a contract, which can hide \"no contract\" alerts. Turn it off to see the real ones.",
+    "search": "Search warehouse, contract, item code…",
+    "kindFilter": "Alert type",
+    "allKinds": "All types",
+    "showCompany": "Include company warehouses",
+    "exportExcel": "Export Excel",
+    "exportFailed": "Could not export the Excel file. Please try again.",
+    "empty": "No alerts.",
+    "colKind": "Type",
+    "colKho": "Warehouse / contract",
+    "colItem": "Item",
+    "colDetail": "Detail",
+    "companyBadge": "Company warehouse",
+    "demoPrefix": "[DEMO]",
+    "negativeMeta": "Negative from {date}, lowest {balance}",
+    "truncated": "Showing {shown}/{total} alerts. Filter or export to Excel to see all.",
+    "rulesTitle": "How the checks work",
+    "companyTitle": "Company warehouses (grouped apart, need no contract)",
+    "companyNote": "Recognised only by the list above (lib/billing/company-warehouses.ts), never guessed from the name. Edit that list to change it.",
+    "kind": {
+      "negative_stock": "Negative stock",
+      "missing_price": "Missing price",
+      "no_contract": "No contract",
+      "not_in_misa": "Gone from MISA",
+      "name_mismatch": "Name / unit differs"
+    },
+    "rule": {
+      "negative_stock": "end-of-day balance of a (warehouse, code) below 0 on a day of the period (opening included); shows the first negative day, that day's outgoing vouchers and the lowest balance. Company warehouses are grouped apart.",
+      "missing_price": "a contract's warehouse has a code with stock or movements but no price row (not even 0đ): calculating will stop.",
+      "no_contract": "a warehouse with stock or movements but no contract; company warehouses skipped; demo contracts count only with the demo switch on.",
+      "not_in_misa": "a contract's warehouse or a priced code in none of the active MISA files (usually renamed in MISA).",
+      "name_mismatch": "item name / unit in the price table, or the contract's warehouse name, differs from MISA."
+    },
+    "match": {
+      "exact": "exact code",
+      "suffix": "code ends with",
+      "prefix": "code starts with"
+    }
   }
 }

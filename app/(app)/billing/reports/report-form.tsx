@@ -16,6 +16,8 @@ import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field } from "@/components/ui/field";
 import { Input, Select } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
+import { useToast } from "@/components/ui/toast";
+import { fetchDownload } from "@/lib/fetch-download";
 
 export interface ReportContractOption {
   id: string;
@@ -74,6 +76,24 @@ export function ReportForm({
     setRanWith([...fd.entries()].map(([k, v]) => [k, String(v)]));
     return runRentReport(prev, fd);
   }, {});
+
+  // Export through fetch so an error (e.g. a month file replaced meanwhile)
+  // shows on this page instead of opening a blank error page.
+  const { toast } = useToast();
+  const [exporting, setExporting] = useState(false);
+  const exportExcel = async () => {
+    setExporting(true);
+    const body = new FormData();
+    for (const [k, v] of ranWith) body.append(k, v);
+    const error = await fetchDownload(
+      "/api/billing/reports/xlsx",
+      { method: "POST", body },
+      "bao-cao-tien-thue.xlsx",
+      t("exportFailed"),
+    );
+    setExporting(false);
+    if (error) toast(error, { tone: "error" });
+  };
 
   const visible = contracts.filter((c) => (status === "all" ? true : status === "active" ? c.active : !c.active));
   const byId = new Map(contracts.map((c) => [c.id, c]));
@@ -234,15 +254,10 @@ export function ReportForm({
                 </button>
               ))}
             </div>
-            <form method="post" action="/api/billing/reports/xlsx">
-              {ranWith.map(([k, v], i) => (
-                <input key={`${k}-${i}`} type="hidden" name={k} value={v} />
-              ))}
-              <Button type="submit" variant="secondary">
-                <Download className="h-4 w-4" aria-hidden />
-                {t("exportExcel")}
-              </Button>
-            </form>
+            <Button type="button" variant="secondary" loading={exporting} onClick={exportExcel}>
+              <Download className="h-4 w-4" aria-hidden />
+              {t("exportExcel")}
+            </Button>
           </div>
 
           {tab === "codes" ? (
