@@ -1499,7 +1499,7 @@
     "colDetail": "Detail",
     "companyBadge": "Company warehouse",
     "demoPrefix": "[DEMO]",
-    "negativeMeta": "Negative from {date}, lowest {balance}",
+    "negativeMeta": "Negative from {date} · vouchers {refs} · lowest {balance}",
     "truncated": "Showing {shown}/{total} alerts. Filter or export to Excel to see all.",
     "rulesTitle": "How the checks work",
     "companyTitle": "Company warehouses (grouped apart, need no contract)",
@@ -1512,7 +1512,7 @@
       "name_mismatch": "Name / unit differs"
     },
     "rule": {
-      "negative_stock": "end-of-day balance of a (warehouse, code) below 0 on a day of the period (opening included); shows the first negative day, that day's outgoing vouchers and the lowest balance. Company warehouses are grouped apart.",
+      "negative_stock": "end-of-day balance of a (warehouse, code) below 0 in the period. Two groups: \"negative in period\" (opening ≥ 0, made negative by a voucher in the period; first negative day, that day's outgoing vouchers, lowest balance) and \"negative at start\" (opening already < 0; opening balance shown, collapsed by default). Company warehouses are grouped apart.",
       "missing_price": "a contract's warehouse has a code with stock or movements but no price row (not even 0đ): calculating will stop.",
       "no_contract": "a warehouse with stock or movements but no contract; company warehouses skipped; demo contracts count only with the demo switch on.",
       "not_in_misa": "a contract's warehouse or a priced code in none of the active MISA files (usually renamed in MISA).",
@@ -1522,6 +1522,17 @@
       "exact": "exact code",
       "suffix": "code ends with",
       "prefix": "code starts with"
-    }
+    },
+    "category": {
+      "negative_new": "Negative in period",
+      "negative_opening": "Negative at start",
+      "missing_price": "Missing price",
+      "no_contract": "No contract",
+      "not_in_misa": "Gone from MISA",
+      "name_mismatch": "Name / unit differs"
+    },
+    "openingTitle": "Negative at the period start ({count})",
+    "openingHint": "Already negative at the period start (usually an old MISA balance). Collapsed so it does not hide new cases.",
+    "openingMeta": "Opening {opening}, lowest {balance}"
   }
 }

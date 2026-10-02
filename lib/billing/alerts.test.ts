@@ -93,8 +93,16 @@ describe("buildAlerts", () => {
   it("negative stock: first negative day, the vouchers taking stock out, the lowest balance", () => {
     const neg = of("negative_stock");
     const vt1 = neg.find((a) => a.kho === "VP-01" && a.maVt === "VT1")!;
-    expect(vt1).toMatchObject({ date: "2026-08-29", balance: -4, refs: ["PX02", "PX03"], company: null, contractId: "vp" });
-    expect(vt1.message).toMatch(/29\/08\/2026.*PX02, PX03.*-4/);
+    expect(vt1).toMatchObject({
+      negativeGroup: "new",
+      openingBalance: 10,
+      date: "2026-08-29",
+      balance: -4,
+      refs: ["PX02", "PX03"],
+      company: null,
+      contractId: "vp",
+    });
+    expect(vt1.message).toMatch(/Âm mới trong kỳ từ ngày 29\/08\/2026.*PX02, PX03.*tồn đầu kỳ 10.*-4/);
     // End-of-day balance: VT2 never negative within the period; after the period is ignored.
     expect(neg.some((a) => a.maVt === "VT2")).toBe(false);
   });
@@ -102,10 +110,24 @@ describe("buildAlerts", () => {
   it("negative stock in a company warehouse is flagged as company, from the period start", () => {
     const tp = of("negative_stock").find((a) => a.kho === "TP/PHÚ THỌ")!;
     expect(tp.company).toMatch(/Kho tổng/);
-    expect(tp).toMatchObject({ date: period.from, balance: -3, refs: [] });
-    expect(tp.message).toMatch(/đầu kỳ/);
-    // Project warehouses sort before company ones within a kind.
-    expect(of("negative_stock").at(-1)!.kho).toBe("TP/PHÚ THỌ");
+    expect(tp).toMatchObject({ negativeGroup: "opening", openingBalance: -3, balance: -3, refs: [] });
+    expect(tp.message).toMatch(/Âm sẵn từ đầu kỳ: tồn đầu kỳ \(26\/08\/2026\) -3/);
+    // "new" before "opening".
+    expect(of("negative_stock").map((a) => a.negativeGroup)).toEqual(["new", "opening"]);
+  });
+
+  it("a balance made negative by vouchers BEFORE the period start counts as already negative", () => {
+    const early: Ledger = {
+      ...ledger,
+      openings: [open("VP-01", "VT1", 2)],
+      movements: [mov("VP-01", "VT1", "2026-08-10", 0, 5, "PX-OLD"), mov("VP-01", "VT1", "2026-09-01", 0, 1, "PX-NEW")],
+    };
+    const [a] = buildAlerts({ ledger: early, period, contracts: [vp], catalog: null }).filter((x) => x.kind === "negative_stock");
+    expect(a).toMatchObject({ negativeGroup: "opening", openingBalance: -3, balance: -4 });
+    // A balance that is exactly 0 at the start and goes negative is "new", on its own day.
+    const zero: Ledger = { ...ledger, openings: [open("VP-01", "VT1", 0)], movements: [mov("VP-01", "VT1", "2026-08-26", 0, 1, "PX-D1")] };
+    const [b] = buildAlerts({ ledger: zero, period, contracts: [vp], catalog: null }).filter((x) => x.kind === "negative_stock");
+    expect(b).toMatchObject({ negativeGroup: "new", openingBalance: 0, date: "2026-08-26", refs: ["PX-D1"] });
   });
 
   it("missing price: codes with activity and no price row, like the engine", () => {
@@ -135,7 +157,7 @@ describe("buildAlerts", () => {
   it("without a catalog only the ledger checks run", () => {
     const noCat = buildAlerts({ ledger, period, contracts: [vp], catalog: null });
     expect(countAlerts(noCat).not_in_misa + countAlerts(noCat).name_mismatch).toBe(0);
-    expect(countAlerts(noCat).negative_stock).toBe(2);
+    expect(countAlerts(noCat)).toMatchObject({ negative_new: 1, negative_opening: 1 });
   });
 });
 
@@ -146,8 +168,9 @@ describe("filterAlerts + exportAlertsXlsx", async () => {
   const alerts = buildAlerts({ ledger, period, contracts: [vp, gone], catalog });
 
   it("filters by kind, search and company warehouses", () => {
-    expect(filterAlerts(alerts, { kind: "negative_stock" }).length).toBe(2);
-    expect(filterAlerts(alerts, { kind: "negative_stock", company: false }).map((a) => a.kho)).toEqual(["VP-01"]);
+    expect(filterAlerts(alerts, { category: "negative_new" }).map((a) => a.kho)).toEqual(["VP-01"]);
+    expect(filterAlerts(alerts, { category: "negative_opening" }).map((a) => a.kho)).toEqual(["TP/PHÚ THỌ"]);
+    expect(filterAlerts(alerts, { category: "negative_opening", company: false })).toEqual([]);
     expect(filterAlerts(alerts, { q: "viet panel vt9" }).map((a) => a.kind)).toEqual(["missing_price"]);
   });
 
@@ -158,10 +181,14 @@ describe("filterAlerts + exportAlertsXlsx", async () => {
     const ws = wb.getWorksheet("Cảnh báo")!;
     const rows: unknown[][] = [];
     ws.eachRow((r) => {
-      if (typeof r.getCell(1).value === "number") rows.push([r.getCell(2).value, r.getCell(3).value, r.getCell(11).value]);
+      if (typeof r.getCell(1).value === "number") {
+        rows.push([r.getCell(2).value, r.getCell(3).value, r.getCell(4).value, r.getCell(11).value, r.getCell(13).value]);
+      }
     });
     expect(rows).toHaveLength(alerts.length);
-    expect(rows[0]).toEqual(["Tồn âm", "VP-01", "PX02, PX03"]);
+    expect(rows[0]).toEqual(["Tồn âm", "Âm mới trong kỳ", "VP-01", 10, "PX02, PX03"]);
+    expect(rows[1]).toEqual(["Tồn âm", "Âm sẵn từ đầu kỳ", "TP/PHÚ THỌ", -3, null]);
+    expect(rows[2][1]).toBeNull();
     expect(String(ws.getRow(2).getCell(1).value)).toMatch(/26\/08\/2026 – 25\/09\/2026/);
   });
 });

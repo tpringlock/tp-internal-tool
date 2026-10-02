@@ -1499,7 +1499,7 @@
     "colDetail": "Chi tiết",
     "companyBadge": "Kho công ty",
     "demoPrefix": "[GIẢ ĐỊNH]",
-    "negativeMeta": "Âm từ {date}, thấp nhất {balance}",
+    "negativeMeta": "Âm từ {date} · phiếu {refs} · thấp nhất {balance}",
     "truncated": "Đang hiện {shown}/{total} cảnh báo. Lọc thêm hoặc xuất Excel để xem hết.",
     "rulesTitle": "Cách kiểm tra",
     "companyTitle": "Kho công ty (tách riêng, không cần hợp đồng)",
@@ -1512,7 +1512,7 @@
       "name_mismatch": "Lệch tên / ĐVT"
     },
     "rule": {
-      "negative_stock": "tồn cuối ngày của (kho, mã) dưới 0 vào một ngày trong kỳ (kể cả tồn đầu kỳ); ghi ngày âm đầu tiên, các phiếu xuất ngày đó và tồn thấp nhất. Kho công ty được tách riêng.",
+      "negative_stock": "tồn cuối ngày của (kho, mã) dưới 0 trong kỳ. Chia 2 nhóm: \"Âm mới trong kỳ\" (tồn đầu kỳ ≥ 0, bị âm do phiếu trong kỳ; ghi ngày âm đầu tiên, phiếu xuất ngày đó, tồn thấp nhất) và \"Âm sẵn từ đầu kỳ\" (tồn đầu kỳ đã < 0; ghi số dư đầu kỳ, thu gọn mặc định). Kho công ty được tách riêng.",
       "missing_price": "kho của hợp đồng có mã có tồn hoặc phát sinh nhưng không có dòng đơn giá nào (kể cả 0đ): tính tiền sẽ dừng.",
       "no_contract": "kho có tồn hoặc phát sinh nhưng không có hợp đồng; bỏ qua kho công ty; hợp đồng giả định chỉ được tính khi bật công tắc giả định.",
       "not_in_misa": "mã kho của hợp đồng hoặc mã VT trong bảng giá không có trong file MISA nào đang dùng (thường do MISA đổi mã).",
@@ -1522,6 +1522,17 @@
       "exact": "trùng mã",
       "suffix": "mã kết thúc bằng",
       "prefix": "mã bắt đầu bằng"
-    }
+    },
+    "category": {
+      "negative_new": "Âm mới trong kỳ",
+      "negative_opening": "Âm sẵn từ đầu kỳ",
+      "missing_price": "Thiếu đơn giá",
+      "no_contract": "Kho chưa có hợp đồng",
+      "not_in_misa": "Không còn trên MISA",
+      "name_mismatch": "Lệch tên / ĐVT"
+    },
+    "openingTitle": "Âm sẵn từ đầu kỳ ({count})",
+    "openingHint": "Tồn đầu kỳ đã âm (thường là số dư cũ trên MISA). Thu gọn để không che các trường hợp âm mới.",
+    "openingMeta": "Tồn đầu kỳ {opening}, thấp nhất {balance}"
   }
 }

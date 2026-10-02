@@ -6,8 +6,8 @@ import { alertsPeriodSchema } from "@/lib/validation";
 import { getShowDemo } from "@/lib/billing/queries";
 import { XLSX_MIME } from "@/lib/billing/server";
 import { formatBillingMonth } from "@/lib/billing/periods";
-import { ALERT_KINDS, filterAlerts, type AlertKind } from "@/lib/billing/alerts";
-import { ALERT_KIND_LABELS, exportAlertsXlsx } from "@/lib/billing/alerts-export";
+import { ALERT_CATEGORIES, filterAlerts, type AlertCategory } from "@/lib/billing/alerts";
+import { ALERT_CATEGORY_LABELS, exportAlertsXlsx } from "@/lib/billing/alerts-export";
 import { alertsInputFrom, runAlerts } from "@/lib/billing/alerts-server";
 
 // exceljs needs Node APIs (Buffer, streams).
@@ -33,13 +33,13 @@ export async function GET(request: NextRequest) {
   }
   if (!run.ok) return new NextResponse(run.error, { status: 422 });
 
-  const kindParam = sp.get("kind") ?? "";
-  const kind = (ALERT_KINDS as readonly string[]).includes(kindParam) ? (kindParam as AlertKind) : "";
+  const categoryParam = sp.get("category") ?? "";
+  const category = (ALERT_CATEGORIES as readonly string[]).includes(categoryParam) ? (categoryParam as AlertCategory) : "";
   const q = sp.get("q") ?? "";
   const company = sp.get("company") !== "0";
-  const alerts = filterAlerts(run.alerts, { kind, q, company });
+  const alerts = filterAlerts(run.alerts, { category, q, company });
   const filter = [
-    kind ? ALERT_KIND_LABELS[kind] : "mọi loại",
+    category ? ALERT_CATEGORY_LABELS[category] : "mọi loại",
     q ? `tìm "${q}"` : null,
     company ? "gồm kho công ty" : "không gồm kho công ty",
   ]
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
   await logActivity(supabase, {
     action: "billing.alerts_exported",
     entityType: "billing_alerts",
-    metadata: { from: run.period.from, to: run.period.to, count: alerts.length, kind: kind || null },
+    metadata: { from: run.period.from, to: run.period.to, count: alerts.length, category: category || null },
     ip: request.headers.get("x-forwarded-for"),
   });
 

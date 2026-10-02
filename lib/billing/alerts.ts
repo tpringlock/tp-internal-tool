@@ -6,9 +6,19 @@ import { sameText } from "./text";
 import type { MisaCatalog } from "./misa-catalog";
 import type { BillingContract, BillingPriceLine } from "@/lib/db/types";
 import type { ContractConfig, IsoDate, Ledger, Period } from "./types";
-import { ALERT_KINDS, type BillingAlert } from "./alert-list";
+import { ALERT_CATEGORIES, alertCategory, type BillingAlert } from "./alert-list";
 
-export { ALERT_KINDS, countAlerts, filterAlerts, type AlertFilter, type AlertKind, type BillingAlert } from "./alert-list";
+export {
+  ALERT_CATEGORIES,
+  ALERT_KINDS,
+  alertCategory,
+  countAlerts,
+  filterAlerts,
+  type AlertCategory,
+  type AlertFilter,
+  type AlertKind,
+  type BillingAlert,
+} from "./alert-list";
 
 // Alert center (feedback item 7, plan section 5). Read-only checks over the
 // merged MISA ledger of a period and the price table. Server-side only (the
@@ -16,9 +26,14 @@ export { ALERT_KINDS, countAlerts, filterAlerts, type AlertFilter, type AlertKin
 //
 // negative_stock  A (warehouse, code) whose end-of-day balance is below 0 on
 //                 some day of the period (the balance at the period start
-//                 included). One alert per pair: the first negative day,
-//                 the vouchers that took stock out that day, the lowest
-//                 balance. Company warehouses (company-warehouses.ts) are
+//                 included). One alert per pair, in one of two groups:
+//                   "new"     - the balance at the period start is >= 0 and
+//                               a voucher in the period takes it below 0:
+//                               the first negative day, that day's outgoing
+//                               vouchers, the lowest balance;
+//                   "opening" - already below 0 at the period start (often
+//                               an old MISA balance): the opening balance
+//                               and the lowest balance. Company warehouses (company-warehouses.ts) are
 //                 flagged `company` so the page groups them separately.
 // missing_price   A contract's warehouse has a code with stock or movements
 //                 (up to the period end) that has no price row at all, not
@@ -57,7 +72,7 @@ export interface AlertsInput {
 const fmt = new Intl.NumberFormat("vi-VN");
 const vnDate = (d: IsoDate) => `${d.slice(8, 10)}/${d.slice(5, 7)}/${d.slice(0, 4)}`;
 
-/** All alerts of a period, by kind (in ALERT_KINDS order), then warehouse and code. */
+/** All alerts of a period, by category (ALERT_CATEGORIES order), project before company warehouses, then warehouse and code. */
 export function buildAlerts(input: AlertsInput): BillingAlert[] {
   const { ledger, period } = input;
   const rules = input.rules ?? COMPANY_WAREHOUSE_RULES;
@@ -108,6 +123,7 @@ export function buildAlerts(input: AlertsInput): BillingAlert[] {
     let k = 0;
     // Balance at the start of the period.
     for (; k < days.length && days[k][0] < period.from; k++) bal += days[k][1].delta;
+    const openingBalance = bal;
     let first: { date: IsoDate; refs: string[] } | null = bal < 0 ? { date: period.from, refs: [] } : null;
     let lowest = bal;
     for (; k < days.length; k++) {
@@ -118,18 +134,21 @@ export function buildAlerts(input: AlertsInput): BillingAlert[] {
     }
     if (!first) continue;
     const c = owner(kho);
+    const group = openingBalance < 0 ? "opening" : "new";
     alerts.push({
       ...base(kho, c),
       kind: "negative_stock",
       maVt: ma,
       tenVt: names.get(ma) ?? null,
+      negativeGroup: group,
+      openingBalance,
       date: first.date,
       balance: lowest,
       refs: first.refs,
       message:
-        first.date === period.from && first.refs.length === 0
-          ? `Tồn âm ngay từ đầu kỳ (${vnDate(period.from)}); thấp nhất ${fmt.format(lowest)}.`
-          : `Âm từ ngày ${vnDate(first.date)}${first.refs.length ? ` (phiếu ${first.refs.join(", ")})` : ""}; thấp nhất ${fmt.format(lowest)}.`,
+        group === "opening"
+          ? `Âm sẵn từ đầu kỳ: tồn đầu kỳ (${vnDate(period.from)}) ${fmt.format(openingBalance)}; thấp nhất ${fmt.format(lowest)}.`
+          : `Âm mới trong kỳ từ ngày ${vnDate(first.date)}${first.refs.length ? ` (phiếu ${first.refs.join(", ")})` : ""}; tồn đầu kỳ ${fmt.format(openingBalance)}, thấp nhất ${fmt.format(lowest)}.`,
     });
   }
 
@@ -231,10 +250,10 @@ export function buildAlerts(input: AlertsInput): BillingAlert[] {
     }
   }
 
-  const order = new Map(ALERT_KINDS.map((k, i) => [k, i]));
+  const order = new Map(ALERT_CATEGORIES.map((k, i) => [k, i]));
   return alerts.sort(
     (a, b) =>
-      order.get(a.kind)! - order.get(b.kind)! ||
+      order.get(alertCategory(a))! - order.get(alertCategory(b))! ||
       Number(a.company !== null) - Number(b.company !== null) ||
       a.kho.localeCompare(b.kho, "vi") ||
       (a.maVt ?? "").localeCompare(b.maVt ?? "", "vi"),
