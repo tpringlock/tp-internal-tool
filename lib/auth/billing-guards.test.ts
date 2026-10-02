@@ -16,8 +16,8 @@ vi.setConfig({ testTimeout: 30_000 });
 const ROOT = join(__dirname, "..", "..");
 const read = (p: string) => readFileSync(join(ROOT, p), "utf8").replace(/\r\n/g, "\n");
 
-/** Actions that only read or set a display preference: viewers allowed. */
-const VIEWER_ACTIONS = new Set(["setShowDemo"]);
+/** Actions that only read (the rent report) or set a display preference: viewers allowed. */
+const VIEWER_ACTIONS = new Set(["setShowDemo", "runRentReport"]);
 /** Admin-only pages: the edit guard + an explicit admin check. */
 const ADMIN_PAGES = new Set(["app/(app)/billing/compare/page.tsx"]);
 

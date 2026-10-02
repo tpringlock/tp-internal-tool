@@ -27,6 +27,7 @@ import { loadHsttContext } from "@/lib/billing/hstt-server";
 import { missingMessage, periodEditBlock } from "@/lib/billing/hstt-data";
 import { hsttFileName } from "@/lib/billing/hstt-text";
 import { PeriodInputsForm } from "./period-inputs-form";
+import { RentItemCards, RentSummaryTable } from "../../rent-result-tables";
 
 export default async function CalculationPage({
   params,
@@ -283,52 +284,7 @@ export default async function CalculationPage({
             <CardTitle>{t("summaryTitle")}</CardTitle>
           </CardHeader>
           <CardBody className="p-0">
-            <table className="responsive-table w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-100 text-left text-slate-500">
-                  <th className="px-5 py-3 font-medium">{t("item")}</th>
-                  <th className="px-5 py-3 text-right font-medium">{t("unitPrice")}</th>
-                  <th className="px-5 py-3 text-right font-medium">{t("closingQty")}</th>
-                  <th className="px-5 py-3 text-right font-medium">{t("amount")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.items.map((it, idx) => (
-                  <tr key={it.name} className="border-b border-slate-50 last:border-0">
-                    <td data-label={t("item")} className="px-5 py-2.5">
-                      <a href={`#item-${idx}`} className="font-medium text-slate-900 hover:text-primary">
-                        {it.name}
-                      </a>
-                    </td>
-                    <td data-label={t("unitPrice")} className="px-5 py-2.5 tabular-nums md:text-right">
-                      {t("pricePerDay", { price: formatNumber(it.unitPrice), unit: it.unit.toLowerCase() })}
-                    </td>
-                    <td data-label={t("closingQty")} className="px-5 py-2.5 tabular-nums md:text-right">
-                      {formatNumber(it.closingQty)} {it.unit.toLowerCase()}
-                    </td>
-                    <td
-                      data-label={t("amount")}
-                      className="px-5 py-2.5 font-medium tabular-nums text-slate-900 md:text-right"
-                    >
-                      {formatNumber(it.amount)}đ
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="border-t border-slate-200 bg-slate-50">
-                  <td colSpan={3} className="hidden px-5 py-3 font-bold text-slate-900 md:table-cell">
-                    {t("rentTotal")}
-                  </td>
-                  <td
-                    data-label={t("rentTotal")}
-                    className="px-5 py-3 text-base font-bold tabular-nums text-slate-900 md:text-right"
-                  >
-                    {formatNumber(result.totalAmount)}đ
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
+            <RentSummaryTable result={result} />
           </CardBody>
         </Card>
 
@@ -415,90 +371,7 @@ export default async function CalculationPage({
 
       <div className="space-y-4">
         <h2 className="text-lg font-bold text-slate-900">{t("detailTitle")}</h2>
-        {result.items.map((it, idx) => (
-          <Card key={it.name} id={`item-${idx}`} className="scroll-mt-24">
-            <CardHeader className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-              <CardTitle>
-                {idx + 1}. {it.name}
-              </CardTitle>
-              <span className="text-sm text-slate-500">
-                {t("pricePerDay", { price: formatNumber(it.unitPrice), unit: it.unit.toLowerCase() })}
-              </span>
-            </CardHeader>
-            <CardBody className="p-0">
-              <table className="responsive-table w-full text-sm">
-                <thead>
-                  <tr className="border-b border-slate-100 text-left text-slate-500">
-                    <th className="px-5 py-2.5 font-medium">{t("lineDate")}</th>
-                    <th className="px-5 py-2.5 font-medium">{t("lineRef")}</th>
-                    <th className="px-5 py-2.5 text-right font-medium">{t("lineQty")}</th>
-                    <th className="px-5 py-2.5 text-right font-medium">{t("lineDays")}</th>
-                    <th className="px-5 py-2.5 text-right font-medium">{t("amount")}</th>
-                    <th className="px-5 py-2.5 font-medium">{t("explain")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {it.lines.map((l, i) => (
-                    <tr
-                      key={`${l.ref}-${l.date}-${i}`}
-                      className="border-b border-slate-50 last:border-0"
-                    >
-                      <td data-label={t("lineDate")} className="whitespace-nowrap px-5 py-2 tabular-nums">
-                        {formatVnDate(l.date)}
-                      </td>
-                      <td data-label={t("lineRef")} className="px-5 py-2">
-                        {l.kind === "ton-dau-ky" ? (
-                          <span className="font-medium text-slate-700">{t("openingLine")}</span>
-                        ) : (
-                          <span className="font-mono text-xs text-slate-700">{l.ref}</span>
-                        )}
-                      </td>
-                      <td
-                        data-label={t("lineQty")}
-                        className={`px-5 py-2 tabular-nums md:text-right ${l.qty < 0 ? "text-red-600" : "text-slate-900"}`}
-                      >
-                        {l.qty > 0 && l.kind === "phat-sinh" ? "+" : ""}
-                        {formatNumber(l.qty)}
-                      </td>
-                      <td data-label={t("lineDays")} className="px-5 py-2 tabular-nums md:text-right">
-                        {l.days}
-                        {l.excludedDays > 0 && (
-                          <span className="block text-xs text-amber-700">
-                            {t("excludedDaysShort", { days: l.excludedDays })}
-                          </span>
-                        )}
-                      </td>
-                      <td
-                        data-label={t("amount")}
-                        className={`px-5 py-2 font-medium tabular-nums md:text-right ${l.amount < 0 ? "text-red-600" : "text-slate-900"}`}
-                      >
-                        {formatNumber(l.amount)}đ
-                      </td>
-                      <td data-label={t("explain")} className="px-5 py-2 text-xs text-slate-500">
-                        {l.explain}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr className="border-t border-slate-200 bg-slate-50 font-semibold text-slate-900">
-                    <td className="hidden px-5 py-2.5 md:table-cell" colSpan={2}>
-                      {t("sumLine")}
-                    </td>
-                    <td data-label={t("closingQty")} className="px-5 py-2.5 tabular-nums md:text-right">
-                      {formatNumber(it.closingQty)}
-                    </td>
-                    <td className="hidden md:table-cell" />
-                    <td data-label={t("sumLine")} className="px-5 py-2.5 tabular-nums md:text-right">
-                      {formatNumber(it.amount)}đ
-                    </td>
-                    <td className="hidden md:table-cell" />
-                  </tr>
-                </tfoot>
-              </table>
-            </CardBody>
-          </Card>
-        ))}
+        <RentItemCards result={result} />
       </div>
     </div>
   );

@@ -139,7 +139,7 @@ Migration 0033–0037 đã apply trên production (0037 = cutover, bảng giá c
   - Actions `app/actions/billing-prices.ts`; trang `/billing/prices`, `/billing/prices/import`; editor `billing/contracts/price-lines-editor.tsx`.
 - **Ô chọn có tìm kiếm:** `components/ui/combobox.tsx` + `lib/search.ts`.
 - **Kiểm tra/quay lại:** `scripts/billing-verify-recalc.mts`; `supabase/revert/check-price-lines-migration.sql`, `check-month-files.sql`, `list-month-files.sql`, các file `003x_*.revert.sql`.
-- **GĐ2 (nhánh `feature/billing-gd2`):** Phần A xong ở code: màn tính tiền tự lấy file tháng (`computeRent` → `loadActiveMonthUploads` + `pickMonthFiles`), mẫu kỳ (`lib/billing/period-presets.ts`, migration 0040 `billing_period_presets` + `billing_contract_period_presets`, trang `/billing/periods`, actions `app/actions/billing-periods.ts`). Chỉ xác nhận được khi khoảng ngày trùng đúng kỳ hợp đồng. Còn: báo cáo nhiều dự án (B), trung tâm cảnh báo (C).
+- **GĐ2 (nhánh `feature/billing-gd2`):** Phần A xong ở code: màn tính tiền tự lấy file tháng (`computeRent` → `loadActiveMonthUploads` + `pickMonthFiles`), mẫu kỳ (`lib/billing/period-presets.ts`, migration 0040 `billing_period_presets` + `billing_contract_period_presets`, trang `/billing/periods`, actions `app/actions/billing-periods.ts`). Chỉ xác nhận được khi khoảng ngày trùng đúng kỳ hợp đồng. Phần B xong ở code: báo cáo tiền thuê nhiều dự án `/billing/reports` (chỉ đọc; `lib/billing/rent-report*.ts`, action `billing-reports.ts`, route `/api/billing/reports/xlsx`, `components/ui/multi-select.tsx`). Còn: trung tâm cảnh báo (C).
 
 ### Trạng thái: GĐ3 (HSTT 4 biểu) đã xong
 
