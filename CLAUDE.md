@@ -139,7 +139,7 @@ Migration 0033–0037 đã apply trên production (0037 = cutover, bảng giá c
   - Actions `app/actions/billing-prices.ts`; trang `/billing/prices`, `/billing/prices/import`; editor `billing/contracts/price-lines-editor.tsx`.
 - **Ô chọn có tìm kiếm:** `components/ui/combobox.tsx` + `lib/search.ts`.
 - **Kiểm tra/quay lại:** `scripts/billing-verify-recalc.mts`; `supabase/revert/check-price-lines-migration.sql`, `check-month-files.sql`, `list-month-files.sql`, các file `003x_*.revert.sql`.
-- **Chưa làm (GĐ2):** màn tính tiền tự lấy file theo tháng (`pickMonthFiles` đã có, chưa gắn), mẫu kỳ, báo cáo nhiều dự án, trung tâm cảnh báo.
+- **GĐ2 (nhánh `feature/billing-gd2`):** Phần A xong ở code: màn tính tiền tự lấy file tháng (`computeRent` → `loadActiveMonthUploads` + `pickMonthFiles`), mẫu kỳ (`lib/billing/period-presets.ts`, migration 0040 `billing_period_presets` + `billing_contract_period_presets`, trang `/billing/periods`, actions `app/actions/billing-periods.ts`). Chỉ xác nhận được khi khoảng ngày trùng đúng kỳ hợp đồng. Còn: báo cáo nhiều dự án (B), trung tâm cảnh báo (C).
 
 ### Trạng thái: GĐ3 (HSTT 4 biểu) đã xong
 
@@ -150,4 +150,4 @@ Migration 0038 (bảng HSTT, chỉ thêm) + 0039 (seed TP + Việt Panel) đã a
 - **Nợ đầu kỳ:** tháng ≤ `opening_debt_month` = tháng làm tay: bỏ qua bản tính của chúng, không tải HSTT. Kỳ đầu sau đó lấy `opening_debt`, các kỳ sau lấy nợ cuối kỳ trước đã xác nhận (`openingDebtFor` trong `hstt-totals.ts`, `openingDebtInfo` trong `hstt-data.ts`).
 - **Code:** `lib/billing/number-to-words.ts`, `hstt-totals.ts`, `hstt-data.ts`, `hstt-server.ts`, `hstt-export.ts` (điền `docs/hstt/hstt-template.xlsx`, file mẫu vào bundle qua `outputFileTracingIncludes` trong `next.config.ts`), `hstt-text.ts`; actions `app/actions/billing-hstt.ts`; trang `/admin/company`, `/billing/customers`, tab HSTT ở `/billing/contracts/[id]?tab=hstt`, khối dữ liệu kỳ `billing/calculations/[id]/period-inputs-form.tsx`.
 - **Golden:** `hstt-export.test.ts` so từng ô với khối T08 của `docs/hstt/hstt-t08-2026-vietpanel.xlsx`. Sửa file mẫu thì chạy lại test này.
-- **Việc còn nợ:** 0040 – lưu dữ liệu kỳ trong 1 transaction (RPC) + trigger khóa kỳ đã xác nhận ở DB (hiện chỉ khóa ở server action, các lệnh ghi chạy nối tiếp). Gửi SQL duyệt trước. Xuất file cộng dồn nhiều tháng: để sau.
+- **Việc còn nợ:** migration số trống tiếp theo (0040 đã dùng cho mẫu kỳ GĐ2) – lưu dữ liệu kỳ trong 1 transaction (RPC) + trigger khóa kỳ đã xác nhận ở DB (hiện chỉ khóa ở server action, các lệnh ghi chạy nối tiếp). Gửi SQL duyệt trước. Xuất file cộng dồn nhiều tháng: để sau.

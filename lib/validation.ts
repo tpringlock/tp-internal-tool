@@ -239,35 +239,66 @@ export const compareDemoSchema = z
 /** Longest custom range accepted (a sanity cap; files must still cover it). */
 export const MAX_RANGE_DAYS = 400;
 
+const billingMonth = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "monthInvalid");
+
+/** "Mẫu kỳ" fields (0040): start day 1-28, length 1/3/6/12 months. */
+export const periodPresetFields = {
+  start_day: z.coerce.number().int("presetStartDayRange").min(1, "presetStartDayRange").max(28, "presetStartDayRange"),
+  months: z.coerce
+    .number()
+    .refine((n): n is 1 | 3 | 6 | 12 => [1, 3, 6, 12].includes(n), "presetMonthsInvalid")
+    .transform((n) => n as 1 | 3 | 6 | 12),
+};
+
 const computeBase = {
   contract_id: z.string().uuid("chooseContract"),
-  upload_ids: z.array(z.string().uuid()).min(1, "chooseUpload").max(12),
+  /**
+   * "months": the active month files covering the period (the normal way);
+   * "files": hand-picked legacy multi-month files (fallback).
+   */
+  source: z.enum(["months", "files"]),
+  upload_ids: z.array(z.string().uuid()).max(12),
 };
 
 /**
- * Either a billing month (the 26 -> 25 period used for the payment dossier,
- * confirmable) or a custom date range (quick look, never confirmable).
+ * Either a preset ("mẫu kỳ") + the month the period ends in, or a custom
+ * date range. Either one is a confirmable billing period only when it is
+ * exactly the contract's own period (decided by the action).
  */
-export const computeRentSchema = z.discriminatedUnion("mode", [
-  z.object({
-    ...computeBase,
-    mode: z.literal("month"),
-    month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "monthInvalid"),
-  }),
-  z
-    .object({
+export const computeRentSchema = z
+  .discriminatedUnion("mode", [
+    z.object({
       ...computeBase,
-      mode: z.literal("range"),
-      date_from: isoDate,
-      date_to: isoDate,
-    })
-    .refine((v) => v.date_to >= v.date_from, { message: "rangeOrder", path: ["date_to"] })
-    .refine(
-      (v) =>
-        (Date.parse(v.date_to) - Date.parse(v.date_from)) / 86_400_000 < MAX_RANGE_DAYS,
-      { message: "rangeTooLong", path: ["date_to"] },
-    ),
-]);
+      ...periodPresetFields,
+      mode: z.literal("preset"),
+      month: billingMonth,
+    }),
+    z
+      .object({
+        ...computeBase,
+        mode: z.literal("range"),
+        date_from: isoDate,
+        date_to: isoDate,
+      })
+      .refine((v) => v.date_to >= v.date_from, { message: "rangeOrder", path: ["date_to"] })
+      .refine(
+        (v) =>
+          (Date.parse(v.date_to) - Date.parse(v.date_from)) / 86_400_000 < MAX_RANGE_DAYS,
+        { message: "rangeTooLong", path: ["date_to"] },
+      ),
+  ])
+  .refine((v) => v.source !== "files" || v.upload_ids.length > 0, {
+    message: "chooseUpload",
+    path: ["upload_ids"],
+  });
+
+/** Add or edit a period preset (admin). */
+export const periodPresetSchema = z.object({
+  ...periodPresetFields,
+  name: z.string().trim().min(1, "presetNameRequired").max(80, "textTooLong"),
+  sort_order: z.coerce.number().int().min(0).max(100_000).default(0),
+  active: z.boolean(),
+});
 
 // --- HSTT (0038) ----------------------------------------------------------
 

@@ -12,6 +12,7 @@ import {
 } from "@/app/actions/billing";
 import { formatVnDate } from "@/lib/billing/dates";
 import { formatBillingMonth } from "@/lib/billing/periods";
+import { describeSourceFiles } from "@/lib/billing/month-files";
 import { hasFractionalQuantities, toAmount } from "@/lib/billing/amounts";
 import { getProfileNames } from "@/lib/billing/queries";
 import { formatDateTime, formatNumber } from "@/lib/format";
@@ -46,11 +47,15 @@ export default async function CalculationPage({
     .maybeSingle();
   if (!calc) notFound();
 
-  const [{ data: uploads }, names, { data: contractRow }] = await Promise.all([
+  const [{ data: uploads }, { data: monthRows }, names, { data: contractRow }] = await Promise.all([
     supabase
       .from("billing_misa_uploads")
       .select("id, file_name, file_from, file_to")
       .in("id", calc.upload_ids),
+    supabase
+      .from("billing_misa_month_files")
+      .select("upload_id, month, version, status")
+      .in("upload_id", calc.upload_ids),
     getProfileNames(supabase, [calc.created_by, calc.confirmed_by, calc.voided_by]),
     supabase
       .from("billing_contracts")
@@ -60,6 +65,7 @@ export default async function CalculationPage({
   ]);
 
   const { result, contract_snapshot: contract } = calc;
+  const sourceFiles = describeSourceFiles(calc.upload_ids, uploads ?? [], monthRows ?? []);
   const monthLabel = calc.period_month ? formatBillingMonth(calc.period_month) : null;
   const periodText = {
     from: formatVnDate(calc.period_from),
@@ -354,19 +360,39 @@ export default async function CalculationPage({
                   {names.get(calc.voided_by ?? "") ?? "—"} · {formatDateTime(calc.voided_at)}
                 </Meta>
               )}
-              <Meta label={t("misaFiles")}>
-                <ul className="space-y-0.5">
-                  {(uploads ?? []).map((u) => (
-                    <li key={u.id} className="break-words">
-                      {u.file_name}{" "}
-                      <span className="text-slate-400">
-                        ({formatVnDate(u.file_from)} – {formatVnDate(u.file_to)})
-                      </span>
+              <Meta label={t("sourceFilesUsed")}>
+                <ul className="space-y-1.5">
+                  {sourceFiles.map((f) => (
+                    <li key={f.upload_id} className="break-words">
+                      {f.deleted ? (
+                        <span className="text-slate-400">{t("fileDeleted")}</span>
+                      ) : (
+                        <>
+                          <span className="font-medium text-slate-900">
+                            {f.month
+                              ? t("fileMonthLabel", { month: formatBillingMonth(f.month), version: f.version ?? 1 })
+                              : t("fileLegacyUsed")}
+                          </span>
+                          {f.superseded && (
+                            <span className="ml-1.5 rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">
+                              {t("fileSuperseded")}
+                            </span>
+                          )}
+                          <span className="block text-xs text-slate-500">
+                            <DownloadLink
+                              href={`/api/billing/uploads/${f.upload_id}`}
+                              className="font-medium text-primary hover:underline"
+                            >
+                              {f.file_name}
+                            </DownloadLink>
+                            {f.file_from && f.file_to && (
+                              <> ({formatVnDate(f.file_from)} – {formatVnDate(f.file_to)})</>
+                            )}
+                          </span>
+                        </>
+                      )}
                     </li>
                   ))}
-                  {(uploads ?? []).length < calc.upload_ids.length && (
-                    <li className="text-slate-400">{t("fileDeleted")}</li>
-                  )}
                 </ul>
               </Meta>
               <Meta label={t("excludedRangesApplied")}>

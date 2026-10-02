@@ -6,6 +6,7 @@ import {
   Calculator,
   Building2,
   CalendarOff,
+  CalendarRange,
   FileCheck2,
   FileSpreadsheet,
   FileText,
@@ -88,6 +89,12 @@ export function BillingNav({
           label: t("prices"),
           icon: <Tags aria-hidden />,
           active: under("/billing/prices"),
+        },
+        {
+          href: "/billing/periods",
+          label: t("periods"),
+          icon: <CalendarRange aria-hidden />,
+          active: under("/billing/periods"),
         },
         {
           href: "/billing/excluded-ranges",

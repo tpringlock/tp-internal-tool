@@ -3,7 +3,6 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { requireBillingViewer } from "@/lib/auth/dal";
 import { canEditBilling } from "@/lib/auth/roles";
-import { uploadsForPicker } from "@/lib/billing/month-files";
 import {
   contractPeriod,
   defaultBillingMonth,
@@ -13,6 +12,7 @@ import {
 import {
   contractLabel,
   getContractLabels,
+  getActivePresets,
   getContractsWithCounts,
   getProfileNames,
   getShowDemo,
@@ -48,19 +48,30 @@ export default async function BillingCalculatePage({
     .limit(5);
   if (!showDemo) recentQuery = recentQuery.eq("is_demo", false);
 
-  const [contracts, { data: uploadRows }, { data: recent }, { data: monthRows }] = await Promise.all([
-    getContractsWithCounts(supabase, showDemo),
-    supabase
-      .from("billing_misa_uploads")
-      .select("id, file_name, file_from, file_to, layout, created_at, warnings")
-      .order("file_from", { ascending: false })
-      .order("created_at", { ascending: false })
-      .limit(200),
-    recentQuery,
-    supabase.from("billing_misa_month_files").select("upload_id, month, version, status").limit(1000),
-  ]);
-  // Active month versions + legacy files; replaced versions are not offered.
-  const uploads = uploadsForPicker(uploadRows ?? [], monthRows ?? []);
+  const [contracts, { data: uploadRows }, { data: recent }, { data: monthRows }, presets, { data: contractPresets }] =
+    await Promise.all([
+      getContractsWithCounts(supabase, showDemo),
+      supabase
+        .from("billing_misa_uploads")
+        .select("id, file_name, file_from, file_to, created_at, warnings")
+        .order("file_from", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(200),
+      recentQuery,
+      supabase.from("billing_misa_month_files").select("upload_id, month, version, status").limit(5000),
+      getActivePresets(supabase),
+      supabase.from("billing_contract_period_presets").select("contract_id, preset_id"),
+    ]);
+  // Month files: the active version of each month. Every other upload that
+  // is not a month file is a legacy file, offered only as a fallback.
+  const monthByUpload = new Map((monthRows ?? []).map((m) => [m.upload_id, m]));
+  const fileName = new Map((uploadRows ?? []).map((u) => [u.id, u.file_name]));
+  const monthFiles = (monthRows ?? [])
+    .filter((m) => m.status === "active")
+    .map((m) => ({ month: m.month, version: m.version, upload_id: m.upload_id, file_name: fileName.get(m.upload_id) ?? "" }))
+    .sort((a, b) => (a.month < b.month ? -1 : 1));
+  const legacyUploads = (uploadRows ?? []).filter((u) => !monthByUpload.has(u.id));
+  const presetOf = new Map((contractPresets ?? []).map((r) => [r.contract_id, r.preset_id]));
 
   const active = contracts.filter((c) => c.active);
   const suggested = defaultBillingMonth(todayIct());
@@ -106,18 +117,18 @@ export default async function BillingCalculatePage({
                 period_start_day: c.period_start_day,
                 contract_start: c.contract_start,
                 item_count: c.item_count,
+                preset_id: presetOf.get(c.id) ?? null,
                 keywords: [c.misa_kho, c.misa_kho_name, c.customer_name, c.contract_no, c.project_name],
               }))}
-              uploads={uploads.map((u) => ({
+              presets={presets}
+              monthFiles={monthFiles}
+              legacyUploads={legacyUploads.map((u) => ({
                 id: u.id,
                 file_name: u.file_name,
                 file_from: u.file_from,
                 file_to: u.file_to,
-                layout: u.layout,
                 created_at: u.created_at,
                 warning_count: u.warnings.length,
-                month: u.month,
-                version: u.version,
               }))}
               months={months}
               defaultContractId={defaultContractId}

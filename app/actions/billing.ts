@@ -22,7 +22,10 @@ import {
   warningsForWarehouse,
   type UnknownCode,
 } from "@/lib/billing/ledger-checks";
-import { contractPeriod, rangesForPeriod } from "@/lib/billing/periods";
+import { rangesForPeriod } from "@/lib/billing/periods";
+import { matchContractMonth, presetPeriodFor } from "@/lib/billing/period-presets";
+import { monthsCovering, pickMonthFiles } from "@/lib/billing/month-files";
+import { loadActiveMonthUploads } from "@/lib/billing/month-files-server";
 import { amountForDb, hasFractionalQuantities } from "@/lib/billing/amounts";
 import {
   BILLING_BUCKET,
@@ -32,6 +35,7 @@ import {
 } from "@/lib/billing/server";
 import { compareContracts, type CompareSummary } from "@/lib/billing/compare";
 import { formatVnDate } from "@/lib/billing/dates";
+import type { Period } from "@/lib/billing/types";
 import { SHOW_DEMO_COOKIE } from "@/lib/billing/queries";
 import type { FormState } from "@/app/actions/auth";
 
@@ -100,11 +104,15 @@ export interface ComputeState extends FormState {
 }
 
 /**
- * Calculate equipment rent for a contract from the chosen MISA uploads, over
- * either a billing month (26 -> 25, the HSTT period) or a custom date range,
- * save it as a draft and open it. Range calculations can't be confirmed. Any engine/parser refusal
- * (file doesn't cover the period, unknown codes, ...) is shown verbatim: it
- * is safer to stop than to under-bill silently.
+ * Calculate equipment rent for a contract over a preset period ("mẫu kỳ" +
+ * month) or a custom date range, save it as a draft and open it. The MISA
+ * data is the ACTIVE month file of every month the period touches, merged
+ * with mergeLedgers; a missing month stops the calculation ("Thiếu file
+ * tháng ..."). Hand-picked legacy files (`source: "files"`) remain as a
+ * fallback. Only a period equal to the contract's own billing period gets a
+ * period_month (confirmable, HSTT); anything else is a custom range. Any
+ * engine/parser refusal is shown verbatim: it is safer to stop than to
+ * under-bill silently.
  */
 export async function computeRent(
   _prev: ComputeState,
@@ -113,9 +121,13 @@ export async function computeRent(
   const user = await requireBillingUser();
   const t = await getTranslations("Billing");
 
+  const mode = formData.get("mode") === "range" ? "range" : "preset";
   const parsed = computeRentSchema.safeParse({
-    mode: formData.get("mode") === "range" ? "range" : "month",
+    mode,
     contract_id: formData.get("contract_id"),
+    source: formData.get("source") === "files" ? "files" : "months",
+    start_day: formData.get("start_day"),
+    months: formData.get("months"),
     month: formData.get("month"),
     date_from: formData.get("date_from"),
     date_to: formData.get("date_to"),
@@ -126,8 +138,7 @@ export async function computeRent(
     return { fieldErrors: translateFieldErrors(tv, parsed.error) };
   }
   const input = parsed.data;
-  const { contract_id: contractId, upload_ids: uploadIds } = input;
-  const month = input.mode === "month" ? input.month : null;
+  const contractId = input.contract_id;
 
   const supabase = await createClient();
   const loaded = await loadContract(supabase, contractId);
@@ -139,36 +150,54 @@ export async function computeRent(
     return { error: t("errNoItems"), contractId };
   }
 
-  const [{ data: uploads }, { data: rangeRows }] = await Promise.all([
-    supabase
-      .from("billing_misa_uploads")
-      .select("id, storage_path, file_name, file_from")
-      .in("id", uploadIds),
-    supabase
-      .from("billing_excluded_ranges")
-      .select("date_from, date_to, reason, contract_id")
-      .or(`contract_id.is.null,contract_id.eq.${contractId}`),
-  ]);
-  if (!uploads || uploads.length !== uploadIds.length) {
-    return { error: t("errUploadNotFound") };
-  }
-
-  let period;
+  let period: Period;
+  let month: string | null;
   try {
-    period =
-      input.mode === "month"
-        ? contractPeriod(input.month, contract.period_start_day, contract.contract_start)
-        : { from: input.date_from, to: input.date_to };
+    if (input.mode === "preset") {
+      ({ period, periodMonth: month } = presetPeriodFor(
+        { start_day: input.start_day, months: input.months },
+        input.month,
+        contract,
+      ));
+    } else {
+      period = { from: input.date_from, to: input.date_to };
+      month = matchContractMonth(period, contract);
+    }
   } catch (e) {
     return { error: (e as Error).message };
   }
+
+  let uploads: { id: string; storage_path: string; file_name: string }[];
+  if (input.source === "months") {
+    let pick;
+    try {
+      pick = pickMonthFiles(period, await loadActiveMonthUploads(supabase, monthsCovering(period)));
+    } catch (e) {
+      return { error: (e as Error).message };
+    }
+    if (pick.error) return { error: pick.error, contractId };
+    uploads = pick.files.map((f) => ({ id: f.upload_id, storage_path: f.storage_path, file_name: f.file_name }));
+  } else {
+    const { data } = await supabase
+      .from("billing_misa_uploads")
+      .select("id, storage_path, file_name, file_from")
+      .in("id", input.upload_ids);
+    if (!data || data.length !== input.upload_ids.length) {
+      return { error: t("errUploadNotFound") };
+    }
+    uploads = [...data].sort((a, b) => (a.file_from < b.file_from ? -1 : 1));
+  }
+  const uploadIds = uploads.map((u) => u.id);
+
+  const { data: rangeRows } = await supabase
+    .from("billing_excluded_ranges")
+    .select("date_from, date_to, reason, contract_id")
+    .or(`contract_id.is.null,contract_id.eq.${contractId}`);
   const excludedRanges = rangesForPeriod(rangeRows ?? [], period);
 
   let result;
   try {
-    const ledger = await loadMergedLedger(
-      [...uploads].sort((a, b) => (a.file_from < b.file_from ? -1 : 1)),
-    );
+    const ledger = await loadMergedLedger(uploads);
     const unknownCodes = findUnknownCodes(ledger, config, period);
     if (unknownCodes.length > 0) {
       return {
@@ -216,6 +245,7 @@ export async function computeRent(
       month,
       from: period.from,
       to: period.to,
+      source: input.source,
       total: result.totalAmount,
     },
   });

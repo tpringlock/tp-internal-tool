@@ -11,6 +11,7 @@ import { contractLabel, getProfileNames } from "@/lib/billing/queries";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { ModuleEyebrow, pageTitleClass } from "@/components/page-title";
 import { ContractForm } from "../contract-form";
+import { ContractPresetForm } from "../contract-preset-form";
 import { PriceLinesEditor } from "../price-lines-editor";
 import { loadActiveCatalog } from "@/lib/billing/month-files-server";
 import { normalizeCode } from "@/lib/billing/text";
@@ -43,7 +44,7 @@ export default async function BillingContractPage({
     .maybeSingle();
   if (!contract) notFound();
 
-  const [{ data: lines }, { catalog }, { data: ranges }, { data: calcs }] =
+  const [{ data: lines }, { catalog }, { data: ranges }, { data: calcs }, { data: presets }, { data: presetLink }] =
     await Promise.all([
       supabase
         .from("billing_price_lines")
@@ -64,6 +65,8 @@ export default async function BillingContractPage({
         .order("period_from", { ascending: false })
         .order("created_at", { ascending: false })
         .limit(12),
+      supabase.from("billing_period_presets").select("id, name, active").order("sort_order").order("name"),
+      supabase.from("billing_contract_period_presets").select("preset_id").eq("contract_id", id).maybeSingle(),
     ]);
   const names = await getProfileNames(supabase, (calcs ?? []).map((c) => c.created_by));
 
@@ -170,6 +173,16 @@ export default async function BillingContractPage({
           <CardBody>
             <ContractForm contract={contract} readOnly={!canEdit} />
           </CardBody>
+          {presets && presets.length > 0 && (
+            <CardBody className="border-t border-slate-100">
+              <ContractPresetForm
+                contractId={contract.id}
+                presetId={presetLink?.preset_id ?? null}
+                presets={presets}
+                readOnly={!canEdit}
+              />
+            </CardBody>
+          )}
         </Card>
 
         <Card>

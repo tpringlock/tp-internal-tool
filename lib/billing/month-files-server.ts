@@ -113,6 +113,41 @@ export async function fillMissingCatalogs(
   return filled;
 }
 
+export interface ActiveMonthUpload {
+  month: string;
+  version: number;
+  upload_id: string;
+  file_name: string;
+  storage_path: string;
+}
+
+/**
+ * The ACTIVE month file of each of the given months that has one, with its
+ * upload row, oldest month first (RLS-bound: also an access check). Feed it
+ * to pickMonthFiles to find the missing months.
+ */
+export async function loadActiveMonthUploads(supabase: Client, months: readonly string[]): Promise<ActiveMonthUpload[]> {
+  if (months.length === 0) return [];
+  const { data: rows, error } = await supabase
+    .from("billing_misa_month_files")
+    .select("month, version, upload_id")
+    .eq("status", "active")
+    .in("month", [...months])
+    .order("month");
+  if (error) throw new Error(error.message);
+  if (!rows || rows.length === 0) return [];
+  const { data: uploads, error: upError } = await supabase
+    .from("billing_misa_uploads")
+    .select("id, file_name, storage_path")
+    .in("id", rows.map((r) => r.upload_id));
+  if (upError) throw new Error(upError.message);
+  const byId = new Map((uploads ?? []).map((u) => [u.id, u]));
+  return rows.flatMap((r) => {
+    const u = byId.get(r.upload_id);
+    return u ? [{ month: r.month, version: r.version, upload_id: r.upload_id, file_name: u.file_name, storage_path: u.storage_path }] : [];
+  });
+}
+
 /**
  * Merged MISA catalog of the ACTIVE month files (newest month wins), or null
  * when there is none. With `fill`, catalogs still missing are read first

@@ -615,6 +615,30 @@ export type BillingPeriodDeduction = {
   updated_at: string;
 };
 
+// --- Period presets (0040) ---------------------------------------------------
+
+/** "Mẫu kỳ": start day (1-28) + length in months (lib/billing/period-presets.ts). */
+export type BillingPeriodPreset = {
+  id: string;
+  name: string;
+  start_day: number;
+  months: 1 | 3 | 6 | 12;
+  sort_order: number;
+  active: boolean;
+  updated_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+/** Default preset of a contract (1:1, optional; side table so billing_contracts is untouched). */
+export type BillingContractPeriodPreset = {
+  contract_id: string;
+  preset_id: string;
+  updated_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 type Insert<T, Optional extends keyof T> = Omit<T, Optional> &
   Partial<Pick<T, Optional>>;
 
@@ -1003,6 +1027,16 @@ export interface Database {
         BillingPeriodDeduction,
         Insert<BillingPeriodDeduction, "id" | "sort_order" | "created_at" | "updated_at">,
         Partial<BillingPeriodDeduction>
+      >;
+      billing_period_presets: Table<
+        BillingPeriodPreset,
+        Insert<BillingPeriodPreset, "id" | "sort_order" | "active" | "updated_by" | "created_at" | "updated_at">,
+        Partial<BillingPeriodPreset>
+      >;
+      billing_contract_period_presets: Table<
+        BillingContractPeriodPreset,
+        Insert<BillingContractPeriodPreset, "updated_by" | "created_at" | "updated_at">,
+        Partial<BillingContractPeriodPreset>
       >;
     };
     Views: {

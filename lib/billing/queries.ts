@@ -1,7 +1,8 @@
 import "server-only";
 import { cookies } from "next/headers";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { BillingContract, BillingPriceLine, Database } from "@/lib/db/types";
+import type { BillingContract, BillingPeriodPreset, BillingPriceLine, Database } from "@/lib/db/types";
+import { DEFAULT_PRESETS } from "./period-presets";
 
 type Client = SupabaseClient<Database>;
 
@@ -119,4 +120,22 @@ export async function getContractLabels(
     .select("id, customer_name, project_name, misa_kho")
     .in("id", unique);
   return new Map((data ?? []).map((c) => [c.id, contractLabel(c)]));
+}
+
+export type PresetOption = Pick<BillingPeriodPreset, "id" | "name" | "start_day" | "months">;
+
+/**
+ * Active period presets in display order. Falls back to the two presets 0040
+ * seeds when the table can't be read (not migrated yet) or none is active,
+ * so the calculate form always has one.
+ */
+export async function getActivePresets(supabase: Client): Promise<PresetOption[]> {
+  const { data, error } = await supabase
+    .from("billing_period_presets")
+    .select("id, name, start_day, months")
+    .eq("active", true)
+    .order("sort_order")
+    .order("name");
+  if (!error && data && data.length > 0) return data;
+  return DEFAULT_PRESETS.map((p) => ({ ...p, id: `default-${p.start_day}-${p.months}` }));
 }

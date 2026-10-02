@@ -12,7 +12,9 @@ import {
   fullMonthOf,
   monthsCovering,
   pickMonthFiles,
+  describeSourceFiles,
 } from "./month-files";
+import { presetPeriod } from "./period-presets";
 
 const fixture = (f: string) => readFileSync(new URL(`./__fixtures__/${f}`, import.meta.url));
 
@@ -137,5 +139,39 @@ describe("choosing month files for a period", () => {
     expect(monthsCovering({ from: "2028-01-26", to: "2028-02-29" })).toEqual(["2028-01", "2028-02"]);
     expect(monthsCovering({ from: "2026-10-01", to: "2026-10-01" })).toEqual(["2026-10"]);
     expect(monthsCovering({ from: "2026-11-26", to: "2027-05-25" })).toHaveLength(7);
+  });
+});
+
+describe("month files for preset periods", () => {
+  it("26 x 3 months ending 09/2026 needs June to September", () => {
+    const p = pickMonthFiles(presetPeriod({ start_day: 26, months: 3 }, "2026-09"), [
+      { month: "2026-06", upload_id: "u6", version: 1 },
+      { month: "2026-07", upload_id: "u7", version: 1 },
+      { month: "2026-09", upload_id: "u9", version: 1 },
+    ]);
+    expect(p.months).toEqual(["2026-06", "2026-07", "2026-08", "2026-09"]);
+    expect(p.error).toBe("Thiếu file tháng 08/2026.");
+  });
+
+  it("calendar month needs only its own month", () => {
+    expect(monthsCovering(presetPeriod({ start_day: 1, months: 1 }, "2028-02"))).toEqual(["2028-02"]);
+  });
+});
+
+describe("files a calculation used", () => {
+  it("keeps upload order, labels month versions, legacy and deleted files", () => {
+    const out = describeSourceFiles(
+      ["a", "b", "gone"],
+      [
+        { id: "b", file_name: "T08.xlsx", file_from: "2026-08-01", file_to: "2026-08-31" },
+        { id: "a", file_name: "cu.xlsx", file_from: "2026-06-26", file_to: "2026-07-31" },
+      ],
+      [{ upload_id: "b", month: "2026-08", version: 2, status: "superseded" }],
+    );
+    expect(out.map((f) => [f.upload_id, f.month, f.version, f.superseded, f.deleted])).toEqual([
+      ["a", null, null, false, false],
+      ["b", "2026-08", 2, true, false],
+      ["gone", null, null, false, true],
+    ]);
   });
 });

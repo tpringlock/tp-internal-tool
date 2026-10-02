@@ -171,3 +171,45 @@ export function pickMonthFiles<T extends ActiveMonthFile>(period: Period, active
     error: missing.length > 0 ? `Thiếu file tháng ${missing.map(formatBillingMonth).join(", ")}.` : null,
   };
 }
+
+export interface SourceFile {
+  upload_id: string;
+  file_name: string | null;
+  file_from: IsoDate | null;
+  file_to: IsoDate | null;
+  /** Month file: its month and version; null for a legacy (non-month) file. */
+  month: string | null;
+  version: number | null;
+  /** The version has since been replaced by a newer upload of the month. */
+  superseded: boolean;
+  /** The upload row is gone (only possible for drafts). */
+  deleted: boolean;
+}
+
+/**
+ * The files a calculation was computed from, in the order of its
+ * upload_ids, with month + version for month files (rows of 0035 are
+ * immutable, so this is exactly what was used).
+ */
+export function describeSourceFiles(
+  uploadIds: readonly string[],
+  uploads: readonly { id: string; file_name: string; file_from: IsoDate; file_to: IsoDate }[],
+  monthRows: readonly PickerMonthRow[],
+): SourceFile[] {
+  const up = new Map(uploads.map((u) => [u.id, u]));
+  const mo = new Map(monthRows.map((m) => [m.upload_id, m]));
+  return uploadIds.map((id) => {
+    const u = up.get(id);
+    const m = mo.get(id);
+    return {
+      upload_id: id,
+      file_name: u?.file_name ?? null,
+      file_from: u?.file_from ?? null,
+      file_to: u?.file_to ?? null,
+      month: m?.month ?? null,
+      version: m?.version ?? null,
+      superseded: m?.status === "superseded",
+      deleted: !u,
+    };
+  });
+}

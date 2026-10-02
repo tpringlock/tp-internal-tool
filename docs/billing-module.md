@@ -15,19 +15,20 @@ Engine tính **tiền thuê thiết bị** (mục I của BB đối chiếu giá
 
 | Trang | Nội dung |
 |---|---|
-| `/billing` | Tính tiền thuê: kéo-thả file MISA; chọn hợp đồng + **kỳ HSTT** (26 → 25) hoặc **khoảng ngày** tùy chọn; file phủ kỳ được chọn sẵn. Bấm Tính → tự lưu **bản nháp** và mở trang kết quả. |
+| `/billing` | Tính tiền thuê (GĐ2): chọn hợp đồng + **mẫu kỳ** + tháng kết thúc kỳ, hoặc **khoảng ngày**. Hệ thống **tự lấy bản đang dùng của các file tháng phủ kỳ** (`pickMonthFiles` → `mergeLedgers`) và liệt kê trước khi tính; thiếu tháng thì báo "Thiếu file tháng MM/YYYY" và không cho tính. File cũ nhiều tháng chỉ còn ở mục **Dự phòng**. Bấm Tính → tự lưu **bản nháp** và mở trang kết quả. |
 | `/billing/calculations/[id]` | Cảnh báo, tổng hợp theo thiết bị, chi tiết từng phiếu (cột Diễn giải = `explain`). Tải Excel · Xác nhận · Xóa nháp · Hủy xác nhận (admin). |
 | `/billing/history` | Lịch sử, lọc theo hợp đồng / trạng thái / loại (kỳ HSTT hay khoảng ngày). |
 | `/billing/uploads` | File MISA đã tải (kỳ dữ liệu, bản 13/16 cột, cảnh báo). |
 | `/billing/contracts`, `/billing/contracts/[id]` | Hợp đồng, đơn giá theo ngày, mã MISA gộp vào từng dòng, mã không tính tiền, ngày miễn tính riêng. Mã chưa khai báo khi tính → link "Thêm các mã này vào hợp đồng". |
 | `/billing/excluded-ranges` | Ngày miễn tính chung (Tết…) hoặc riêng hợp đồng. |
+| `/billing/periods` | **Mẫu kỳ** (0040): ngày bắt đầu 1–28 + 1/3/6/12 tháng. Mọi người xem, chỉ admin thêm/sửa/xóa. Hợp đồng gán **mẫu kỳ mặc định** ở tab Chung. |
 | `/billing/compare` | **Chỉ admin.** Đối chiếu với tool Excel (xem dưới). |
 | `/billing/customers`, `/billing/customers/[id]` | Khách hàng (Bên A) của HSTT. Xóa: chỉ admin, không xóa được khi còn hợp đồng dùng. |
 | `/billing/contracts/[id]?tab=hstt` | Tab **HSTT** của hợp đồng: Bên A, loại/ngày ký HĐ, dự án, câu "Căn cứ…", VAT, nợ ban đầu, bảng giá vận chuyển, tạm ứng. |
 | `/admin/company` | **Chỉ admin.** Thông tin công ty (Bên B). |
 
 **Vòng đời bản tính:** nháp → đã xác nhận → đã hủy. Bản đã xác nhận bị khóa (trigger `billing_calc_guard`); mỗi hợp đồng + kỳ chỉ có một bản xác nhận. **Không xác nhận được** khi:
-- tính theo khoảng ngày (chỉ để tra cứu);
+- khoảng ngày **không trùng đúng kỳ của hợp đồng** (`period_start_day`, 1 tháng, cắt theo `contract_start`): mẫu kỳ khác hoặc khoảng ngày tự chọn được lưu với `period_month = null`, chỉ để tra cứu (`matchContractMonth` / `presetPeriodFor` trong `period-presets.ts`);
 - hợp đồng giả định;
 - có mặt hàng **số lượng lẻ** (thường do nguyên vật liệu nằm nhầm trong kho cho thuê): hiện băng đỏ, vẫn lưu nháp được, kế toán sửa mã hàng rồi tính lại.
 
@@ -114,6 +115,7 @@ Migration (tạo file mới, không sửa file cũ):
 | `0033`–`0037` | GĐ1: role "Chỉ xem", file MISA theo tháng, bảng giá phẳng, cutover (xem `docs/billing-gd1-trien-khai.md`). |
 | `0038_billing_hstt.sql` | GĐ3, chỉ thêm bảng: `company_profile` (Bên B, 1 dòng, chỉ admin sửa), `billing_customers` (Bên A), `billing_contract_hstt` (1:1 hợp đồng, bảng phụ để không đổi `billing_contracts`), `billing_transport_prices`, `billing_contract_advances`, `billing_period_inputs` / `_transport` / `_deductions`. RLS: đọc `is_billing_viewer`, ghi `is_billing_user`. Quay lại: `supabase/revert/0038_billing_hstt.revert.sql`. |
 | `0039_billing_hstt_seed_vietpanel.sql` | Seed TP + Việt Panel từ HSTT T08/2026 (nợ ban đầu 2.906.447.532 cuối 08/2026). |
+| `0040_billing_period_presets.sql` | GĐ2, chỉ thêm bảng: `billing_period_presets` (seed "26→25 (1 tháng)", "Tháng dương lịch"; ghi: chỉ admin) + bảng phụ `billing_contract_period_presets` (mẫu mặc định của hợp đồng; ghi: admin + kế toán; `on delete restrict`: mẫu đang được hợp đồng dùng thì không xóa được, chỉ "Ngừng dùng"). Bản tính không thêm cột: `upload_ids` đã trỏ đúng phiên bản file tháng. Quay lại: `supabase/revert/0040_billing_period_presets.revert.sql`. |
 
 Không cần biến môi trường mới: dùng `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` sẵn có. `exceljs` chạy ở runtime Node (server action, route `/api/billing/calculations/[id]/xlsx`).
 
@@ -165,14 +167,12 @@ npx tsx scripts/billing-preview.mts <file-misa.xlsx> 2026-09 ra-file.xlsx
 
 ## Tải file từ MISA
 
-Mở **Sổ chi tiết vật tư hàng hóa**, chọn Kho `<<Tất cả>>`, rồi làm một trong hai cách:
-- Chọn kỳ **tùy chọn từ ngày 26 tháng trước đến ngày 25 tháng tính tiền** (nếu MISA cho phép). Chỉ cần 1 file.
-- Hoặc tải **2 file theo tháng**, ví dụ tháng 8 và tháng 9, rồi upload cả hai. Hệ thống ghép lại bằng `mergeLedgers`.
+Mở **Sổ chi tiết vật tư hàng hóa**, chọn Kho `<<Tất cả>>`, kỳ **trọn 1 tháng** (01 → cuối tháng), rồi upload ở `/billing/uploads`. Mỗi tháng có 1 bản đang dùng; tải lại tháng đó thì tạo phiên bản mới. Khi tính, hệ thống tự lấy các tháng phủ kỳ (kỳ 26/07–25/08 cần file tháng 7 và tháng 8) và ghép bằng `mergeLedgers`.
 
 Cả bản 13 cột lẫn 16 cột (có cột Giá trị) đều đọc được.
 
 ## Chưa làm (theo thứ tự ưu tiên)
 
 1. Ngày Tết chính xác từ kế toán (giao diện nhập ngày miễn tính đã có).
-2. HSTT: lưu dữ liệu kỳ trong 1 transaction + khóa ở DB (0040, xem plan mục 9); xuất file cộng dồn nhiều tháng.
+2. HSTT: lưu dữ liệu kỳ trong 1 transaction + khóa ở DB (migration số trống tiếp theo, xem plan mục 9); xuất file cộng dồn nhiều tháng.
 3. Phiếu bị sót của kỳ đã chốt: cần cơ chế "dòng điều chỉnh" nhập tay. Engine đã tính đúng số ngày nếu truyền phiếu có ngày trước kỳ.
