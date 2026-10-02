@@ -116,7 +116,7 @@ Lint hiện có sẵn 6 lỗi cũ (`react-hooks/set-state-in-effect` ở admin/c
 - ⚠ `.env.local` trỏ tới **PRODUCTION** (`surnokungqebqzzlyrsz`). Không có môi trường dev. `npm run dev`, mọi script và `supabase db query --linked` đều chạm dữ liệu thật: **mọi lệnh ghi lên DB phải hỏi trước** (đọc thì được).
 - Migration:
   - gửi SQL cho chủ dự án duyệt trước;
-  - backup (`supabase/revert/backup-billing.sql`, `backup-billing-gd1.sql`) và `check-real-contracts.sql` (so MD5) **trước và sau** khi apply;
+  - backup (`supabase/revert/backup-billing.sql`, `backup-billing-gd1.sql`, `backup-billing-hstt.sql` (HSTT 0038 + mẫu kỳ 0040, có dữ liệu thật Bên A/B, dữ liệu kỳ)) và `check-real-contracts.sql` (so MD5) **trước và sau** khi apply. Cả 3 file backup chỉ đọc; output để ở `C:\Users\Admin\tp-backups\`, không để trong repo;
   - `npx supabase db push` do chủ dự án tự chạy; `--dry-run` phải chỉ liệt kê đúng file mới.
 - Không sửa 4 file lõi: `lib/billing/engine.ts`, `misa-parser.ts`, `dates.ts`, `merge-ledgers.ts`.
 - Không chạy `supabase/revert/0032_billing_demo_and_decimal.revert.sql`. Dọn dữ liệu giả định chỉ bằng `npm run seed:gia-dinh:xoa -- --project=surnokungqebqzzlyrsz`.

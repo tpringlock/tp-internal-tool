@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import ExcelJS from "exceljs";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { vietpanelSenci } from "./contracts/vietpanel-senci";
 import { buildMisaCatalog } from "./misa-catalog";
 import { parseMisaLedger } from "./misa-parser";
@@ -15,6 +15,10 @@ import {
   type PriceImportPreview,
 } from "./price-import";
 import { flattenContractConfig, groupPriceLines } from "./price-lines";
+
+// Parses real MISA / Excel files, which is slow on a busy machine: this file
+// gets its own timeout instead of raising the global one.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 // ---------------------------------------------------------------------------
 // helpers

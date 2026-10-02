@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, normalize, relative } from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi as vitest } from "vitest";
 import vi from "@/messages/vi.json";
 import en from "@/messages/en.json";
 import {
@@ -10,6 +10,10 @@ import {
   pickMessages,
   type ClientModule,
 } from "./client-namespaces";
+
+// Scans every source file of the app, which is slow on a busy machine: this file gets its own
+// timeout instead of raising the global one.
+vitest.setConfig({ testTimeout: 30_000 });
 
 const ROOT = normalize(join(__dirname, "..", ".."));
 

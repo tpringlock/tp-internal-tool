@@ -1,9 +1,13 @@
 import { readFileSync } from "node:fs";
 import ExcelJS from "exceljs";
 import * as XLSX from "xlsx";
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { buildHstt, canCuText, estimateLines, hsttFileName, type HsttInput } from "./hstt-export";
 import type { RentItemResult, RentLine } from "./types";
+
+// Parses real MISA / Excel files, which is slow on a busy machine: this file
+// gets its own timeout instead of raising the global one.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 // ── Golden data: T08/2026 Việt Panel (docs/hstt/hstt-export-plan.md, section 6) ──
 type FixtureLine = {

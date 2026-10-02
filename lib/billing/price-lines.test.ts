@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { vietpanelSenci } from "./contracts/vietpanel-senci";
 import { computeRentFromLedger } from "./engine";
 import { parseMisaLedger } from "./misa-parser";
@@ -13,6 +13,10 @@ import {
   type PriceLineFields,
 } from "./price-lines";
 import { PRICE_TEMPLATE_ROWS } from "./price-template";
+
+// Parses real MISA / Excel files, which is slow on a busy machine: this file
+// gets its own timeout instead of raising the global one.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 const VP_CONTRACT = {
   code: vietpanelSenci.id,

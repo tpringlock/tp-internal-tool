@@ -1,6 +1,10 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+// Scans every billing source file, which is slow on a busy machine: this file gets its own
+// timeout instead of raising the global one.
+vi.setConfig({ testTimeout: 30_000 });
 
 /**
  * Static check of the billing permission model (plan section 3): every

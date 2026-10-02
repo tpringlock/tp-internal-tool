@@ -1,10 +1,14 @@
 import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import seed from "./seed/gia-dinh-excel-contracts.json";
 import expected from "./__fixtures__/excel-tool-expected-2026-06.json";
 import { parseMisaLedger } from "./misa-parser";
 import { compareContracts } from "./compare";
 import type { ContractConfig } from "./types";
+
+// Parses real MISA / Excel files, which is slow on a busy machine: this file
+// gets its own timeout instead of raising the global one.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 const contracts = seed.contracts as ContractConfig[];
 

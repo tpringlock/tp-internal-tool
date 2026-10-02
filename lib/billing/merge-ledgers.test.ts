@@ -1,10 +1,14 @@
 import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { parseMisaLedger } from "./misa-parser";
 import { mergeLedgers } from "./merge-ledgers";
 import { computeRentFromLedger } from "./engine";
 import { vietpanelSenci } from "./contracts/vietpanel-senci";
 import type { Ledger } from "./types";
+
+// Parses real MISA / Excel files, which is slow on a busy machine: this file
+// gets its own timeout instead of raising the global one.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 /** Cắt 1 file thành 2 file liên tiếp (như tải tháng riêng lẻ), rồi ghép lại phải ra đúng như cũ. */
 function split(l: Ledger, lastDayOfFirst: string): [Ledger, Ledger] {

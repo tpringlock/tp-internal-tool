@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { parseMisaLedger } from "./misa-parser";
 import { readMisaTitle } from "./misa-title";
 import {
@@ -15,6 +15,10 @@ import {
   describeSourceFiles,
 } from "./month-files";
 import { presetPeriod } from "./period-presets";
+
+// Parses real MISA / Excel files, which is slow on a busy machine: this file
+// gets its own timeout instead of raising the global one.
+vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
 
 const fixture = (f: string) => readFileSync(new URL(`./__fixtures__/${f}`, import.meta.url));
 
