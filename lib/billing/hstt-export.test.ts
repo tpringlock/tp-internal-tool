@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import ExcelJS from "exceljs";
 import * as XLSX from "xlsx";
 import { beforeAll, describe, expect, it } from "vitest";
-import { buildHstt, canCuText, hsttFileName, type HsttInput } from "./hstt-export";
+import { buildHstt, canCuText, estimateLines, hsttFileName, type HsttInput } from "./hstt-export";
 import type { RentItemResult, RentLine } from "./types";
 
 // ── Golden data: T08/2026 Việt Panel (docs/hstt/hstt-export-plan.md, section 6) ──
@@ -210,9 +210,32 @@ describe("buildHstt – golden T08/2026 Việt Panel", () => {
 
   it("has the 4 sheets, each printing only its block", () => {
     expect(out.worksheets.map((w) => w.name)).toEqual(["ĐNTT", "ĐCCN", "Giá trị", "Khối lượng"]);
+    const firstPrinted: Record<string, number> = { "Khối lượng": 3 };
     for (const s of SHEETS) {
-      expect(out.getWorksheet(s.name)!.pageSetup.printArea, s.name).toBe(`A1:${s.lastCol}${s.rows}`);
+      expect(out.getWorksheet(s.name)!.pageSetup.printArea, s.name).toBe(
+        `A${firstPrinted[s.name] ?? 1}:${s.lastCol}${s.rows}`,
+      );
     }
+  });
+
+  it("starts the Khối lượng print area at the CỘNG HÒA line, like the hand-made file", () => {
+    const kl = out.getWorksheet("Khối lượng")!;
+    const start = Number(/^A(\d+):/.exec(kl.pageSetup.printArea ?? "")![1]);
+    expect(plain(kl.getCell(`A${start}`).value)).toBe("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM");
+  });
+
+  it("makes the 'Căn cứ' rows tall enough for their text (at least 2 lines)", () => {
+    // Hand-made T09: 32,25 (Giá trị) and 34,5 (Khối lượng); one 13pt line is 16,5.
+    expect(out.getWorksheet("Giá trị")!.getRow(7).height).toBeGreaterThanOrEqual(32.25);
+    expect(out.getWorksheet("Khối lượng")!.getRow(9).height).toBeGreaterThanOrEqual(32.25);
+    expect(out.getWorksheet("ĐNTT")!.getRow(12).height).toBeGreaterThanOrEqual(32.25);
+    expect(out.getWorksheet("ĐCCN")!.getRow(8).height).toBeGreaterThanOrEqual(30);
+  });
+
+  it("keeps short wrapped cells at their template height", () => {
+    expect(out.getWorksheet("ĐNTT")!.getRow(17).height).toBe(16.5); // Đơn vị thụ hưởng
+    expect(out.getWorksheet("ĐNTT")!.getRow(10).height).toBe(16.5); // Kính gửi
+    expect(out.getWorksheet("ĐNTT")!.getRow(3).height).toBe(16.5); // 2-row merge: untouched
   });
 
   for (const s of SHEETS) {
@@ -371,6 +394,48 @@ describe("buildHstt – variants", () => {
     });
     expect(gt.getCell(`J${row}`).value).toBeNull();
     expect(gt.getCell(`K${row}`).value).toBe("Tính cuối kỳ");
+  });
+});
+
+describe("estimateLines (Times New Roman, Excel column widths)", () => {
+  const canCu = canCuText(t08Input); // ~190 characters
+  const tpWidths = { giaTri: [11.43, 43, 12.14, 16.29, 16.29, 12.57, 16.86, 10.57, 13.14, 21.14, 24.43] };
+
+  it("matches the hand-made files", () => {
+    // T09: the "Căn cứ" sentence takes 2 lines on Giá trị (A:K) at 13pt.
+    expect(estimateLines(canCu, tpWidths.giaTri, 13)).toBe(2);
+    // ĐNTT A11:G11 greeting fits on one line in the hand-made file.
+    const greeting = "Công ty Cổ phần Tập đoàn Thiết bị xây dựng TP xin gửi tới Quý Công ty lời chào trân trọng và hợp tác.";
+    expect(estimateLines(greeting, [12.43, 12.29, 15.29, 12, 17, 14.29, 33.57], 13)).toBe(1);
+  });
+
+  it("counts explicit line breaks and never returns less than one line", () => {
+    expect(estimateLines("A\nB", [20], 13)).toBe(2);
+    expect(estimateLines("", [20], 13)).toBe(1);
+  });
+});
+
+describe("buildHstt – wrapped text heights", () => {
+  it("grows with the text: a long 'Căn cứ' sentence and a long address get more lines", async () => {
+    const long = `- Căn cứ ${"Phụ lục hợp đồng số 01, 02, 03 và 04 kèm theo hợp đồng kinh tế, ".repeat(6)}về việc cho thuê.`;
+    const { buffer } = await buildHstt(
+      {
+        ...t08Input,
+        contract: { ...t08Input.contract, canCuOverride: long },
+        customer: { ...t08Input.customer, dia_chi: "Số 1, ".repeat(40) + "Bắc Ninh" },
+      },
+      template,
+    );
+    const wb = new ExcelJS.Workbook();
+    await wb.xlsx.load(buffer as unknown as ArrayBuffer);
+    const gt = wb.getWorksheet("Giá trị")!;
+    const kl = wb.getWorksheet("Khối lượng")!;
+    // ~430 characters: 3+ lines on the 198-wide Giá trị merge, more on the narrower ones.
+    expect(gt.getRow(7).height).toBeGreaterThanOrEqual(3 * 16.5);
+    expect(kl.getRow(9).height).toBeGreaterThanOrEqual(gt.getRow(7).height!);
+    expect(wb.getWorksheet("ĐNTT")!.getRow(12).height).toBeGreaterThan(gt.getRow(7).height!);
+    // ĐCCN Bên A address (C10:H10, wrapped).
+    expect(wb.getWorksheet("ĐCCN")!.getRow(10).height).toBeGreaterThanOrEqual(2 * 15.75);
   });
 });
 

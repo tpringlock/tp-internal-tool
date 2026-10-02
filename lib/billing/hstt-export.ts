@@ -379,13 +379,19 @@ function placeholderCell(ws: ExcelJS.Worksheet, key: string): string {
   return found;
 }
 
+/**
+ * Replace the placeholders of a sheet. Returns the wrapped text cells whose
+ * content came from the data (their row height must follow the text).
+ */
 function fillPlaceholders(
   ws: ExcelJS.Worksheet,
   text: Record<string, string>,
   cells: Record<string, ExcelJS.CellValue>,
-) {
+): WrappedCell[] {
+  const wrapped: WrappedCell[] = [];
   eachMaster(ws, (cell) => {
     if (typeof cell.value !== "string" || !cell.value.includes("{{")) return;
+    if (cell.alignment?.wrapText) wrapped.push({ cell, minLines: cell.value.includes("{{can_cu_hd}}") ? 2 : 1 });
     const whole = /^\{\{([^}]+)\}\}$/.exec(cell.value);
     if (whole && whole[1] in cells) {
       cell.value = cells[whole[1]];
@@ -396,6 +402,81 @@ function fillPlaceholders(
       return text[key];
     });
   });
+  return wrapped;
+}
+
+// ───────────── Row heights of wrapped text ─────────────
+
+interface WrappedCell {
+  cell: ExcelJS.Cell;
+  /** The "Căn cứ" sentence always gets at least 2 lines, like the hand-made files. */
+  minLines: number;
+}
+
+/** Excel's row height (points) of one line of Times New Roman at a font size. */
+const LINE_HEIGHT: Record<number, number> = { 10: 12.75, 11: 15, 12: 15.75, 13: 16.5, 14: 18.75, 16: 20.25 };
+const lineHeight = (size: number) => LINE_HEIGHT[size] ?? Math.ceil(size * 1.3 * 4) / 4;
+
+/** Pixel width of a column as Excel draws it (7px per unit of the default font + 5px padding). */
+const columnPx = (width: number) => Math.trunc(width * 7 + 5);
+
+/**
+ * Approximate advance of Times New Roman, in em: capitals are wide, spaces
+ * narrow, everything else (lower case, digits, punctuation) average. Errs on
+ * the wide side so a line never overflows: cut text is worse than spare space.
+ */
+function textEm(text: string): number {
+  let em = 0;
+  for (const ch of text) em += ch === " " ? 0.25 : ch !== ch.toLowerCase() ? 0.7 : 0.45;
+  return em;
+}
+
+/**
+ * Estimated number of lines of `text` (wrapped, explicit line breaks kept) in
+ * a cell or merge made of columns of the given widths, at a font size in pt.
+ */
+export function estimateLines(text: string, columnWidths: readonly number[], fontSize: number): number {
+  const boxPx = columnWidths.reduce((s, w) => s + columnPx(w), 0) - 6; // cell margins
+  const emPx = (fontSize * 96) / 72;
+  return text
+    .split("\n")
+    .reduce((n, part) => n + Math.max(1, Math.ceil((textEm(part.trimEnd()) * emPx) / boxPx)), 0);
+}
+
+/**
+ * Give each row holding data-driven wrapped text the height of its estimated
+ * line count (never lower than the template's). Merges spanning several rows
+ * already have room for their lines and are left alone.
+ */
+function fitWrappedRows(ws: ExcelJS.Worksheet, wrapped: WrappedCell[]) {
+  const merges = ws.model.merges.map((m) => m.split(":").map((a) => ws.getCell(a)));
+  const need = new Map<number, number>();
+  for (const { cell, minLines } of wrapped) {
+    if (typeof cell.value !== "string") continue;
+    const m = merges.find(([tl]) => tl.address === cell.address);
+    if (m && Number(m[1].row) !== Number(m[0].row)) continue;
+    const widths: number[] = [];
+    const lastCol = Number(m ? m[1].col : cell.col);
+    for (let c = Number(cell.col); c <= lastCol; c++) widths.push(ws.getColumn(c).width ?? 8.43);
+    const size = cell.font?.size ?? 11;
+    const lines = Math.max(minLines, estimateLines(cell.value, widths, size));
+    const row = Number(cell.row);
+    need.set(row, Math.max(need.get(row) ?? 0, lines * lineHeight(size)));
+  }
+  for (const [r, h] of need) {
+    const row = ws.getRow(r);
+    if (h > (row.height ?? 0)) row.height = h;
+  }
+}
+
+/** Start the print area at the first row whose column A is `text`. */
+function printFromRow(ws: ExcelJS.Worksheet, text: string) {
+  let start = 0;
+  ws.eachRow((row, r) => {
+    if (!start && String(row.getCell(1).value ?? "").trim() === text) start = r;
+  });
+  const area = ws.pageSetup.printArea;
+  if (start && area) ws.pageSetup.printArea = area.replace(/^([A-Z]+)\d+:/, `$1${start}:`);
 }
 
 function sumFormula(values: number[]): ExcelJS.CellValue {
@@ -483,7 +564,9 @@ export async function buildHstt(input: HsttInput, template: Buffer | ArrayBuffer
     "cn.no_cuoi_ky": { formula: `${noDau}+${phatSinh}-${thanhToan}`, result: closing },
     "dntt.so_tien": afterRef,
   };
-  for (const ws of [dntt, dccn, giaTri, khoiLuong]) fillPlaceholders(ws, text, cells);
+  for (const ws of [dntt, dccn, giaTri, khoiLuong]) fitWrappedRows(ws, fillPlaceholders(ws, text, cells));
+  // The hand-made Khối lượng prints from its "CỘNG HÒA…" line (no blank rows on top).
+  printFromRow(khoiLuong, "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM");
   if (input.debt.advancesNote.trim()) {
     dccn.getCell(`I${rowsOf(tamUng)[0]}`).value = input.debt.advancesNote.trim();
   }
