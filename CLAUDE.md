@@ -8,7 +8,7 @@ Portal nội bộ của Ringlock TP (ringlocktp.vn). Một app Next.js duy nhấ
 | --------------------- | ------------ | ------------------------------------------------------ |
 | Quản lí tài liệu      | `/documents` | mọi người (employee chỉ thấy dự án mình là thành viên) |
 | TP Academy            | `/academy`   | mọi người                                              |
-| Tính hóa đơn tự động  | `/billing`   | admin + accountant; billing_viewer chỉ xem (trang `/billing/compare`: chỉ admin) |
+| Tính hóa đơn tự động  | `/billing`   | admin + accountant; billing_viewer chỉ xem và tải HSTT (trang `/billing/compare`: chỉ admin) |
 | Admin Panel           | `/admin/*`   | admin + manager (users, activity, docs: chỉ admin)     |
 
 ## Stack
@@ -56,6 +56,7 @@ Lint hiện có sẵn 6 lỗi cũ (`react-hooks/set-state-in-effect` ở admin/c
 - Academy: `courses` → `chapters` → `lessons` (+ quiz, notes, files, progress).
 - `misa_*`: cache dữ liệu từ MISA AMIS (read-only), xem `docs/misa-integration.md`.
 - Billing: `billing_contracts` (1 hợp đồng = 1 kho MISA) → `billing_price_lines` (0036: 1 dòng = 1 mã VT; `ten_vt`/`dvt` theo MISA, `print_name`/`print_dvt` ghi đè khi in HSTT, đơn giá 0 = không tính tiền; gộp thành `ContractConfig` bằng `lib/billing/price-lines.ts`), `billing_price_imports` (nhật ký nhập Excel), `billing_excluded_ranges`, `billing_misa_uploads` (file ở bucket private `billing`) + `billing_misa_month_files` (0035: file theo tháng, phiên bản, 1 bản đang dùng/tháng), `billing_rent_calculations` (nháp → xác nhận → hủy; `total_amount numeric(20,4)`). `billing_contract_items` / `billing_excluded_codes` đã **khóa ghi** từ 0037, chỉ giữ để quay lại. RLS: đọc `private.is_billing_viewer()`, ghi `private.is_billing_user()`.
+- HSTT (0038): `company_profile` (Bên B, 1 dòng id=1, chỉ admin sửa), `billing_customers` (Bên A), `billing_contract_hstt` (1:1 hợp đồng: Bên A, loại/ngày ký, dự án, câu Căn cứ, VAT, `opening_debt` + `opening_debt_month`), `billing_transport_prices`, `billing_contract_advances`, `billing_period_inputs` + `billing_period_transport` + `billing_period_deductions` (dữ liệu kỳ theo hợp đồng + `period_from`). Tiền là `bigint` (VND nguyên).
 - **Dữ liệu giả định** (`is_demo = true`, tên "[GIẢ ĐỊNH] ", đơn giá Excel, chỉ để đối chiếu): ẩn trừ khi bật công tắc, không bao giờ xác nhận được. Seed/xóa: `npm run seed:gia-dinh -- --project=<ref>` / `npm run seed:gia-dinh:xoa -- --project=<ref>`. Kiểm tra hợp đồng thật trước/sau: `supabase/revert/check-real-contracts.sql`.
 
 ## Quy tắc bắt buộc
@@ -119,7 +120,7 @@ Lint hiện có sẵn 6 lỗi cũ (`react-hooks/set-state-in-effect` ở admin/c
   - `npx supabase db push` do chủ dự án tự chạy; `--dry-run` phải chỉ liệt kê đúng file mới.
 - Không sửa 4 file lõi: `lib/billing/engine.ts`, `misa-parser.ts`, `dates.ts`, `merge-ledgers.ts`.
 - Không chạy `supabase/revert/0032_billing_demo_and_decimal.revert.sql`. Dọn dữ liệu giả định chỉ bằng `npm run seed:gia-dinh:xoa -- --project=surnokungqebqzzlyrsz`.
-- Không sửa giá hợp đồng Việt Panel thật (`vietpanel-senci`, kho `VIETPANEL-01`). Số chuẩn: kỳ 08/2026 (26/07→25/08) = **806.342.923đ**. Sau mọi thay đổi đụng giá/tính tiền: `npx tsx scripts/billing-verify-recalc.mts --project=surnokungqebqzzlyrsz` phải ra **0 khác biệt**.
+- Không sửa giá hợp đồng Việt Panel thật (`vietpanel-senci`, kho `VIETPANEL-01`). Số chuẩn: kỳ 08/2026 (26/07→25/08) = **806.342.923đ** (tiền thiết bị); HSTT kỳ 09/2026 sau thuế = **800.796.900đ** (thiết bị 656.478.611, khớp bản làm tay). Sau mọi thay đổi đụng giá/tính tiền: `npx tsx scripts/billing-verify-recalc.mts --project=surnokungqebqzzlyrsz` phải ra **0 khác biệt**.
 - Không tự `git push`. Dữ liệu tạo khi test đặt tiền tố **"TEST"** và liệt kê lại để xóa.
 
 ### Trạng thái: GĐ1 (nền dữ liệu) đã xong
@@ -138,4 +139,15 @@ Migration 0033–0037 đã apply trên production (0037 = cutover, bảng giá c
   - Actions `app/actions/billing-prices.ts`; trang `/billing/prices`, `/billing/prices/import`; editor `billing/contracts/price-lines-editor.tsx`.
 - **Ô chọn có tìm kiếm:** `components/ui/combobox.tsx` + `lib/search.ts`.
 - **Kiểm tra/quay lại:** `scripts/billing-verify-recalc.mts`; `supabase/revert/check-price-lines-migration.sql`, `check-month-files.sql`, `list-month-files.sql`, các file `003x_*.revert.sql`.
-- **Chưa làm (GĐ2+):** màn tính tiền tự lấy file theo tháng (`pickMonthFiles` đã có, chưa gắn), mẫu kỳ, báo cáo nhiều dự án, trung tâm cảnh báo, HSTT 4 biểu.
+- **Chưa làm (GĐ2):** màn tính tiền tự lấy file theo tháng (`pickMonthFiles` đã có, chưa gắn), mẫu kỳ, báo cáo nhiều dự án, trung tâm cảnh báo.
+
+### Trạng thái: GĐ3 (HSTT 4 biểu) đã xong
+
+Migration 0038 (bảng HSTT, chỉ thêm) + 0039 (seed TP + Việt Panel) đã apply. Code ở nhánh `feature/billing-hstt` (merge vào `main` để deploy). Kế hoạch, khảo sát, "Đã biết", "Việc còn nợ": `docs/hstt/hstt-export-plan.md`; tổng quan: `docs/billing-module.md` phần HSTT.
+
+- **Luồng:** tính (kỳ 26→25) → **Dữ liệu kỳ** trên trang bản tính (vận chuyển G/F/tính ngay–cuối kỳ, giảm trừ sau thuế, đã thanh toán, nợ đầu kỳ tự tính hoặc ghi đè) → xác nhận → **Tải HSTT** (`/api/billing/calculations/[id]/hstt`; Chỉ xem tải được).
+- **Khóa:** kỳ đã có bản tính xác nhận thì `savePeriodInputs` từ chối (`periodEditBlock`, `lib/billing/hstt-lock.test.ts`); muốn sửa phải hủy xác nhận (admin).
+- **Nợ đầu kỳ:** tháng ≤ `opening_debt_month` = tháng làm tay: bỏ qua bản tính của chúng, không tải HSTT. Kỳ đầu sau đó lấy `opening_debt`, các kỳ sau lấy nợ cuối kỳ trước đã xác nhận (`openingDebtFor` trong `hstt-totals.ts`, `openingDebtInfo` trong `hstt-data.ts`).
+- **Code:** `lib/billing/number-to-words.ts`, `hstt-totals.ts`, `hstt-data.ts`, `hstt-server.ts`, `hstt-export.ts` (điền `docs/hstt/hstt-template.xlsx`, file mẫu vào bundle qua `outputFileTracingIncludes` trong `next.config.ts`), `hstt-text.ts`; actions `app/actions/billing-hstt.ts`; trang `/admin/company`, `/billing/customers`, tab HSTT ở `/billing/contracts/[id]?tab=hstt`, khối dữ liệu kỳ `billing/calculations/[id]/period-inputs-form.tsx`.
+- **Golden:** `hstt-export.test.ts` so từng ô với khối T08 của `docs/hstt/hstt-t08-2026-vietpanel.xlsx`. Sửa file mẫu thì chạy lại test này.
+- **Việc còn nợ:** 0040 – lưu dữ liệu kỳ trong 1 transaction (RPC) + trigger khóa kỳ đã xác nhận ở DB (hiện chỉ khóa ở server action, các lệnh ghi chạy nối tiếp). Gửi SQL duyệt trước. Xuất file cộng dồn nhiều tháng: để sau.

@@ -118,6 +118,9 @@ Sinh HSTT **tháng 08/2026 của Việt Panel** từ: các dòng trong `vietpane
   Mỗi dòng lệch = 1 ngày × SL × đơn giá; tổng đúng 1.800.544đ.
 - **Quyết định (02/10/2026):** giữ **MISA là nguồn đúng**, không đổi engine. Nếu ngày trả thực tế khác, kế toán sửa ngày phiếu trong MISA rồi tải lại file tháng.
 - Golden test (mục 6) dựng từ các dòng của kỳ "08/2026" trong `lib/billing/__fixtures__/vietpanel-senci-golden.json` (= số làm tay), nên không bị ảnh hưởng.
+- **T09/2026 Việt Panel (02/10/2026): HSTT web khớp bản làm tay.** Giá trị + Khối lượng khớp từng đồng: thiết bị 656.478.611, sau thuế **800.796.900**. ĐNTT/ĐCCN đúng công thức, nợ đầu kỳ 2.906.447.532 (nợ ban đầu cuối 08/2026). Đây là số chuẩn của kỳ 09/2026.
+- **T09: 2 cặp phiếu cùng ngày 25/09 bị đảo thứ tự** giữa web và bản tay (web xếp theo thứ tự trong file MISA). Cùng ngày, cùng số ngày thuê nên không ảnh hưởng tiền.
+- **Bản tay T09 ghi nhầm nhãn** "Tổng tiền thuê tháng 08/2026" (đúng ra là 09/2026). File web ghi đúng tháng của kỳ.
 
 ## 9. Việc còn nợ
 
