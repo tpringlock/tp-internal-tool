@@ -122,6 +122,7 @@ Lint hiện có sẵn 6 lỗi cũ (`react-hooks/set-state-in-effect` ở admin/c
 - Không chạy `supabase/revert/0032_billing_demo_and_decimal.revert.sql`. Dọn dữ liệu giả định chỉ bằng `npm run seed:gia-dinh:xoa -- --project=surnokungqebqzzlyrsz`.
 - Không sửa giá hợp đồng Việt Panel thật (`vietpanel-senci`, kho `VIETPANEL-01`). Số chuẩn: kỳ 08/2026 (26/07→25/08) = **806.342.923đ** (tiền thiết bị); HSTT kỳ 09/2026 sau thuế = **800.796.900đ** (thiết bị 656.478.611, khớp bản làm tay). Sau mọi thay đổi đụng giá/tính tiền: `npx tsx scripts/billing-verify-recalc.mts --project=surnokungqebqzzlyrsz` phải ra **0 khác biệt**.
 - Không tự `git push`. Dữ liệu tạo khi test đặt tiền tố **"TEST"** và liệt kê lại để xóa.
+- **Mốc `check-real-contracts.sql`** (từ 03/10/2026, sau khi chủ dự án xóa hợp đồng test `dungtest`; còn 1 hợp đồng thật Việt Panel): `contracts_md5` = `0390eeadc39371b91175ee1d91438e5a`, `items_md5` = `847f33c34875e21e4b8e41b2e8839264`, `excluded_md5` = `9b5309eb401e895b097cd9b983e6ffff`. Trước/sau mỗi migration phải ra đúng mốc này (trừ khi chủ dự án chủ động sửa hợp đồng thật).
 
 ### Trạng thái: GĐ1 (nền dữ liệu) đã xong
 
