@@ -26,6 +26,17 @@ Tải **"Mẫu chuẩn để chỉnh"** (trang Mẫu HSTT). File này giống m�
 | Đổi vị trí các ô số ở ĐCCN, ĐNTT | Được. Ví dụ đưa cột "Giá trị (vnđ)" của ĐCCN sang trái: công thức nợ cuối kỳ tự theo vị trí mới. |
 | Thêm sheet riêng (ghi chú, phụ lục) | Được. Sheet không có dấu ở Z1 được giữ nguyên, không điền gì vào. |
 
+### Lưu ý khi đổi font
+
+Mẫu chuẩn được căn theo font **Times New Roman**. Các font khác như Arial, Calibri… **rộng hơn**, nên cùng một dòng chữ sẽ chiếm nhiều chỗ hơn. Nhãn dài có thể **tràn sang ô bên cạnh** và dính vào dữ liệu. Ví dụ ở biểu ĐCCN: nhãn "Tài khoản ngân hàng số:" (cột A–B) dính liền vào số tài khoản ở cột C.
+
+Cách xử lý (chọn một hoặc kết hợp):
+
+- **Nới độ rộng cột** chứa nhãn (kéo mép cột A/B rộng ra), hoặc
+- **Giảm cỡ chữ** của nhãn (ví dụ 13 → 12).
+
+Sau đó **luôn dùng bước "Tải file thử"** (mục 6) và xem bản in (Ctrl+P) từng sheet trước khi lưu mẫu. Hệ thống kiểm tra được chữ, dấu và ô dữ liệu, nhưng **không phát hiện được chữ bị tràn hay bị che**: chỉ nhìn bản in mới thấy.
+
 ## 3. Không được làm (hệ thống sẽ báo lỗi, không cho lưu)
 
 - **Đặt logo/con dấu vào ô trên trang tính, không đặt trong Header/Footer; không dùng biểu đồ, hình vẽ** (shape, text box, WordArt). Những thứ này bị mất khi sinh file nên hệ thống chặn ngay từ đầu.

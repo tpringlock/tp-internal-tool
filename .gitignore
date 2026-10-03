@@ -47,3 +47,6 @@ next-env.d.ts
 
 # drop folders for incoming code (copied into the repo, then deleted)
 _incoming-billing*/
+
+# Supabase CLI cache (rewritten by every CLI run)
+supabase/.temp/
