@@ -1,7 +1,10 @@
 /**
- * HSTT export: fill docs/hstt/hstt-template.xlsx (4 sheets: ĐNTT, ĐCCN,
- * Giá trị, Khối lượng) with one period of one contract.
- * Plan: docs/hstt/hstt-export-plan.md, sections 3–4.
+ * HSTT export: fill an HSTT template (the standard one is
+ * docs/hstt/hstt-template.xlsx: ĐNTT, ĐCCN, Giá trị, Khối lượng) with one
+ * period of one contract.
+ * Plan: docs/hstt/hstt-export-plan.md, sections 3–4. Template convention:
+ * hstt-placeholders.ts (cell Z1 = sheet role; a template may hold only some
+ * of the 4 sheets, sheets without a role are copied untouched).
  *
  * The template keeps every font, border, merge, width and print setting of
  * the hand-made file. Text cells carry {{placeholders}}; the hidden column Z
@@ -22,6 +25,8 @@ import {
   type HsttTransport,
 } from "./hstt-totals";
 import { amountInWords } from "./number-to-words";
+import { MARKER_COLUMN, PLACEHOLDER_RE, type SheetRole } from "./hstt-placeholders";
+import { HsttTemplateError, cellText, eachMasterCell, inspectWorkbook, quoteSheet, readMarkers } from "./hstt-template";
 import { canCuText, dmy, hsttFileName, monthLabel } from "./hstt-text";
 import type { IsoDate, RentItemResult, RentLine } from "./types";
 
@@ -116,7 +121,7 @@ interface OutRow {
   merges?: string[];
 }
 
-const LAST_COL = 26; // Z (markers)
+const LAST_COL = MARKER_COLUMN; // Z
 
 interface CellSnap {
   value: ExcelJS.CellValue;
@@ -196,15 +201,19 @@ function rebuildRegion(ws: ExcelJS.Worksheet, start: number, end: number, plan: 
   });
 
   if (printEnd) ws.pageSetup.printArea = printArea.replace(/\d+$/, String(printEnd + delta));
+  // Pictures (logo, stamp) below the rebuilt rows move with them.
+  for (const img of ws.getImages()) {
+    const { tl, br } = img.range as unknown as { tl: { nativeRow: number }; br?: { nativeRow: number } };
+    if (tl.nativeRow + 1 > end) {
+      tl.nativeRow += delta;
+      if (br) br.nativeRow += delta;
+    }
+  }
   return delta;
 }
 
 function markers(ws: ExcelJS.Worksheet): Map<string, number> {
-  const out = new Map<string, number>();
-  ws.getColumn(LAST_COL).eachCell((cell, r) => {
-    if (typeof cell.value === "string") out.set(cell.value.trim(), r);
-  });
-  return out;
+  return new Map([...readMarkers(ws)].map(([k, rows]) => [k, rows[0]]));
 }
 
 function marker(m: Map<string, number>, key: string, sheet: string): number {
@@ -358,25 +367,22 @@ function fillKhoiLuong(ws: ExcelJS.Worksheet, input: HsttInput) {
 
 // ───────────── Placeholders ─────────────
 
-const PLACEHOLDER = /\{\{([^}]+)\}\}/g;
-
-function eachMaster(ws: ExcelJS.Worksheet, fn: (cell: ExcelJS.Cell) => void) {
-  ws.eachRow({ includeEmpty: false }, (row) =>
-    row.eachCell({ includeEmpty: false }, (cell) => {
-      if (cell.isMerged && cell.master.address !== cell.address) return;
-      fn(cell);
-    }),
-  );
+/** Address of the first cell holding exactly {{key}}, if any. */
+function placeholderCell(ws: ExcelJS.Worksheet | undefined, key: string): string | null {
+  let found: string | null = null;
+  if (ws) {
+    eachMasterCell(ws, (cell) => {
+      if (!found && cellText(cell.value)?.trim() === `{{${key}}}`) found = cell.address;
+    });
+  }
+  return found;
 }
 
-/** Address of the first cell holding exactly {{key}}. */
-function placeholderCell(ws: ExcelJS.Worksheet, key: string): string {
-  let found = "";
-  eachMaster(ws, (cell) => {
-    if (!found && cell.value === `{{${key}}}`) found = cell.address;
+function replaceText(text: string, data: Record<string, string>, where: string): string {
+  return text.replace(PLACEHOLDER_RE, (_, key: string) => {
+    if (!(key in data)) throw new Error(`Placeholder không có dữ liệu: {{${key}}} (${where}).`);
+    return data[key];
   });
-  if (!found) throw new Error(`File mẫu HSTT thiếu ô {{${key}}} ở sheet ${ws.name}.`);
-  return found;
 }
 
 /**
@@ -389,18 +395,24 @@ function fillPlaceholders(
   cells: Record<string, ExcelJS.CellValue>,
 ): WrappedCell[] {
   const wrapped: WrappedCell[] = [];
-  eachMaster(ws, (cell) => {
-    if (typeof cell.value !== "string" || !cell.value.includes("{{")) return;
-    if (cell.alignment?.wrapText) wrapped.push({ cell, minLines: cell.value.includes("{{can_cu_hd}}") ? 2 : 1 });
-    const whole = /^\{\{([^}]+)\}\}$/.exec(cell.value);
+  eachMasterCell(ws, (cell) => {
+    const value = cell.value;
+    const str = cellText(value);
+    if (str === null || !str.includes("{{")) return;
+    if (cell.alignment?.wrapText) wrapped.push({ cell, minLines: str.includes("{{can_cu_hd}}") ? 2 : 1 });
+    const whole = /^\{\{([^{}]+)\}\}$/.exec(str.trim());
     if (whole && whole[1] in cells) {
       cell.value = cells[whole[1]];
       return;
     }
-    cell.value = cell.value.replace(PLACEHOLDER, (_, key: string) => {
-      if (!(key in text)) throw new Error(`Placeholder không có dữ liệu: {{${key}}} (${ws.name}!${cell.address}).`);
-      return text[key];
-    });
+    const where = `${ws.name}!${cell.address}`;
+    if (typeof value === "string") {
+      cell.value = replaceText(value, text, where);
+    } else {
+      // Rich text (part of the cell formatted differently): replace run by run.
+      const rich = value as ExcelJS.CellRichTextValue;
+      cell.value = { richText: rich.richText.map((run) => ({ ...run, text: replaceText(run.text, text, where) })) };
+    }
   });
   return wrapped;
 }
@@ -452,14 +464,15 @@ function fitWrappedRows(ws: ExcelJS.Worksheet, wrapped: WrappedCell[]) {
   const merges = ws.model.merges.map((m) => m.split(":").map((a) => ws.getCell(a)));
   const need = new Map<number, number>();
   for (const { cell, minLines } of wrapped) {
-    if (typeof cell.value !== "string") continue;
+    const value = cellText(cell.value);
+    if (value === null) continue;
     const m = merges.find(([tl]) => tl.address === cell.address);
     if (m && Number(m[1].row) !== Number(m[0].row)) continue;
     const widths: number[] = [];
     const lastCol = Number(m ? m[1].col : cell.col);
     for (let c = Number(cell.col); c <= lastCol; c++) widths.push(ws.getColumn(c).width ?? 8.43);
     const size = cell.font?.size ?? 11;
-    const lines = Math.max(minLines, estimateLines(cell.value, widths, size));
+    const lines = Math.max(minLines, estimateLines(value, widths, size));
     const row = Number(cell.row);
     need.set(row, Math.max(need.get(row) ?? 0, lines * lineHeight(size)));
   }
@@ -501,18 +514,17 @@ export async function buildHstt(input: HsttInput, template: Buffer | ArrayBuffer
   const wb = new ExcelJS.Workbook();
   const buf = Buffer.isBuffer(template) ? template : Buffer.from(template as ArrayBuffer);
   await wb.xlsx.load(buf as unknown as ArrayBuffer);
-  const sheet = (name: string) => {
-    const ws = wb.getWorksheet(name);
-    if (!ws) throw new Error(`File mẫu HSTT thiếu sheet "${name}".`);
-    return ws;
-  };
-  const dntt = sheet("ĐNTT");
-  const dccn = sheet("ĐCCN");
-  const giaTri = sheet("Giá trị");
-  const khoiLuong = sheet("Khối lượng");
+  const { roles, guides, issues } = inspectWorkbook(wb);
+  const errors = issues.filter((i) => i.level === "error");
+  if (errors.length) throw new HsttTemplateError(errors);
+  for (const ws of guides) wb.removeWorksheet(ws.id);
+  const sheet = (role: SheetRole) => roles.get(role);
+  const dccn = sheet("dccn");
+  const giaTri = sheet("gia-tri");
+  const khoiLuong = sheet("khoi-luong");
 
-  const afterRow = fillGiaTri(giaTri, input, totals);
-  fillKhoiLuong(khoiLuong, input);
+  const afterRow = giaTri ? fillGiaTri(giaTri, input, totals) : null;
+  if (khoiLuong) fillKhoiLuong(khoiLuong, input);
 
   const { company: b, customer: a } = input;
   const text: Record<string, string> = {
@@ -549,32 +561,42 @@ export async function buildHstt(input: HsttInput, template: Buffer | ArrayBuffer
     "cn.bang_chu": amountInWords(closing),
     "dntt.bang_chu": amountInWords(totals.afterTax),
   };
-  const afterRef = { formula: `'Giá trị'!J${afterRow}`, result: totals.afterTax };
+  // Without a Giá trị sheet the amounts are plain numbers instead of references.
+  const afterRef: ExcelJS.CellValue =
+    giaTri && afterRow ? { formula: `${quoteSheet(giaTri.name)}!J${afterRow}`, result: totals.afterTax } : totals.afterTax;
 
-  // ĐCCN: line 5 = line 2 + line 3 - line 4, by cell reference.
-  const noDau = placeholderCell(dccn, "cn.no_dau_ky");
-  const phatSinh = placeholderCell(dccn, "cn.phat_sinh");
-  const thanhToan = placeholderCell(dccn, "cn.thanh_toan");
-  const tamUng = placeholderCell(dccn, "cn.tam_ung");
   const cells: Record<string, ExcelJS.CellValue> = {
     "cn.tam_ung": sumFormula(input.debt.advances),
     "cn.no_dau_ky": input.debt.opening,
     "cn.phat_sinh": afterRef,
     "cn.thanh_toan": input.debt.paid,
-    "cn.no_cuoi_ky": { formula: `${noDau}+${phatSinh}-${thanhToan}`, result: closing },
+    "cn.no_cuoi_ky": closing,
     "dntt.so_tien": afterRef,
   };
-  for (const ws of [dntt, dccn, giaTri, khoiLuong]) fitWrappedRows(ws, fillPlaceholders(ws, text, cells));
+  // ĐCCN: line 5 = line 2 + line 3 - line 4, by cell reference when all three are on that sheet.
+  const noDau = placeholderCell(dccn, "cn.no_dau_ky");
+  const phatSinh = placeholderCell(dccn, "cn.phat_sinh");
+  const thanhToan = placeholderCell(dccn, "cn.thanh_toan");
+  const tamUng = placeholderCell(dccn, "cn.tam_ung");
+  const dccnCells: Record<string, ExcelJS.CellValue> =
+    noDau && phatSinh && thanhToan
+      ? { ...cells, "cn.no_cuoi_ky": { formula: `${noDau}+${phatSinh}-${thanhToan}`, result: closing } }
+      : cells;
+
+  const filled = [...roles.values()];
+  for (const ws of filled) fitWrappedRows(ws, fillPlaceholders(ws, text, ws === dccn ? dccnCells : cells));
   // The hand-made Khối lượng prints from its "CỘNG HÒA…" line (no blank rows on top).
-  printFromRow(khoiLuong, "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM");
-  if (input.debt.advancesNote.trim()) {
+  if (khoiLuong) printFromRow(khoiLuong, "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM");
+  if (dccn && tamUng && input.debt.advancesNote.trim()) {
     dccn.getCell(`I${rowsOf(tamUng)[0]}`).value = input.debt.advancesNote.trim();
   }
 
-  for (const ws of [dntt, dccn, giaTri, khoiLuong]) {
-    ws.getColumn(LAST_COL).eachCell({ includeEmpty: false }, (cell) => {
+  for (const ws of filled) {
+    const z = ws.getColumn(LAST_COL);
+    z.eachCell({ includeEmpty: false }, (cell) => {
       cell.value = null;
     });
+    z.hidden = true;
   }
   wb.calcProperties = { ...wb.calcProperties, fullCalcOnLoad: true };
 
