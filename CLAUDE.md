@@ -142,6 +142,14 @@ Migration 0033–0037 đã apply trên production (0037 = cutover, bảng giá c
 - **Kiểm tra/quay lại:** `scripts/billing-verify-recalc.mts`; `supabase/revert/check-price-lines-migration.sql`, `check-month-files.sql`, `list-month-files.sql`, các file `003x_*.revert.sql`.
 - **GĐ2 (nhánh `feature/billing-gd2`):** Phần A xong ở code: màn tính tiền tự lấy file tháng (`computeRent` → `loadActiveMonthUploads` + `pickMonthFiles`), mẫu kỳ (`lib/billing/period-presets.ts`, migration 0040 `billing_period_presets` + `billing_contract_period_presets`, trang `/billing/periods`, actions `app/actions/billing-periods.ts`). Chỉ xác nhận được khi khoảng ngày trùng đúng kỳ hợp đồng. Phần B xong ở code: báo cáo tiền thuê nhiều dự án `/billing/reports` (chỉ đọc; `lib/billing/rent-report*.ts`, action `billing-reports.ts`, route `/api/billing/reports/xlsx`, `components/ui/multi-select.tsx`). Phần C xong ở code: trung tâm cảnh báo `/billing/alerts` (chỉ đọc; `lib/billing/alerts.ts`, `alert-list.ts`, `alerts-server.ts`, `alerts-export.ts`; kho công ty chỉ theo danh sách `lib/billing/company-warehouses.ts`). Việc còn nợ GĐ2: nhóm dự án đã lưu (cần bảng DB).
 
+### Trạng thái: GĐ4 (mẫu HSTT riêng cho khách) – code xong ở nhánh `feature/billing-gd4`
+
+Migration 0041 (chỉ thêm) đã apply. Hướng dẫn kế toán: `docs/hstt/cach-tu-lam-mau.md`; tổng quan: `docs/billing-module.md` mục "Mẫu HSTT riêng cho khách".
+
+- **Quy ước:** ô Z1 = vai trò sheet (`sheet:dntt|dccn|gia-tri|khoi-luong`, `sheet:huong-dan` bỏ khi xuất); engine tìm biểu theo Z1. Giới hạn đã chốt: cột dữ liệu bảng thiết bị cố định A–K, mục II Vận chuyển bắt buộc; biểu đồ / hình vẽ / ảnh trong Header/Footer là **lỗi**.
+- **Code:** `lib/billing/hstt-placeholders.ts`, `hstt-template.ts` (`validateTemplate`, `buildEditableTemplate`), `hstt-template-issues.ts`, `hstt-templates-server.ts`; actions `app/actions/billing-hstt-templates.ts`; trang `/billing/templates`; route `/api/billing/hstt-templates/{standard,preview,versions/[id]}`; ô chọn mẫu ở tab HSTT hợp đồng; route Tải HSTT dùng mẫu đã gán và ghi `billing_hstt_exports`.
+- **Kiểm tra:** `hstt-template.test.ts` (mẫu chuẩn + mẫu TEST, T09 = 800.796.900 từ `__fixtures__/hstt-t09-2026-vietpanel.json`), `scripts/hstt-check-template.mts`, `scripts/hstt-snapshot.mts` (chỉ đọc).
+
 ### Trạng thái: GĐ3 (HSTT 4 biểu) đã xong
 
 Migration 0038 (bảng HSTT, chỉ thêm) + 0039 (seed TP + Việt Panel) đã apply. Code ở nhánh `feature/billing-hstt` (merge vào `main` để deploy). Kế hoạch, khảo sát, "Đã biết", "Việc còn nợ": `docs/hstt/hstt-export-plan.md`; tổng quan: `docs/billing-module.md` phần HSTT.

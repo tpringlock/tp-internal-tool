@@ -1,19 +1,22 @@
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
+import { contractTemplate } from "@/lib/billing/hstt-templates-server";
 import type { BillingContract } from "@/lib/db/types";
 import { Alert } from "@/components/ui/alert";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { ContractHsttForm } from "./contract-hstt-form";
 import { TransportPricesEditor } from "./transport-prices-editor";
 import { AdvancesEditor } from "./advances-editor";
+import { ContractTemplateForm } from "./contract-template-form";
 
 /**
  * "HSTT" tab of a contract (0038): Bên A + contract fields, transport price
- * list, advances. The page guard already ran (requireBillingViewer); every
+ * list, advances, and the HSTT template (0041). The page guard already ran (requireBillingViewer); every
  * form is disabled for "Chỉ xem" and the actions refuse them anyway.
  */
 export async function ContractHsttTab({ contract, canEdit }: { contract: BillingContract; canEdit: boolean }) {
   const t = await getTranslations("Hstt");
+  const tt = await getTranslations("HsttTemplates");
   const supabase = await createClient();
   const [{ data: hstt }, { data: customers }, { data: company }, { data: prices }, { data: advances }] =
     await Promise.all([
@@ -23,6 +26,10 @@ export async function ContractHsttTab({ contract, canEdit }: { contract: Billing
       supabase.from("billing_transport_prices").select("*").eq("contract_id", contract.id).order("sort_order"),
       supabase.from("billing_contract_advances").select("*").eq("contract_id", contract.id).order("sort_order"),
     ]);
+  const [current, { data: templates }] = await Promise.all([
+    contractTemplate(supabase, contract.id),
+    supabase.from("billing_hstt_templates").select("id, name").eq("status", "active").order("name"),
+  ]);
   // Remount the list editors when the saved rows change (new ids after a save).
   const stamp = (rows: { id: string; updated_at: string }[] | null) =>
     (rows ?? []).map((r) => `${r.id}@${r.updated_at}`).join("|");
@@ -44,6 +51,22 @@ export async function ContractHsttTab({ contract, canEdit }: { contract: Billing
             hstt={hstt}
             customers={customers ?? []}
             companyTenThuong={company?.ten_thuong ?? ""}
+            readOnly={!canEdit}
+          />
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{tt("contractTitle")}</CardTitle>
+          <p className="mt-1 text-sm text-slate-500">{tt("contractSubtitle")}</p>
+        </CardHeader>
+        <CardBody>
+          <ContractTemplateForm
+            key={current ? `${current.templateId}@${current.version}` : "standard"}
+            contractId={contract.id}
+            current={current && { templateId: current.templateId, name: current.name, version: current.version }}
+            templates={templates ?? []}
             readOnly={!canEdit}
           />
         </CardBody>

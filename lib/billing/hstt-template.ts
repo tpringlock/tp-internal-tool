@@ -30,32 +30,35 @@ import {
 
 export const MAX_TEMPLATE_BYTES = 2 * 1024 * 1024;
 
-export type TemplateIssueCode =
+/** Every issue code; messages: HsttTemplates.issue.<code>. */
+export const TEMPLATE_ISSUE_CODES = [
   // errors
-  | "tooLarge"
-  | "notXlsx"
-  | "macro"
-  | "externalLink"
-  | "externalFormula"
-  | "noRoleSheet"
-  | "unknownRole"
-  | "duplicateRole"
-  | "unknownPlaceholder"
-  | "numberNotAlone"
-  | "placeholderSplit"
-  | "missingMarker"
-  | "duplicateMarker"
-  | "markerGap"
+  "tooLarge",
+  "notXlsx",
+  "macro",
+  "externalLink",
+  "externalFormula",
+  "noRoleSheet",
+  "unknownRole",
+  "duplicateRole",
+  "unknownPlaceholder",
+  "numberNotAlone",
+  "placeholderSplit",
+  "missingMarker",
+  "duplicateMarker",
+  "markerGap",
   // Dropped by exceljs: logo and stamp must be pictures placed over the cells.
-  | "chartLost"
-  | "shapeLost"
-  | "headerImageLost"
+  "chartLost",
+  "shapeLost",
+  "headerImageLost",
   // warnings
-  | "unmarkedPlaceholders"
-  | "unknownMarker"
-  | "brokenPlaceholder"
-  | "missingPlaceholder"
-  | "missingSheetRef";
+  "unmarkedPlaceholders",
+  "unknownMarker",
+  "brokenPlaceholder",
+  "missingPlaceholder",
+  "missingSheetRef",
+] as const;
+export type TemplateIssueCode = (typeof TEMPLATE_ISSUE_CODES)[number];
 
 export interface TemplateIssue {
   level: "error" | "warning";

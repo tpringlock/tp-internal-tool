@@ -86,6 +86,25 @@ Kế hoạch và khảo sát file làm tay: `docs/hstt/hstt-export-plan.md` (m�
 | `hstt-export.ts`, `hstt-text.ts` | Điền file mẫu; câu "Căn cứ…" và tên file. |
 | `app/actions/billing-hstt.ts` | Action: công ty, khách hàng, tab HSTT hợp đồng, dữ liệu kỳ. |
 
+### Mẫu HSTT riêng cho khách (GĐ4)
+
+Hướng dẫn cho kế toán: `docs/hstt/cach-tu-lam-mau.md`. Admin tải mẫu `.xlsx` riêng lên `/billing/templates`, kế toán/admin gán mẫu cho hợp đồng ở tab HSTT; nút **Tải HSTT** dùng phiên bản mới nhất của mẫu đã gán, không gán thì dùng mẫu chuẩn.
+
+- **Quy ước mẫu** (`hstt-placeholders.ts`): ô **Z1** khai báo vai trò sheet (`sheet:dntt|dccn|gia-tri|khoi-luong`, `sheet:huong-dan` bị bỏ khi xuất); engine tìm biểu theo Z1, mẫu có thể chỉ có một số biểu, sheet không có Z1 giữ nguyên. Dấu dòng ở cột Z phải liền nhau, đúng thứ tự. Cột dữ liệu bảng thiết bị cố định (A–K), mục II Vận chuyển bắt buộc.
+- **Kiểm tra** (`validateTemplate` trong `hstt-template.ts`): lỗi chặn lưu (placeholder lạ, ô số ghép chữ, thiếu/trùng/hở dấu dòng, trùng vai trò, công thức/liên kết ra file ngoài, macro, > 2MB, biểu đồ, hình vẽ, ảnh trong Header/Footer); cảnh báo vẫn lưu được. Câu thông báo: `HsttTemplates.issue.<code>` (test `hstt-template-issues.test.ts`).
+- **Tải file thử**: `POST /api/billing/hstt-templates/preview` (admin) sinh HSTT từ file đang tải lên bằng dữ liệu T09/2026 Việt Panel (`__fixtures__/hstt-t09-2026-vietpanel.json`, 800.796.900đ), không lưu gì.
+- **Mẫu chuẩn để chỉnh**: `GET /api/billing/hstt-templates/standard` (`buildEditableTemplate`: hiện cột Z + sheet `HUONG_DAN`).
+- **Truy vết**: mỗi lần tải HSTT ghi `billing_hstt_exports` (mẫu + phiên bản hoặc mẫu chuẩn, sha256 file mẫu, số tiền, người tải); không ghi được log thì không trả file.
+- Thử nhanh một file mẫu không cần DB: `npx tsx scripts/hstt-check-template.mts <mau.xlsx> --out=thu.xlsx`.
+
+| File | Vai trò |
+|---|---|
+| `hstt-placeholders.ts` | Vai trò sheet, dấu dòng, danh sách placeholder (client-safe). |
+| `hstt-template.ts` | `validateTemplate`, `inspectWorkbook` (dùng chung với engine), `buildEditableTemplate`. |
+| `hstt-template-issues.ts` | Hiển thị báo cáo kiểm tra (client-safe). |
+| `hstt-templates-server.ts` | Mẫu của hợp đồng, đọc file từ bucket `billing-templates`, mẫu chuẩn, dữ liệu file thử. |
+| `app/actions/billing-hstt-templates.ts` | Kiểm tra, lưu, dùng lại phiên bản, ngừng/dùng lại, xóa (admin); gán mẫu (kế toán + admin). |
+
 **Thêm một hợp đồng mới cho HSTT:**
 1. **Khách hàng** → thêm Bên A (tên in hoa, tên viết thường dùng trong câu "Căn cứ", tên rút gọn cho tên file, MST, TK, đại diện).
 2. Hợp đồng → **tab HSTT**: chọn Bên A, loại HĐ, ngày ký, tên + địa chỉ dự án (số HĐ sửa ở tab Chung), VAT; kiểm tra câu "Căn cứ" xem trước (sửa tay nếu cần).
@@ -117,6 +136,7 @@ Migration (tạo file mới, không sửa file cũ):
 | `0033`–`0037` | GĐ1: role "Chỉ xem", file MISA theo tháng, bảng giá phẳng, cutover (xem `docs/billing-gd1-trien-khai.md`). |
 | `0038_billing_hstt.sql` | GĐ3, chỉ thêm bảng: `company_profile` (Bên B, 1 dòng, chỉ admin sửa), `billing_customers` (Bên A), `billing_contract_hstt` (1:1 hợp đồng, bảng phụ để không đổi `billing_contracts`), `billing_transport_prices`, `billing_contract_advances`, `billing_period_inputs` / `_transport` / `_deductions`. RLS: đọc `is_billing_viewer`, ghi `is_billing_user`. Quay lại: `supabase/revert/0038_billing_hstt.revert.sql`. |
 | `0039_billing_hstt_seed_vietpanel.sql` | Seed TP + Việt Panel từ HSTT T08/2026 (nợ ban đầu 2.906.447.532 cuối 08/2026). |
+| `0041_billing_hstt_templates.sql` | GĐ4, chỉ thêm: `billing_hstt_templates`, `billing_hstt_template_versions` (không sửa; bản đang dùng = số phiên bản lớn nhất; `reused_from` cho "Dùng lại phiên bản này"), `billing_contract_hstt_templates` (bảng phụ, không có dòng = mẫu chuẩn), `billing_hstt_exports` (log tải HSTT, giữ lại khi xóa hợp đồng), RPC `billing_add_hstt_template_version`, bucket **`billing-templates`** (private, 2MB). RLS: đọc Chỉ xem; quản lý mẫu: admin; gán: kế toán + admin. Quay lại: `supabase/revert/0041_billing_hstt_templates.revert.sql`. |
 | `0040_billing_period_presets.sql` | GĐ2, chỉ thêm bảng: `billing_period_presets` (seed "26→25 (1 tháng)", "Tháng dương lịch"; ghi: chỉ admin) + bảng phụ `billing_contract_period_presets` (mẫu mặc định của hợp đồng; ghi: admin + kế toán; `on delete restrict`: mẫu đang được hợp đồng dùng thì không xóa được, chỉ "Ngừng dùng"). Bản tính không thêm cột: `upload_ids` đã trỏ đúng phiên bản file tháng. Quay lại: `supabase/revert/0040_billing_period_presets.revert.sql`. |
 
 Không cần biến môi trường mới: dùng `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` sẵn có. `exceljs` chạy ở runtime Node (server action, route `/api/billing/calculations/[id]/xlsx`).

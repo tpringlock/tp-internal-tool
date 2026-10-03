@@ -14,6 +14,7 @@ import {
   FileText,
   History,
   Info,
+  LayoutTemplate,
   Tags,
 } from "lucide-react";
 import { setShowDemo } from "@/app/actions/billing";
@@ -97,6 +98,12 @@ export function BillingNav({
           label: t("customers"),
           icon: <Building2 aria-hidden />,
           active: under("/billing/customers"),
+        },
+        {
+          href: "/billing/templates",
+          label: t("templates"),
+          icon: <LayoutTemplate aria-hidden />,
+          active: under("/billing/templates"),
         },
         {
           href: "/billing/prices",

@@ -101,13 +101,20 @@ Gõ đúng chữ thường, không dấu cách. Danh sách đầy đủ kèm ví
 
 Ví dụ câu ghép: `Hai bên cùng nhau đối chiếu công nợ tiền thuê thiết bị dự án {{du_an.ten}}, {{du_an.dia_chi}} như sau:` → "… dự án Senci, KCN Phúc Điền, Hải Dương như sau:".
 
-## 6. Kiểm tra và tải thử
+## 6. Tải mẫu lên, kiểm tra, tải thử, gán cho hợp đồng
 
-Tải mẫu lên trang Mẫu HSTT. Hệ thống kiểm tra ngay:
+Trang **Tính hóa đơn → Mẫu HSTT** (`/billing/templates`). Ai có quyền billing cũng xem và tải mẫu được; chỉ **admin** tải mẫu lên, ngừng dùng, xóa.
 
-- **Lỗi** (đỏ): phải sửa file rồi tải lại, chưa lưu được.
-- **Cảnh báo** (vàng): vẫn lưu được, nhưng nên xem. Ví dụ: sheet không có Z1 mà lại có `{{…}}` (sẽ không được điền), ĐNTT không có ô `{{dntt.so_tien}}`, dấu lạ ở cột Z.
+1. **Chọn file.** Hệ thống kiểm tra ngay và hiện báo cáo:
+   - **Lỗi** (đỏ): phải sửa file rồi chọn lại, chưa lưu được. Ví dụ: `Ô dữ liệu lạ {{a.ten}}: gõ sai tên hoặc có dấu cách`, `Thiếu dấu dòng "row:cong" ở cột Z`, `Mẫu có ảnh trong Header/Footer. Đặt logo/con dấu vào ô trên trang tính, không đặt trong Header/Footer; không dùng biểu đồ, hình vẽ.`
+   - **Cảnh báo** (vàng): vẫn lưu được, nhưng nên xem. Ví dụ: sheet không có Z1 mà lại có `{{…}}` (sẽ không được điền), ĐNTT không có ô `{{dntt.so_tien}}`, dấu lạ ở cột Z.
+   - Danh sách sheet và vai trò hệ thống nhận ra (ví dụ "Giá trị: Đối chiếu giá trị", "Ghi chú: không vai trò, giữ nguyên").
+2. **Tải file thử.** Hệ thống sinh HSTT bằng số liệu kỳ 09/2026 của Việt Panel (tổng sau thuế **800.796.900đ**) từ chính file vừa chọn, chưa lưu gì. Mở ra, xem bản in (Ctrl+P) từng sheet, so số tiền.
+3. **Lưu mẫu.** Chọn **Mẫu mới** (đặt tên, ví dụ "Mẫu Việt Panel") hoặc **Phiên bản mới của mẫu có sẵn** (sửa mẫu cũ). Ghi chú phiên bản để sau này biết đã đổi gì ("đổi font, thêm logo").
+4. **Gán cho hợp đồng.** Mở hợp đồng → tab **HSTT** → ô **Mẫu HSTT** → chọn mẫu → Lưu (kế toán hoặc admin). Chọn lại "Mẫu chuẩn TP" để bỏ mẫu riêng. Trang bản tính ghi rõ "Mẫu: … (v…)" ngay dưới nút **Tải HSTT**.
 
-Trước khi lưu, bấm **tải file thử**: hệ thống sinh HSTT bằng số liệu kỳ 09/2026 của Việt Panel (tổng sau thuế 800.796.900đ). Mở ra, xem bản in (Ctrl+P) từng sheet, so số tiền.
+**Phiên bản.** Mỗi lần lưu là một phiên bản mới; hợp đồng luôn dùng **phiên bản mới nhất** của mẫu. Phiên bản cũ vẫn tải về được (mục "Lịch sử phiên bản"). Lỡ lưu nhầm: bấm **Dùng lại phiên bản này** ở phiên bản cũ, hệ thống tạo một phiên bản mới cùng nội dung file cũ (không sửa lịch sử).
 
-Tải lại mẫu cùng tên thì tạo **phiên bản mới**; phiên bản cũ vẫn tải về được, và mỗi lần tải HSTT hệ thống ghi lại đã dùng mẫu nào, phiên bản nào.
+**Ngừng dùng / xóa.** Mẫu đang gán cho hợp đồng thì không ngừng dùng được: bỏ gán trước. Chỉ xóa được mẫu chưa gán và chưa từng dùng để tải HSTT (mẫu TEST); mẫu đã dùng thì chỉ ngừng dùng.
+
+**Truy vết.** Mỗi lần bấm Tải HSTT, hệ thống ghi lại hợp đồng, kỳ, mẫu và phiên bản (hoặc mẫu chuẩn), mã băm file mẫu, số tiền sau thuế, nợ cuối kỳ, người tải và thời gian, để biết file đã gửi khách sinh từ mẫu nào.
