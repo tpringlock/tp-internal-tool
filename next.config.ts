@@ -11,9 +11,10 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "26mb",
     },
   },
-  // The HSTT route reads its Excel template from disk at runtime.
+  // The HSTT routes read the standard Excel template from disk at runtime.
   outputFileTracingIncludes: {
     "/api/billing/calculations/**": ["./docs/hstt/hstt-template.xlsx"],
+    "/api/billing/hstt-templates/**": ["./docs/hstt/hstt-template.xlsx"],
   },
 };
 

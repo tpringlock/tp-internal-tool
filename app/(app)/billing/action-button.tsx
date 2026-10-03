@@ -24,6 +24,7 @@ export function ActionButton({
   variant = "secondary",
   icon,
   iconOnly = false,
+  fields,
 }: {
   action: Action;
   id: string;
@@ -34,6 +35,8 @@ export function ActionButton({
   variant?: ButtonProps["variant"];
   icon?: React.ReactNode;
   iconOnly?: boolean;
+  /** Extra hidden form fields sent with `id`. */
+  fields?: Record<string, string>;
 }) {
   const t = useTranslations("Billing");
   const { toast } = useToast();
@@ -70,6 +73,9 @@ export function ActionButton({
           </Button>
           <form action={formAction}>
             <input type="hidden" name="id" value={id} />
+            {Object.entries(fields ?? {}).map(([k, v]) => (
+              <input key={k} type="hidden" name={k} value={v} />
+            ))}
             <Button
               type="submit"
               size="sm"

@@ -12,6 +12,7 @@ import type {
   PriceImportPayload,
   PriceLinePayload,
 } from "@/lib/billing/price-import";
+import type { TemplateReport } from "@/lib/billing/hstt-template";
 
 /**
  * billing_viewer ("Chỉ xem", 0033): read-only access to /billing; elsewhere
@@ -639,6 +640,67 @@ export type BillingContractPeriodPreset = {
   updated_at: string;
 };
 
+// --- Customer HSTT templates (0041) -------------------------------------------
+
+export type HsttTemplateStatus = "active" | "retired";
+
+/** A customer HSTT template; its current file is the highest version. */
+export type BillingHsttTemplate = {
+  id: string;
+  name: string;
+  description: string;
+  status: HsttTemplateStatus;
+  created_by: string;
+  created_at: string;
+  retired_by: string | null;
+  retired_at: string | null;
+  updated_at: string;
+};
+
+/** One uploaded template file (immutable). Bucket `billing-templates`. */
+export type BillingHsttTemplateVersion = {
+  id: string;
+  template_id: string;
+  version: number;
+  storage_path: string;
+  file_name: string;
+  size_bytes: number;
+  sha256: string;
+  /** validateTemplate report; only reports without errors are stored. */
+  report: TemplateReport;
+  note: string;
+  /** "Dùng lại phiên bản này": the version whose file this one re-publishes. */
+  reused_from: string | null;
+  created_by: string;
+  created_at: string;
+};
+
+/** Contract -> template (no row = standard TP template). */
+export type BillingContractHsttTemplate = {
+  contract_id: string;
+  template_id: string;
+  assigned_by: string;
+  assigned_at: string;
+};
+
+/** One HSTT download; outlives the contract (code + customer snapshot). */
+export type BillingHsttExport = {
+  id: string;
+  contract_id: string | null;
+  calculation_id: string | null;
+  contract_code: string;
+  customer_name: string;
+  period_month: string;
+  /** null = standard template. */
+  template_version_id: string | null;
+  template_sha256: string;
+  file_name: string;
+  after_tax: number;
+  closing_debt: number;
+  exported_by: string;
+  exported_at: string;
+};
+
 type Insert<T, Optional extends keyof T> = Omit<T, Optional> &
   Partial<Pick<T, Optional>>;
 
@@ -1038,6 +1100,31 @@ export interface Database {
         Insert<BillingContractPeriodPreset, "updated_by" | "created_at" | "updated_at">,
         Partial<BillingContractPeriodPreset>
       >;
+      billing_hstt_templates: Table<
+        BillingHsttTemplate,
+        Insert<
+          BillingHsttTemplate,
+          "id" | "description" | "status" | "created_at" | "retired_by" | "retired_at" | "updated_at"
+        >,
+        Partial<Pick<BillingHsttTemplate, "name" | "description" | "status">>
+      >;
+      /** Insert through billing_add_hstt_template_version; no update policy (immutable). */
+      billing_hstt_template_versions: Table<
+        BillingHsttTemplateVersion,
+        Insert<BillingHsttTemplateVersion, "id" | "note" | "reused_from" | "created_at">,
+        Partial<BillingHsttTemplateVersion>
+      >;
+      /** assigned_by / assigned_at are set by the guard trigger. */
+      billing_contract_hstt_templates: Table<
+        BillingContractHsttTemplate,
+        Insert<BillingContractHsttTemplate, "assigned_at">,
+        Partial<Pick<BillingContractHsttTemplate, "template_id" | "assigned_by">>
+      >;
+      billing_hstt_exports: Table<
+        BillingHsttExport,
+        Insert<BillingHsttExport, "id" | "calculation_id" | "template_version_id" | "exported_at">,
+        Partial<BillingHsttExport>
+      >;
     };
     Views: {
       // Service-role only (see 0020_user_emails_view.sql).
@@ -1081,6 +1168,23 @@ export interface Database {
           p_catalog: MisaCatalog;
         };
         Returns: { month: string; version: number; replaced_upload_id: string | null };
+      };
+      billing_add_hstt_template_version: {
+        Args: {
+          /** null = new template named p_name. */
+          p_template_id: string | null;
+          p_name: string | null;
+          p_file: {
+            storage_path: string;
+            file_name: string;
+            size_bytes: number;
+            sha256: string;
+            note?: string;
+            reused_from?: string | null;
+          };
+          p_report: TemplateReport;
+        };
+        Returns: { template_id: string; version_id: string; version: number };
       };
       /** Revoked from the app by 0037 (old price tables frozen); kept for the revert path. */
       billing_save_contract_config: {

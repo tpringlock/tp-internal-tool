@@ -24,6 +24,7 @@ import { ActionButton } from "../../action-button";
 import { StatusBadge } from "../../status-badge";
 import { ScopeNotice } from "../../scope-notice";
 import { loadHsttContext } from "@/lib/billing/hstt-server";
+import { contractTemplate } from "@/lib/billing/hstt-templates-server";
 import { missingMessage, periodEditBlock } from "@/lib/billing/hstt-data";
 import { hsttFileName } from "@/lib/billing/hstt-text";
 import { PeriodInputsForm } from "./period-inputs-form";
@@ -79,6 +80,8 @@ export default async function CalculationPage({
   const confirmable = !!monthLabel && !isDemo && !fractional;
   // HSTT block: billing months only (custom ranges never get an HSTT).
   const hstt = calc.period_month ? await loadHsttContext(supabase, calc.id) : null;
+  const hsttTemplate = hstt ? await contractTemplate(supabase, calc.contract_id) : null;
+  const tt = await getTranslations("HsttTemplates");
   const block = hstt
     ? periodEditBlock({
         canEdit,
@@ -253,6 +256,11 @@ export default async function CalculationPage({
                   </DownloadLink>
                   <p className="break-words text-xs text-slate-500">
                     {hsttFileName(calc.period_month, hstt.customer?.ten_rut_gon || hstt.customer?.ten_in_hoa || "")}
+                    <span className="block">
+                      {hsttTemplate
+                        ? tt("templateUsed", { name: hsttTemplate.name, version: hsttTemplate.version })
+                        : tt("templateStandard")}
+                    </span>
                   </p>
                 </>
               ) : (

@@ -122,6 +122,7 @@ Lint hiện có sẵn 6 lỗi cũ (`react-hooks/set-state-in-effect` ở admin/c
 - Không chạy `supabase/revert/0032_billing_demo_and_decimal.revert.sql`. Dọn dữ liệu giả định chỉ bằng `npm run seed:gia-dinh:xoa -- --project=surnokungqebqzzlyrsz`.
 - Không sửa giá hợp đồng Việt Panel thật (`vietpanel-senci`, kho `VIETPANEL-01`). Số chuẩn: kỳ 08/2026 (26/07→25/08) = **806.342.923đ** (tiền thiết bị); HSTT kỳ 09/2026 sau thuế = **800.796.900đ** (thiết bị 656.478.611, khớp bản làm tay). Sau mọi thay đổi đụng giá/tính tiền: `npx tsx scripts/billing-verify-recalc.mts --project=surnokungqebqzzlyrsz` phải ra **0 khác biệt**.
 - Không tự `git push`. Dữ liệu tạo khi test đặt tiền tố **"TEST"** và liệt kê lại để xóa.
+- **Mốc `check-real-contracts.sql`** (từ 03/10/2026, sau khi chủ dự án xóa hợp đồng test `dungtest`; còn 1 hợp đồng thật Việt Panel): `contracts_md5` = `0390eeadc39371b91175ee1d91438e5a`, `items_md5` = `847f33c34875e21e4b8e41b2e8839264`, `excluded_md5` = `9b5309eb401e895b097cd9b983e6ffff`. Trước/sau mỗi migration phải ra đúng mốc này (trừ khi chủ dự án chủ động sửa hợp đồng thật).
 
 ### Trạng thái: GĐ1 (nền dữ liệu) đã xong
 
@@ -140,6 +141,14 @@ Migration 0033–0037 đã apply trên production (0037 = cutover, bảng giá c
 - **Ô chọn có tìm kiếm:** `components/ui/combobox.tsx` + `lib/search.ts`.
 - **Kiểm tra/quay lại:** `scripts/billing-verify-recalc.mts`; `supabase/revert/check-price-lines-migration.sql`, `check-month-files.sql`, `list-month-files.sql`, các file `003x_*.revert.sql`.
 - **GĐ2 (nhánh `feature/billing-gd2`):** Phần A xong ở code: màn tính tiền tự lấy file tháng (`computeRent` → `loadActiveMonthUploads` + `pickMonthFiles`), mẫu kỳ (`lib/billing/period-presets.ts`, migration 0040 `billing_period_presets` + `billing_contract_period_presets`, trang `/billing/periods`, actions `app/actions/billing-periods.ts`). Chỉ xác nhận được khi khoảng ngày trùng đúng kỳ hợp đồng. Phần B xong ở code: báo cáo tiền thuê nhiều dự án `/billing/reports` (chỉ đọc; `lib/billing/rent-report*.ts`, action `billing-reports.ts`, route `/api/billing/reports/xlsx`, `components/ui/multi-select.tsx`). Phần C xong ở code: trung tâm cảnh báo `/billing/alerts` (chỉ đọc; `lib/billing/alerts.ts`, `alert-list.ts`, `alerts-server.ts`, `alerts-export.ts`; kho công ty chỉ theo danh sách `lib/billing/company-warehouses.ts`). Việc còn nợ GĐ2: nhóm dự án đã lưu (cần bảng DB).
+
+### Trạng thái: GĐ4 (mẫu HSTT riêng cho khách) – code xong ở nhánh `feature/billing-gd4`
+
+Migration 0041 (chỉ thêm) đã apply. Hướng dẫn kế toán: `docs/hstt/cach-tu-lam-mau.md`; tổng quan: `docs/billing-module.md` mục "Mẫu HSTT riêng cho khách".
+
+- **Quy ước:** ô Z1 = vai trò sheet (`sheet:dntt|dccn|gia-tri|khoi-luong`, `sheet:huong-dan` bỏ khi xuất); engine tìm biểu theo Z1. Giới hạn đã chốt: cột dữ liệu bảng thiết bị cố định A–K, mục II Vận chuyển bắt buộc; biểu đồ / hình vẽ / ảnh trong Header/Footer là **lỗi**.
+- **Code:** `lib/billing/hstt-placeholders.ts`, `hstt-template.ts` (`validateTemplate`, `buildEditableTemplate`), `hstt-template-issues.ts`, `hstt-templates-server.ts`; actions `app/actions/billing-hstt-templates.ts`; trang `/billing/templates`; route `/api/billing/hstt-templates/{standard,preview,versions/[id]}`; ô chọn mẫu ở tab HSTT hợp đồng; route Tải HSTT dùng mẫu đã gán và ghi `billing_hstt_exports`.
+- **Kiểm tra:** `hstt-template.test.ts` (mẫu chuẩn + mẫu TEST, T09 = 800.796.900 từ `__fixtures__/hstt-t09-2026-vietpanel.json`), `scripts/hstt-check-template.mts`, `scripts/hstt-snapshot.mts` (chỉ đọc).
 
 ### Trạng thái: GĐ3 (HSTT 4 biểu) đã xong
 

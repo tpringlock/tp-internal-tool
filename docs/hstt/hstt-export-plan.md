@@ -63,6 +63,8 @@ Ngày lập biên bản giữ nguyên dạng "ngày ……tháng……năm 2026"
    - Khối lượng: cùng các dòng như Giá trị nhưng không có cột đơn giá và thành tiền. Mục II vận chuyển chỉ ghi số chuyến.
 5. Đặt print area cho từng sheet đúng vùng đã sinh. Xóa nội dung cột Z. Tên file: `HSTT T{MM}.{YYYY} - {tên khách rút gọn} - TP.xlsx`.
 
+**GĐ4 – vai trò sheet (ô Z1):** mỗi sheet khai báo vai trò ở `Z1`: `sheet:dntt` · `sheet:dccn` · `sheet:gia-tri` · `sheet:khoi-luong` (`sheet:huong-dan` = sheet hướng dẫn, bị bỏ khi xuất). Engine tìm biểu theo Z1, không theo tên sheet; mẫu có thể chỉ có một số biểu; sheet không có Z1 giữ nguyên, không điền. Các dấu dòng của bảng phải nằm trên các dòng **liền nhau, đúng thứ tự**. Danh sách placeholder/dấu dòng: `lib/billing/hstt-placeholders.ts`; kiểm tra mẫu: `validateTemplate` trong `lib/billing/hstt-template.ts`; thử nhanh: `npx tsx scripts/hstt-check-template.mts <mau.xlsx> --out=thu.xlsx`.
+
 **Phạm vi giai đoạn này:** mỗi lần xuất ra **1 file cho 1 tháng** (4 sheet, mỗi sheet chỉ có khối của tháng đó). Xuất file cộng dồn nhiều tháng như hiện tại để sau.
 
 ## 4. Danh sách placeholder trong file mẫu
