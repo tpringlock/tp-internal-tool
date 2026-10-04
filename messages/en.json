@@ -13,6 +13,18 @@
     "passwordHint": "At least 8 characters, with a letter and a number.",
     "sessionExpired": "Your session has expired. Please sign in again."
   },
+  "BillingTour": {
+    "help": "User guide",
+    "pageTour": "Replay the guide for this page",
+    "noPageTour": "No guide for this page yet",
+    "workflowTour": "Monthly HSTT workflow",
+    "next": "Next",
+    "prev": "Back",
+    "done": "Done",
+    "gotIt": "Got it",
+    "close": "Close the guide",
+    "progress": "Step {current}/{total}"
+  },
   "Nav": {
     "profile": "Profile",
     "admin": "Admin",

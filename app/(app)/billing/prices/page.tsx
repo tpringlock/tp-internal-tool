@@ -69,6 +69,7 @@ export default async function BillingPricesPage({
         </div>
         <div className="flex flex-wrap gap-2">
           <DownloadLink
+            data-tour="prices-export"
             href={`/api/billing/prices/xlsx${qs ? `?${qs}` : ""}`}
             className="h-10 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-900 hover:border-primary hover:text-primary"
           >
@@ -84,6 +85,7 @@ export default async function BillingPricesPage({
           </DownloadLink>
           {canEdit && (
             <Link
+              data-tour="prices-import"
               href="/billing/prices/import"
               className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-hover"
             >
@@ -94,16 +96,18 @@ export default async function BillingPricesPage({
         </div>
       </div>
 
-      <PriceFilters
-        contracts={(contracts ?? []).map((c) => ({
-          id: c.id,
-          label: contractLabel(c),
-          keywords: [c.misa_kho, c.misa_kho_name, c.customer_name, c.contract_no, c.project_name],
-        }))}
-        q={filter.q ?? ""}
-        contract={filter.contract ?? ""}
-        issues={filter.issues}
-      />
+      <div data-tour="prices-filters">
+        <PriceFilters
+          contracts={(contracts ?? []).map((c) => ({
+            id: c.id,
+            label: contractLabel(c),
+            keywords: [c.misa_kho, c.misa_kho_name, c.customer_name, c.contract_no, c.project_name],
+          }))}
+          q={filter.q ?? ""}
+          contract={filter.contract ?? ""}
+          issues={filter.issues}
+        />
+      </div>
 
       {!catalog ? (
         <p className="text-sm text-slate-500">{t("noCatalog")}</p>
@@ -111,7 +115,7 @@ export default async function BillingPricesPage({
         missing > 0 && <p className="text-sm text-slate-500">{t("catalogPartial", { count: missing })}</p>
       )}
 
-      <Card>
+      <Card data-tour="prices-table">
         <CardHeader className="flex flex-wrap items-center justify-between gap-3">
           <CardTitle>{t("rowCount", { count: total })}</CardTitle>
           {catalog && issueCount > 0 && (
@@ -197,7 +201,7 @@ export default async function BillingPricesPage({
         }}
       />
 
-      <Card>
+      <Card data-tour="prices-imports">
         <CardHeader>
           <CardTitle>{t("importsTitle")}</CardTitle>
         </CardHeader>

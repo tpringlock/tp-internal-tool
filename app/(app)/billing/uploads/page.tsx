@@ -75,8 +75,10 @@ export default async function BillingUploadsPage() {
       {canEdit && (
         <Card>
           <CardBody className="space-y-3">
-            <UploadDropzone />
-            <details className="text-sm text-slate-600">
+            <div data-tour="uploads-dropzone">
+              <UploadDropzone />
+            </div>
+            <details className="text-sm text-slate-600" data-tour="uploads-how-to">
               <summary className="cursor-pointer font-medium text-slate-700">{tb("howToExport")}</summary>
               <ol className="mt-2 list-decimal space-y-1 pl-5">
                 <li>{tb("howToExport1")}</li>
@@ -104,7 +106,7 @@ export default async function BillingUploadsPage() {
         </Alert>
       )}
 
-      <Card>
+      <Card data-tour="uploads-months">
         <CardHeader>
           <CardTitle>{t("monthFilesTitle", { count: byMonth.size })}</CardTitle>
           {gaps.length > 0 && (
@@ -125,7 +127,9 @@ export default async function BillingUploadsPage() {
                   <th className="px-5 py-3 font-medium">{t("colFile")}</th>
                   <th className="px-5 py-3 font-medium">{t("colContent")}</th>
                   <th className="px-5 py-3 font-medium">{t("colUploaded")}</th>
-                  <th className="px-5 py-3 font-medium">{t("colUsed")}</th>
+                  <th className="px-5 py-3 font-medium" data-tour="uploads-used">
+                    {t("colUsed")}
+                  </th>
                   <th className="px-5 py-3" />
                 </tr>
               </thead>
@@ -304,16 +308,18 @@ function VersionRow({
         {upload && (
           <FileActions upload={upload} isAdmin={isAdmin} t={t}>
             {isAdmin && !active && (
-              <ActionButton
-                action={restoreMonthFileVersion}
-                id={v.id}
-                label={t("restore")}
-                title={t("restoreTitle", { month: formatBillingMonth(v.month), version: v.version })}
-                body={t("restoreBody")}
-                confirmLabel={t("restore")}
-                icon={<RotateCcw className="h-4 w-4" aria-hidden />}
-                iconOnly
-              />
+              <span data-tour="uploads-restore">
+                <ActionButton
+                  action={restoreMonthFileVersion}
+                  id={v.id}
+                  label={t("restore")}
+                  title={t("restoreTitle", { month: formatBillingMonth(v.month), version: v.version })}
+                  body={t("restoreBody")}
+                  confirmLabel={t("restore")}
+                  icon={<RotateCcw className="h-4 w-4" aria-hidden />}
+                  iconOnly
+                />
+              </span>
             )}
           </FileActions>
         )}

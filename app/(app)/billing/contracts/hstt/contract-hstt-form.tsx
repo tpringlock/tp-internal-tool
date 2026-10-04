@@ -139,18 +139,20 @@ export function ContractHsttForm({
           </Field>
         </div>
 
-        <Field label={t("openingDebt")} htmlFor="opening_debt" error={err("opening_debt")} hint={t("openingDebtHint")}>
-          <MoneyInput
-            id="opening_debt"
-            name="opening_debt"
-            defaultValue={hstt?.opening_debt === null || hstt?.opening_debt === undefined ? null : Number(hstt.opening_debt)}
-            allowNegative
-            disabled={readOnly}
-          />
-        </Field>
-        <Field label={t("openingDebtMonth")} htmlFor="opening_debt_month" error={err("opening_debt_month")}>
-          <Input id="opening_debt_month" name="opening_debt_month" type="month" defaultValue={hstt?.opening_debt_month ?? ""} />
-        </Field>
+        <div className="grid gap-4 sm:col-span-2 sm:grid-cols-2" data-tour="hstt-opening-debt">
+          <Field label={t("openingDebt")} htmlFor="opening_debt" error={err("opening_debt")} hint={t("openingDebtHint")}>
+            <MoneyInput
+              id="opening_debt"
+              name="opening_debt"
+              defaultValue={hstt?.opening_debt === null || hstt?.opening_debt === undefined ? null : Number(hstt.opening_debt)}
+              allowNegative
+              disabled={readOnly}
+            />
+          </Field>
+          <Field label={t("openingDebtMonth")} htmlFor="opening_debt_month" error={err("opening_debt_month")}>
+            <Input id="opening_debt_month" name="opening_debt_month" type="month" defaultValue={hstt?.opening_debt_month ?? ""} />
+          </Field>
+        </div>
       </fieldset>
 
       {!readOnly && (

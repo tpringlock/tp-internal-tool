@@ -62,6 +62,7 @@ export function PriceImportForm() {
     <div className="space-y-5">
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_18rem]">
         <label
+          data-tour="price-import-file"
           className={cn(
             "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center hover:border-primary/60 hover:bg-primary/5",
             busy && "pointer-events-none opacity-70",
@@ -86,7 +87,7 @@ export function PriceImportForm() {
           />
         </label>
 
-        <fieldset className="space-y-2 rounded-2xl border border-slate-200 p-4 text-sm">
+        <fieldset className="space-y-2 rounded-2xl border border-slate-200 p-4 text-sm" data-tour="price-import-mode">
           <legend className="px-1 font-medium text-slate-700">{t("modeLabel")}</legend>
           {(["upsert", "replace"] as const).map((m) => (
             <label key={m} className="flex cursor-pointer items-start gap-2">

@@ -13,6 +13,18 @@
     "passwordHint": "Ít nhất 8 ký tự, gồm cả chữ và số.",
     "sessionExpired": "Phiên của bạn đã hết hạn. Vui lòng đăng nhập lại."
   },
+  "BillingTour": {
+    "help": "Hướng dẫn sử dụng",
+    "pageTour": "Xem lại hướng dẫn trang này",
+    "noPageTour": "Trang này chưa có hướng dẫn",
+    "workflowTour": "Quy trình làm HSTT hằng tháng",
+    "next": "Tiếp",
+    "prev": "Quay lại",
+    "done": "Xong",
+    "gotIt": "Đã hiểu",
+    "close": "Đóng hướng dẫn",
+    "progress": "Bước {current}/{total}"
+  },
   "Nav": {
     "profile": "Hồ sơ",
     "admin": "Admin",

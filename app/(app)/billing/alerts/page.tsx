@@ -77,7 +77,7 @@ export default async function AlertsPage({
         <p className="mt-1.5 text-sm text-slate-500">{t("subtitle")}</p>
       </div>
 
-      <Card>
+      <Card data-tour="alerts-period">
         <CardBody className="space-y-3">
           <AlertsPeriodForm presets={presets} months={months} value={value} />
           {run?.ok && (
@@ -104,7 +104,7 @@ export default async function AlertsPage({
 
       {run?.ok && <AlertsView alerts={run.alerts} query={query} />}
 
-      <details className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+      <details className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600" data-tour="alerts-rules">
         <summary className="cursor-pointer font-medium text-slate-800">{t("rulesTitle")}</summary>
         <ul className="mt-2 list-disc space-y-1 pl-5">
           {(["negative_stock", "missing_price", "no_contract", "not_in_misa", "name_mismatch"] as const).map((k) => (
