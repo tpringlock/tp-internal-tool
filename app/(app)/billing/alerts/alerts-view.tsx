@@ -66,7 +66,7 @@ export function AlertsView({ alerts, query }: { alerts: BillingAlert[]; query: s
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6" data-tour="alerts-summary">
         {ALERT_CATEGORIES.map((c) => (
           <button
             key={c}
@@ -91,7 +91,7 @@ export function AlertsView({ alerts, query }: { alerts: BillingAlert[]; query: s
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3" data-tour="alerts-filters">
         <Input
           type="search"
           value={q}

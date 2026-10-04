@@ -103,7 +103,9 @@ export default async function CalculationPage({
                 ? t("calcTitle", { month: monthLabel })
                 : t("calcTitleRange", periodText)}
             </h1>
-            <StatusBadge status={calc.status} />
+            <span data-tour="calc-status">
+              <StatusBadge status={calc.status} />
+            </span>
           </div>
           <p className="mt-1.5 text-sm text-slate-600">
             <Link
@@ -142,33 +144,37 @@ export default async function CalculationPage({
                 icon={<Trash2 className="h-4 w-4" aria-hidden />}
               />
               {confirmable && (
-                <ActionButton
-                  action={confirmCalculation}
-                  id={calc.id}
-                  label={t("confirm")}
-                  title={t("confirmTitle")}
-                  body={t("confirmBody", {
-                    month: monthLabel,
-                    total: formatNumber(toAmount(calc.total_amount)),
-                  })}
-                  confirmLabel={t("confirm")}
-                  variant="primary"
-                  icon={<CheckCircle2 className="h-4 w-4" aria-hidden />}
-                />
+                <span data-tour="calc-confirm">
+                  <ActionButton
+                    action={confirmCalculation}
+                    id={calc.id}
+                    label={t("confirm")}
+                    title={t("confirmTitle")}
+                    body={t("confirmBody", {
+                      month: monthLabel,
+                      total: formatNumber(toAmount(calc.total_amount)),
+                    })}
+                    confirmLabel={t("confirm")}
+                    variant="primary"
+                    icon={<CheckCircle2 className="h-4 w-4" aria-hidden />}
+                  />
+                </span>
               )}
             </>
           )}
           {calc.status === "confirmed" && isAdmin && (
-            <ActionButton
-              action={voidCalculation}
-              id={calc.id}
-              label={t("void")}
-              title={t("voidTitle")}
-              body={t("voidBody")}
-              confirmLabel={t("void")}
-              variant="danger"
-              icon={<Undo2 className="h-4 w-4" aria-hidden />}
-            />
+            <span data-tour="calc-void">
+              <ActionButton
+                action={voidCalculation}
+                id={calc.id}
+                label={t("void")}
+                title={t("voidTitle")}
+                body={t("voidBody")}
+                confirmLabel={t("void")}
+                variant="danger"
+                icon={<Undo2 className="h-4 w-4" aria-hidden />}
+              />
+            </span>
           )}
         </div>
       </div>
@@ -240,7 +246,7 @@ export default async function CalculationPage({
             note={hstt.periodInput?.note ?? ""}
             chainOpening={hstt.chainOpening}
           />
-          <Card className="h-fit">
+          <Card className="h-fit" data-tour="calc-hstt">
             <CardHeader>
               <CardTitle>{th("hsttTitle")}</CardTitle>
             </CardHeader>

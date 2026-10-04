@@ -38,7 +38,7 @@ export async function ContractHsttTab({ contract, canEdit }: { contract: Billing
     <div className="space-y-6">
       {contract.is_demo && <Alert tone="info">{t("demoNoHstt")}</Alert>}
 
-      <Card>
+      <Card data-tour="hstt-contract-form">
         <CardHeader>
           <CardTitle>{t("contractHsttTitle")}</CardTitle>
           <p className="mt-1 text-sm text-slate-500">{t("contractHsttSubtitle")}</p>
@@ -56,7 +56,7 @@ export async function ContractHsttTab({ contract, canEdit }: { contract: Billing
         </CardBody>
       </Card>
 
-      <Card>
+      <Card data-tour="hstt-template">
         <CardHeader>
           <CardTitle>{tt("contractTitle")}</CardTitle>
           <p className="mt-1 text-sm text-slate-500">{tt("contractSubtitle")}</p>
@@ -73,7 +73,7 @@ export async function ContractHsttTab({ contract, canEdit }: { contract: Billing
       </Card>
 
       <div className="grid gap-6 xl:grid-cols-2">
-        <Card>
+        <Card data-tour="hstt-transport">
           <CardHeader>
             <CardTitle>{t("transportTitle")}</CardTitle>
             <p className="mt-1 text-sm text-slate-500">{t("transportSubtitle")}</p>
@@ -94,7 +94,7 @@ export async function ContractHsttTab({ contract, canEdit }: { contract: Billing
           </CardBody>
         </Card>
 
-        <Card>
+        <Card data-tour="hstt-advances">
           <CardHeader>
             <CardTitle>{t("advancesTitle")}</CardTitle>
             <p className="mt-1 text-sm text-slate-500">{t("advancesSubtitle")}</p>

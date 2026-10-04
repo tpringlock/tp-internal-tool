@@ -12,6 +12,7 @@ export default async function AppLayout({
   return (
     <div className="flex min-h-dvh flex-col bg-background">
       <TopNav
+        userId={user.id}
         fullName={user.profile.full_name}
         email={user.email}
         role={user.profile.role}

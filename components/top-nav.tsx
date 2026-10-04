@@ -1,25 +1,32 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { BillingTour } from "@/components/billing-tour";
 import { UserMenu } from "@/components/user-menu";
 import { ModuleSwitcher } from "@/components/module-switcher";
 import { getModulesForRole, HOME_HREF } from "@/lib/app-modules";
+import { canViewBilling } from "@/lib/auth/roles";
 import type { UserRole } from "@/lib/db/types";
 
 /**
  * App-wide header shared by every module: brand (logo + project name) and the
  * module switcher on the left, the account menu on the right. Full width so it
- * lines up with the full-bleed Documents workspace.
+ * lines up with the full-bleed Documents workspace. On /billing pages a "?"
+ * button opens the module's guided tours.
  */
 export function TopNav({
+  userId,
   fullName,
   email,
   role,
 }: {
+  userId: string;
   fullName: string;
   email: string | null;
   role: UserRole;
 }) {
   const tc = useTranslations("Common");
+  const tt = useTranslations("BillingTour");
   const modules = getModulesForRole(role);
 
   return (
@@ -48,7 +55,27 @@ export function TopNav({
 
         <ModuleSwitcher modules={modules} />
 
-        <div className="ml-auto flex items-center">
+        <div className="ml-auto flex items-center gap-1 sm:gap-2">
+          {canViewBilling(role) && (
+            <Suspense>
+              <BillingTour
+                userId={userId}
+                role={role}
+                labels={{
+                  help: tt("help"),
+                  pageTour: tt("pageTour"),
+                  noPageTour: tt("noPageTour"),
+                  workflowTour: tt("workflowTour"),
+                  next: tt("next"),
+                  prev: tt("prev"),
+                  done: tt("done"),
+                  gotIt: tt("gotIt"),
+                  close: tt("close"),
+                  progress: tt.raw("progress") as string,
+                }}
+              />
+            </Suspense>
+          )}
           <UserMenu fullName={fullName} email={email} role={role} />
         </div>
       </div>

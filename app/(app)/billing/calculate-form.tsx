@@ -207,90 +207,94 @@ export function CalculateForm({
         ))}
       </div>
 
-      <Field label={t("contract")} htmlFor="calc-contract" error={state.fieldErrors?.contract_id?.[0]}>
-        <Combobox
-          id="calc-contract"
-          value={contractId}
-          onChange={(v) => v && setContractId(v)}
-          options={contracts.map((c) => ({ value: c.id, label: c.label, keywords: c.keywords }))}
-          placeholder={t("searchContract")}
-          emptyText={t("noContractMatch")}
-        />
-      </Field>
+      <div data-tour="billing-calc-contract">
+        <Field label={t("contract")} htmlFor="calc-contract" error={state.fieldErrors?.contract_id?.[0]}>
+          <Combobox
+            id="calc-contract"
+            value={contractId}
+            onChange={(v) => v && setContractId(v)}
+            options={contracts.map((c) => ({ value: c.id, label: c.label, keywords: c.keywords }))}
+            placeholder={t("searchContract")}
+            emptyText={t("noContractMatch")}
+          />
+        </Field>
+      </div>
 
-      {mode === "preset" ? (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={t("periodPreset")} htmlFor="calc-preset" hint={t("periodPresetHint")}>
-            <Select id="calc-preset" value={preset?.id ?? ""} onChange={(e) => setPresetId(e.target.value)}>
-              {presets.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label={t("periodEndMonth")} htmlFor="calc-month" error={state.fieldErrors?.month?.[0]}>
-            <Select id="calc-month" value={month} onChange={(e) => setMonth(e.target.value)}>
-              {months.map((m) => (
-                <option key={m} value={m}>
-                  {monthLabel(m)}
-                </option>
-              ))}
-            </Select>
-          </Field>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 gap-3 sm:max-w-md">
-          <Field label={t("dateFrom")} htmlFor="calc-from" error={state.fieldErrors?.date_from?.[0]}>
-            <Input
-              id="calc-from"
-              type="date"
-              value={rangeFrom}
-              max={rangeTo || undefined}
-              onChange={(e) => setRangeFrom(e.target.value)}
-              required
-            />
-          </Field>
-          <Field label={t("dateTo")} htmlFor="calc-to" error={state.fieldErrors?.date_to?.[0]}>
-            <Input
-              id="calc-to"
-              type="date"
-              value={rangeTo}
-              min={rangeFrom || undefined}
-              onChange={(e) => setRangeTo(e.target.value)}
-              required
-            />
-          </Field>
-        </div>
-      )}
+      <div data-tour="billing-calc-period" className="space-y-5">
+        {mode === "preset" ? (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label={t("periodPreset")} htmlFor="calc-preset" hint={t("periodPresetHint")}>
+              <Select id="calc-preset" value={preset?.id ?? ""} onChange={(e) => setPresetId(e.target.value)}>
+                {presets.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label={t("periodEndMonth")} htmlFor="calc-month" error={state.fieldErrors?.month?.[0]}>
+              <Select id="calc-month" value={month} onChange={(e) => setMonth(e.target.value)}>
+                {months.map((m) => (
+                  <option key={m} value={m}>
+                    {monthLabel(m)}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:max-w-md">
+            <Field label={t("dateFrom")} htmlFor="calc-from" error={state.fieldErrors?.date_from?.[0]}>
+              <Input
+                id="calc-from"
+                type="date"
+                value={rangeFrom}
+                max={rangeTo || undefined}
+                onChange={(e) => setRangeFrom(e.target.value)}
+                required
+              />
+            </Field>
+            <Field label={t("dateTo")} htmlFor="calc-to" error={state.fieldErrors?.date_to?.[0]}>
+              <Input
+                id="calc-to"
+                type="date"
+                value={rangeTo}
+                min={rangeFrom || undefined}
+                onChange={(e) => setRangeTo(e.target.value)}
+                required
+              />
+            </Field>
+          </div>
+        )}
 
-      {period ? (
-        <div
-          className={cn(
-            "flex items-start gap-2 rounded-xl px-4 py-3 text-sm",
-            periodMonth ? "bg-green-50 text-green-900" : "bg-slate-100 text-slate-700",
-          )}
-        >
-          {periodMonth ? (
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-          ) : (
-            <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
-          )}
-          <p>
-            <span className="font-medium">
-              {t("periodHint", { from: formatVnDate(period.from), to: formatVnDate(period.to) })}
-            </span>
-            {" · "}
-            {periodMonth
-              ? t("periodIsContractPeriod", { month: formatBillingMonth(periodMonth) })
-              : t("periodIsCustomRange")}
-          </p>
-        </div>
-      ) : (
-        <p className="text-sm text-red-700">{t("chooseValidRange")}</p>
-      )}
+        {period ? (
+          <div
+            className={cn(
+              "flex items-start gap-2 rounded-xl px-4 py-3 text-sm",
+              periodMonth ? "bg-green-50 text-green-900" : "bg-slate-100 text-slate-700",
+            )}
+          >
+            {periodMonth ? (
+              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+            ) : (
+              <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+            )}
+            <p>
+              <span className="font-medium">
+                {t("periodHint", { from: formatVnDate(period.from), to: formatVnDate(period.to) })}
+              </span>
+              {" · "}
+              {periodMonth
+                ? t("periodIsContractPeriod", { month: formatBillingMonth(periodMonth) })
+                : t("periodIsCustomRange")}
+            </p>
+          </div>
+        ) : (
+          <p className="text-sm text-red-700">{t("chooseValidRange")}</p>
+        )}
+      </div>
 
-      <fieldset className="space-y-2">
+      <fieldset className="space-y-2" data-tour="billing-calc-files">
         <legend className="text-sm font-medium text-slate-700">{t("misaFiles")}</legend>
         {legacy ? (
           <p className="flex items-start gap-1.5 text-sm text-amber-800">
@@ -440,7 +444,7 @@ export function CalculateForm({
 
       {contract && contract.item_count === 0 && <Alert tone="info">{t("contractHasNoItems")}</Alert>}
 
-      <Button type="submit" loading={pending} disabled={!canSubmit}>
+      <Button type="submit" loading={pending} disabled={!canSubmit} data-tour="billing-calc-submit">
         {pending ? t("calculating") : t("calculate")}
       </Button>
     </form>

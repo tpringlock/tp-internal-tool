@@ -100,7 +100,11 @@ export default async function BillingCalculatePage({
 
       <ScopeNotice />
 
-      {!canEdit && <Alert tone="info">{t("readOnlyNotice")}</Alert>}
+      {!canEdit && (
+        <div data-tour="billing-read-only">
+          <Alert tone="info">{t("readOnlyNotice")}</Alert>
+        </div>
+      )}
 
       {canEdit && (
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
@@ -138,7 +142,7 @@ export default async function BillingCalculatePage({
           </CardBody>
         </Card>
 
-        <Card className="h-fit">
+        <Card className="h-fit" data-tour="billing-upload-card">
           <CardHeader>
             <CardTitle>{t("step1Title")}</CardTitle>
           </CardHeader>
@@ -156,7 +160,7 @@ export default async function BillingCalculatePage({
       </div>
       )}
 
-      <Card>
+      <Card data-tour="billing-recent">
         <CardHeader className="flex items-center justify-between gap-3">
           <CardTitle>{t("recentCalculations")}</CardTitle>
           <Link href="/billing/history" className="text-sm font-medium text-primary hover:underline">

@@ -64,6 +64,7 @@ export default async function HsttTemplatesPage() {
           <p className="mt-1.5 text-sm text-slate-500">{t("subtitle")}</p>
         </div>
         <DownloadLink
+          data-tour="templates-standard"
           href="/api/billing/hstt-templates/standard"
           className="h-10 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-900 hover:border-primary hover:text-primary"
         >
@@ -72,7 +73,7 @@ export default async function HsttTemplatesPage() {
         </DownloadLink>
       </div>
 
-      <Card>
+      <Card data-tour="templates-how-to">
         <CardBody className="text-sm text-slate-600">
           <details>
             <summary className="cursor-pointer font-medium text-slate-800">{t("howToTitle")}</summary>
@@ -89,7 +90,7 @@ export default async function HsttTemplatesPage() {
       </Card>
 
       {isAdmin && (
-        <Card>
+        <Card data-tour="templates-upload">
           <CardHeader>
             <CardTitle>{t("uploadTitle")}</CardTitle>
             <p className="mt-1 text-sm text-slate-500">{t("uploadSubtitle")}</p>
@@ -110,7 +111,7 @@ export default async function HsttTemplatesPage() {
         </CardBody>
       </Card>
 
-      <section className="space-y-3">
+      <section className="space-y-3" data-tour="templates-list">
         <h2 className="text-base font-semibold text-slate-900">{t("templatesTitle", { count: templates.length })}</h2>
         {templates.length === 0 && <p className="text-sm text-slate-500">{t("noTemplates")}</p>}
         {templates.map((tpl) => (

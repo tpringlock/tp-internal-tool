@@ -118,7 +118,7 @@ export function PeriodInputsForm({
   const intOrNull = (v: string) => (v.trim() === "" ? null : Math.max(0, Math.trunc(Number(v))) || 0);
 
   return (
-    <Card>
+    <Card data-tour="calc-period-inputs">
       <CardHeader>
         <CardTitle>{t("periodTitle", { month: fmtMonth(month) })}</CardTitle>
         <p className="mt-1 text-sm text-slate-500">{t("periodSubtitle")}</p>
@@ -293,7 +293,7 @@ export function PeriodInputsForm({
             </section>
           </fieldset>
 
-          <section className="rounded-xl border border-primary/30 bg-primary/5 p-4">
+          <section className="rounded-xl border border-primary/30 bg-primary/5 p-4" data-tour="calc-totals">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-primary">{t("totalsTitle")}</h3>
             <dl className="mt-3 grid gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
               <Total label={t("equipmentTotal")} value={totals.equipment} />

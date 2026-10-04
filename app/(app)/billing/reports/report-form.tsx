@@ -125,7 +125,7 @@ export function ReportForm({
               </>
             )}
 
-            <fieldset className="space-y-2">
+            <fieldset className="space-y-2" data-tour="reports-projects">
               <legend className="mb-1 text-sm font-medium text-slate-700">{t("projects")}</legend>
               <MultiSelect
                 options={visible.map((c) => ({
@@ -159,7 +159,7 @@ export function ReportForm({
               )}
             </fieldset>
 
-            <div className="grid gap-4 sm:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] sm:items-end">
+            <div className="grid gap-4 sm:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] sm:items-end" data-tour="reports-period">
               <Field label={t("periodMode")} htmlFor="report-mode">
                 <Select id="report-mode" value={mode} onChange={(e) => setMode(e.target.value as Mode)}>
                   <option value="preset">{t("modePreset")}</option>
@@ -206,7 +206,7 @@ export function ReportForm({
 
             {demoSelected > 0 && <DemoBanner text={t("demoSelected", { count: demoSelected })} />}
 
-            <Button type="submit" loading={pending} disabled={selected.length === 0 || !preview}>
+            <Button type="submit" loading={pending} disabled={selected.length === 0 || !preview} data-tour="reports-run">
               {pending ? t("running") : t("run")}
             </Button>
             {pending && <p className="text-xs text-slate-500">{t("runningHint")}</p>}
@@ -220,7 +220,7 @@ export function ReportForm({
         <>
           {result.report.demoCount > 0 && <DemoBanner text={t("demoInReport", { count: result.report.demoCount })} />}
 
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-3" data-tour="reports-result">
             <Stat label={t("statTotal")} value={`${formatNumber(result.report.total)}đ`} strong />
             <Stat label={t("statProjects")} value={t("statProjectsValue", { ok: result.report.okCount, errors: result.report.errorCount })} />
             <Stat
