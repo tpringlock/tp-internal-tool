@@ -69,9 +69,11 @@ export default async function ClientWorkspacePage({
   const { clientId } = await params;
   const sp = await searchParams;
   const highlight = sp.highlight ?? "";
-  const tab: Tab = sp.tab === "share" ? "share" : "files";
+  const wantsShare = sp.tab === "share";
   const user = await requireUser();
   const canManage = canManageContent(user.profile.role);
+  // Folder links expose every project of the client: managers/admins only.
+  const tab: Tab = wantsShare && canManage ? "share" : "files";
   const isAdmin = user.profile.role === "admin";
   const supabase = await createClient();
   const t = await getTranslations("DocWorkspace");
@@ -255,7 +257,9 @@ export default async function ClientWorkspacePage({
               { id: "files", href: projectHref(projectId), Icon: FolderOpen, label: t("tabFiles") },
               { id: "share", href: `${base}?tab=share`, Icon: Link2, label: t("tabShare") },
             ] as const
-          ).map((item) => (
+          )
+            .filter((item) => item.id !== "share" || canManage)
+            .map((item) => (
             <Link
               key={item.id}
               href={item.href}

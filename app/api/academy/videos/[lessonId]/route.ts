@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionUser } from "@/lib/auth/dal";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ACADEMY_BUCKET } from "@/lib/academy/constants";
 
@@ -19,9 +20,8 @@ export async function GET(
   const { lessonId } = await params;
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getSessionUser also rejects deactivated accounts (profiles.is_active).
+  const user = await getSessionUser();
   if (!user) {
     return new NextResponse("Unauthorized", { status: 401 });
   }

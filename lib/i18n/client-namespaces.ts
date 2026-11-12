@@ -11,6 +11,7 @@
  */
 export const SHELL_NAMESPACES = [
   "Common",
+  "Errors",
   "Nav",
   "AppModules",
   "Breadcrumb",

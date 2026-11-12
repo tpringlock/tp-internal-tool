@@ -13,6 +13,15 @@
     "passwordHint": "At least 8 characters, with a letter and a number.",
     "sessionExpired": "Your session has expired. Please sign in again."
   },
+  "Errors": {
+    "title": "Something went wrong",
+    "body": "This page could not be displayed. Please try again; if it keeps failing, tell an administrator and include the reference below.",
+    "reference": "Reference: {code}",
+    "retry": "Try again",
+    "home": "Back to home",
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "The page you opened does not exist, was removed, or you do not have access to it."
+  },
   "BillingTour": {
     "help": "User guide",
     "pageTour": "Replay the guide for this page",

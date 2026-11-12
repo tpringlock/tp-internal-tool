@@ -13,6 +13,15 @@
     "passwordHint": "Ít nhất 8 ký tự, gồm cả chữ và số.",
     "sessionExpired": "Phiên của bạn đã hết hạn. Vui lòng đăng nhập lại."
   },
+  "Errors": {
+    "title": "Đã xảy ra lỗi",
+    "body": "Không thể hiển thị trang này. Vui lòng thử lại; nếu vẫn lỗi, hãy báo quản trị viên kèm mã lỗi bên dưới.",
+    "reference": "Mã lỗi: {code}",
+    "retry": "Thử lại",
+    "home": "Về trang chủ",
+    "notFoundTitle": "Không tìm thấy trang",
+    "notFoundBody": "Trang bạn mở không tồn tại, đã bị xóa hoặc bạn không có quyền xem."
+  },
   "BillingTour": {
     "help": "Hướng dẫn sử dụng",
     "pageTour": "Xem lại hướng dẫn trang này",

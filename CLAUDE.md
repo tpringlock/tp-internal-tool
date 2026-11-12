@@ -109,6 +109,8 @@ Lint hiện có sẵn 6 lỗi cũ (`react-hooks/set-state-in-effect` ở admin/c
 
 - Việc lớn (nhiều file, đụng DB/RLS): lên kế hoạch trước, liệt kê file sẽ sửa và migration cần có, chờ duyệt rồi mới code.
 - Không tự `git push`, không chạy `supabase db push` lên project thật. Migration để người dùng tự apply.
+- Chưa có backup (Supabase free). Cân nhắc nâng Pro trước khi billing dùng dữ liệu thật.
+- **`supabase db push` luôn apply TẤT CẢ file đang chờ** trong `supabase/migrations/`, không có cách chọn từng file. Trước khi push: `npx supabase db push --dry-run` (lệnh đầy đủ, có `npx supabase`) phải liệt kê đúng và chỉ những file đã duyệt. File chưa duyệt thì không để trong thư mục `migrations/` (đặt ở nơi khác, ví dụ `supabase/drafts/`, cho tới khi được duyệt).
 - Cuối việc: tóm tắt file đã sửa, những chỗ kiểm tra quyền đã thêm, và các lệnh kiểm tra đã chạy.
 
 ## Billing – quy tắc bắt buộc
