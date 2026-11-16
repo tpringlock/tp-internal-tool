@@ -33,11 +33,15 @@ export function formatVND(amount: string | number | null | undefined): string {
   }).format(value);
 }
 
-/** Deterministic date-time for display, e.g. 6 Aug 2026, 14:30 (ICT). */
+/**
+ * Deterministic date-time for display, e.g. 06/08/2026, 14:30 (ICT). Numeric
+ * month like formatDate: a short month name would come out in English
+ * ("6 Aug 2026") in the Vietnamese UI.
+ */
 export function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString(DISPLAY_LOCALE, {
-    day: "numeric",
-    month: "short",
+    day: "2-digit",
+    month: "2-digit",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
