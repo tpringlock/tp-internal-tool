@@ -11,6 +11,7 @@ const PUBLIC_PREFIXES = [
   "/share", // public client share viewer
   "/api/share", // public share file stream
   "/auth", // email-link callbacks
+  "/robots.txt", // app/robots.ts (disallow all); crawlers are signed out
 ];
 
 /** Paths a signed-in user should be bounced away from (back to the portal). */
