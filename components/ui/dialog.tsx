@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 /**
@@ -21,6 +22,8 @@ export function Dialog({
   children: React.ReactNode;
   className?: string;
 }) {
+  const t = useTranslations("Common");
+
   React.useEffect(() => {
     if (!open) return;
     const onKeyDown = (e: KeyboardEvent) => {
@@ -58,7 +61,7 @@ export function Dialog({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t("dismiss")}
             className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 hover:bg-slate-50 hover:text-slate-900"
           >
             <X className="h-5 w-5" />

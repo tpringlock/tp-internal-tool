@@ -11,7 +11,8 @@
     "newPassword": "Mật khẩu mới",
     "confirmPassword": "Xác nhận mật khẩu",
     "passwordHint": "Ít nhất 8 ký tự, gồm cả chữ và số.",
-    "sessionExpired": "Phiên của bạn đã hết hạn. Vui lòng đăng nhập lại."
+    "sessionExpired": "Phiên của bạn đã hết hạn. Vui lòng đăng nhập lại.",
+    "loading": "Đang tải…"
   },
   "Errors": {
     "title": "Đã xảy ra lỗi",
@@ -692,6 +693,7 @@
     "addCourseDoc": "Thêm PDF"
   },
   "Breadcrumb": {
+    "navLabel": "Đường dẫn trang",
     "back": "Quay lại",
     "home": "Trang chủ",
     "detail": "Chi tiết",

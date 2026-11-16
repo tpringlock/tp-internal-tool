@@ -11,7 +11,8 @@
     "newPassword": "New password",
     "confirmPassword": "Confirm password",
     "passwordHint": "At least 8 characters, with a letter and a number.",
-    "sessionExpired": "Your session has expired. Please sign in again."
+    "sessionExpired": "Your session has expired. Please sign in again.",
+    "loading": "Loading…"
   },
   "Errors": {
     "title": "Something went wrong",
@@ -692,6 +693,7 @@
     "addCourseDoc": "Add a PDF"
   },
   "Breadcrumb": {
+    "navLabel": "Breadcrumb",
     "back": "Back",
     "home": "Home",
     "detail": "Detail",
