@@ -50,3 +50,7 @@ _incoming-billing*/
 
 # Supabase CLI cache (rewritten by every CLI run)
 supabase/.temp/
+
+# UX audit output (screenshots, local billing baseline) - not for commit
+audit-screenshots/
+billing-baseline.txt
