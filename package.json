@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "seed:gia-dinh": "tsx scripts/seed-gia-dinh.mts",
-    "seed:gia-dinh:xoa": "tsx scripts/seed-gia-dinh.mts --xoa"
+    "seed:gia-dinh:xoa": "tsx scripts/seed-gia-dinh.mts --xoa",
+    "billing:fingerprint": "node --env-file=.env.local scripts/billing-fingerprint.cjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.7.1",
