@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
 import { Dialog } from "@/components/ui/dialog";
-import { useToast, useFormStateToast } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/toast";
 import { useFormAction } from "@/components/ui/use-form-action";
 
 export function CreateClientForm() {
@@ -122,18 +122,19 @@ export function DeleteClientButton({
   const t = useTranslations("Admin");
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
-  const [state, formProps, pending] = useFormAction<FormState>(
-    deleteClient,
-    {},
-  );
-  useFormStateToast(state);
-
-  useEffect(() => {
-    // Close on any outcome; the toast carries the result. On success with a
-    // redirect the action navigates away and this state never arrives.
-    if (state.success || state.error) setOpen(false);
-    if (state.success) toast(state.success, { tone: "success" });
-  }, [state, toast]);
+  const [, formProps, pending] = useFormAction<FormState>(deleteClient, {}, {
+    // Both callbacks run inside the action, so the toast does not depend on
+    // this component surviving the revalidation or the redirect.
+    onResult: (result) => {
+      if (result.success || result.error) setOpen(false);
+      if (result.success) toast(result.success, { tone: "success" });
+      if (result.error) toast(result.error, { tone: "error" });
+    },
+    // With `redirectTo` the action redirects on success and never returns a
+    // state: say it here (the toast provider lives in the root layout and
+    // survives the navigation).
+    onRedirect: () => toast(t("clientDeleted", { name: client.name }), { tone: "success" }),
+  });
 
   return (
     <>

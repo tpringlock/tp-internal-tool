@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { deleteProjects } from "@/app/actions/projects";
 import type { FormState } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
-import { useToast, useFormStateToast } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/toast";
 import { DeleteProjectButton } from "../../projects/delete-project-button";
 import { useFormAction } from "@/components/ui/use-form-action";
 
@@ -35,21 +35,20 @@ export function ClientProjectsManager({
   const { toast } = useToast();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirming, setConfirming] = useState(false);
-  const [state, formProps, pending] = useFormAction<FormState>(
-    deleteProjects,
-    {},
-  );
-  useFormStateToast(state);
-
-  useEffect(() => {
-    // Close on any outcome; the toast carries the result. Deleted rows leave
-    // the list with the revalidated page, so drop the stale selection.
-    if (state.success || state.error) {
-      setConfirming(false);
-      setSelected(new Set());
-    }
-    if (state.success) toast(state.success, { tone: "success" });
-  }, [state, toast]);
+  const [, formProps, pending] = useFormAction<FormState>(deleteProjects, {}, {
+    // Runs inside the action, before the revalidated page removes this
+    // component, so the toast is not lost with it (an effect on `state`
+    // never ran once the row or page was gone).
+    onResult: (result) => {
+      // Deleted rows leave the list with the revalidated page: drop the selection.
+      if (result.success || result.error) {
+        setConfirming(false);
+        setSelected(new Set());
+      }
+      if (result.success) toast(result.success, { tone: "success" });
+      if (result.error) toast(result.error, { tone: "error" });
+    },
+  });
 
   function toggle(id: string) {
     setSelected((prev) => {
