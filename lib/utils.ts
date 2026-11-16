@@ -18,3 +18,15 @@ export function safeInternalPath(path: unknown, fallback = "/"): string {
     ? v
     : fallback;
 }
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * True when `value` has the shape of a UUID. Route params that feed a uuid
+ * column or RPC argument are checked with this first: Postgres raises on a
+ * malformed uuid, which would surface as an error page instead of a 404.
+ */
+export function isUuid(value: unknown): value is string {
+  return typeof value === "string" && UUID_RE.test(value);
+}

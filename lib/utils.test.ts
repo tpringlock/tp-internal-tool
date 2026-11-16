@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { safeInternalPath } from "./utils";
+import { isUuid, safeInternalPath } from "./utils";
 
 describe("safeInternalPath", () => {
   it("accepts same-origin relative paths", () => {
@@ -32,5 +32,22 @@ describe("safeInternalPath", () => {
   it("honours a custom fallback", () => {
     expect(safeInternalPath("//evil.com", "")).toBe("");
     expect(safeInternalPath("/ok", "")).toBe("/ok");
+  });
+});
+
+describe("isUuid", () => {
+  it("accepts UUIDs in either case", () => {
+    expect(isUuid("48c42cf3-5628-42d4-a587-92111c4a2b9d")).toBe(true);
+    expect(isUuid("48C42CF3-5628-42D4-A587-92111C4A2B9D")).toBe(true);
+    expect(isUuid("00000000-0000-0000-0000-000000000000")).toBe(true);
+  });
+
+  it("rejects anything else", () => {
+    expect(isUuid("khong-phai-uuid")).toBe(false);
+    expect(isUuid("48c42cf3-5628-42d4-a587-92111c4a2b9")).toBe(false);
+    expect(isUuid(" 48c42cf3-5628-42d4-a587-92111c4a2b9d")).toBe(false);
+    expect(isUuid("")).toBe(false);
+    expect(isUuid(null)).toBe(false);
+    expect(isUuid(undefined)).toBe(false);
   });
 });

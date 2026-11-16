@@ -13,7 +13,7 @@ import { getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth/dal";
 import { canManageContent } from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/server";
-import { cn } from "@/lib/utils";
+import { cn, isUuid } from "@/lib/utils";
 import { Pagination } from "@/components/ui/pagination";
 import { formatBytes } from "@/lib/format";
 import { documentStatsByProject } from "@/lib/documents/counts";
@@ -71,6 +71,9 @@ export default async function ClientWorkspacePage({
   const highlight = sp.highlight ?? "";
   const wantsShare = sp.tab === "share";
   const user = await requireUser();
+  // A malformed id would make the stats RPC throw (uuid cast) and show the
+  // error page; it can never match a client, so answer 404 straight away.
+  if (!isUuid(clientId)) notFound();
   const canManage = canManageContent(user.profile.role);
   // Folder links expose every project of the client: managers/admins only.
   const tab: Tab = wantsShare && canManage ? "share" : "files";
