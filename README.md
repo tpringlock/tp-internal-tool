@@ -1,5 +1,22 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Cài đặt (đọc trước khi `npm ci`)
+
+Gói `xlsx` (SheetJS 0.20.3) không lấy từ npm registry mà từ tarball `https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz` (bản trên npm đã ngừng cập nhật và còn lỗ hổng bảo mật). Từ npm 12, mặc định `allow-remote = none` nên lệnh cài sẽ dừng với lỗi:
+
+```
+npm error code EALLOWREMOTE
+npm error Refusing to fetch "xlsx@https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+```
+
+Cách cài: cho phép tarball từ xa riêng cho lần chạy đó (lock file đã ghim `integrity` của gói nên nội dung vẫn được kiểm tra):
+
+```bash
+npm ci --allow-remote=all
+```
+
+Không cần sửa `.npmrc`. npm 11 trở xuống không gặp lỗi này, `npm ci` chạy bình thường.
+
 ## Getting Started
 
 First, run the development server:
