@@ -5,7 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { logActivity } from "@/lib/activity";
 import { env } from "@/lib/env";
-import { safeInternalPath } from "@/lib/utils";
+import { safeNextPath } from "@/lib/utils";
 import {
   loginSchema,
   forgotPasswordSchema,
@@ -19,9 +19,12 @@ export interface FormState {
   fieldErrors?: Record<string, string[]>;
 }
 
-/** Only permit same-origin relative redirect targets. */
+/**
+ * Only permit same-origin app pages as the post-login target; the auth pages
+ * themselves (`/login?next=/login…`) fall back to home.
+ */
 function safeNext(next: FormDataEntryValue | null): string {
-  return safeInternalPath(next);
+  return safeNextPath(next);
 }
 
 export async function login(
