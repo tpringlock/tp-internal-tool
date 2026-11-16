@@ -75,7 +75,7 @@ export function CourseContentPanel({
                       aria-hidden
                     />
                     <span className="font-medium">{file.file_name}</span>
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-slate-500">
                       {formatBytes(file.file_size)}
                     </span>
                   </div>

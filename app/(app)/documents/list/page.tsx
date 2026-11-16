@@ -170,7 +170,7 @@ export default async function DocumentsListPage({
                       >
                         {d.canonical_name}
                       </Link>
-                      <div className="text-xs text-slate-400">
+                      <div className="text-xs text-slate-500">
                         {formatBytes(d.file_size)}
                       </div>
                     </td>
@@ -183,7 +183,7 @@ export default async function DocumentsListPage({
                     >
                       {d.projects?.name ?? "—"}
                       {d.projects?.clients?.name && (
-                        <div className="text-xs text-slate-400">
+                        <div className="text-xs text-slate-500">
                           {d.projects.clients.name}
                         </div>
                       )}

@@ -218,7 +218,7 @@ export function LessonEditor({
                   <Video className="h-4 w-4 shrink-0 text-primary" aria-hidden />
                   {lesson.video_file_name}
                   {lesson.video_file_size != null && (
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-slate-500">
                       {formatBytes(lesson.video_file_size)}
                     </span>
                   )}
@@ -254,7 +254,7 @@ export function LessonEditor({
                     <span className="flex items-center gap-2 text-sm text-slate-700">
                       <FileText className="h-4 w-4 shrink-0 text-primary" aria-hidden />
                       {file.file_name}
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-slate-500">
                         {formatBytes(file.file_size)}
                       </span>
                     </span>

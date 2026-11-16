@@ -117,7 +117,7 @@ export default async function CoursePage({
                   >
                     <summary className="flex cursor-pointer items-center justify-between px-5 py-3 text-sm font-medium text-slate-800 hover:bg-slate-50">
                       <span>{chapter.title}</span>
-                      <span className="text-xs font-normal text-slate-400">
+                      <span className="text-xs font-normal text-slate-500">
                         {t("lessonCount", { count: chapter.lessons.length })}
                       </span>
                     </summary>
@@ -173,7 +173,7 @@ export default async function CoursePage({
                               </span>
                             </Link>
                           ) : (
-                            <div className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-400">
+                            <div className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-500">
                               <Lock className="h-4 w-4 shrink-0" aria-hidden />
                               <span>{t("quizLabel")}</span>
                             </div>

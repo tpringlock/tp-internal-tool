@@ -93,7 +93,7 @@ export default async function PeriodPresetsPage() {
                       {p.active ? (
                         <span className="text-green-700">{t("active")}</span>
                       ) : (
-                        <span className="text-slate-400">{t("inactive")}</span>
+                        <span className="text-slate-500">{t("inactive")}</span>
                       )}
                     </td>
                     {isAdmin && (

@@ -121,12 +121,12 @@ export function DocumentSearch() {
       {open && (
         <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg">
           {loading && results.length === 0 ? (
-            <p className="flex items-center gap-2 px-4 py-3 text-sm text-slate-400">
+            <p className="flex items-center gap-2 px-4 py-3 text-sm text-slate-500">
               <Spinner className="h-4 w-4" />
               {t("searching")}
             </p>
           ) : results.length === 0 ? (
-            <p className="px-4 py-3 text-sm text-slate-400">{t("noMatches")}</p>
+            <p className="px-4 py-3 text-sm text-slate-500">{t("noMatches")}</p>
           ) : (
             <ul className="max-h-80 overflow-auto py-1">
               {results.map((s, i) => (
@@ -145,7 +145,7 @@ export function DocumentSearch() {
                     <span className="line-clamp-1 text-sm font-medium text-slate-900">
                       {s.canonicalName}
                     </span>
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-slate-500">
                       {s.clientName}
                     </span>
                   </button>

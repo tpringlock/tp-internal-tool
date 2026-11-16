@@ -74,7 +74,7 @@ export function ModuleSwitcher({ modules }: { modules: AppModuleLink[] }) {
     >
       {(close) => (
         <>
-          <p className="px-3 pb-1 pt-1.5 text-xs font-semibold uppercase tracking-wider text-slate-400">
+          <p className="px-3 pb-1 pt-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
             {t("apps")}
           </p>
           {modules.map((m) => {

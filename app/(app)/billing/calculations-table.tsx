@@ -71,7 +71,7 @@ export async function CalculationsTable({
             </td>
             <td data-label={t("createdBy")} className="px-5 py-3 text-slate-600">
               {creatorNames.get(r.created_by) ?? "—"}
-              <span className="block text-xs text-slate-400">{formatDateTime(r.created_at)}</span>
+              <span className="block text-xs text-slate-500">{formatDateTime(r.created_at)}</span>
             </td>
             <td className="px-5 py-3 text-right">
               <Link

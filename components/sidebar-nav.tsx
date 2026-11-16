@@ -38,7 +38,7 @@ export function SidebarNav({
       {sections.map((section, i) => (
         <div key={section.title ?? i} className="space-y-1">
           {section.title && (
-            <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+            <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               {section.title}
             </p>
           )}
@@ -70,7 +70,7 @@ export function SidebarNav({
                 <span
                   className={cn(
                     "shrink-0 text-xs tabular-nums",
-                    item.active ? "text-primary" : "text-slate-400",
+                    item.active ? "text-primary" : "text-slate-500",
                   )}
                 >
                   {item.meta}

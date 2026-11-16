@@ -199,7 +199,7 @@ export default async function BillingUploadsPage() {
                     </td>
                     <td data-label={t("colUploaded")} className="px-5 py-3 text-slate-600">
                       {names.get(u.uploaded_by) ?? "—"}
-                      <span className="block text-xs text-slate-400">{formatDateTime(u.created_at)}</span>
+                      <span className="block text-xs text-slate-500">{formatDateTime(u.created_at)}</span>
                     </td>
                     <td data-label={t("colUsed")} className="px-5 py-3 text-slate-600">
                       <UseCount use={uses.get(u.id)} t={t} />
@@ -261,7 +261,7 @@ function VersionRow({
             {active ? t("active") : t("superseded")}
           </span>
         </span>
-        {first && count > 1 && <span className="block text-xs text-slate-400">{t("versionCount", { count })}</span>}
+        {first && count > 1 && <span className="block text-xs text-slate-500">{t("versionCount", { count })}</span>}
       </td>
       <td data-label={t("colFile")} className="px-5 py-3 md:max-w-xs">
         <span className={cn("block break-words", active && "font-medium text-slate-900")}>{upload?.file_name ?? "—"}</span>
@@ -294,9 +294,9 @@ function VersionRow({
       </td>
       <td data-label={t("colUploaded")} className="px-5 py-3">
         {uploader}
-        <span className="block text-xs text-slate-400">{formatDateTime(v.created_at)}</span>
+        <span className="block text-xs text-slate-500">{formatDateTime(v.created_at)}</span>
         {v.superseded_at && (
-          <span className="block text-xs text-slate-400">
+          <span className="block text-xs text-slate-500">
             {t("supersededAt", { date: formatDateTime(v.superseded_at) })}
           </span>
         )}
@@ -329,7 +329,7 @@ function VersionRow({
 }
 
 function UseCount({ use, t }: { use: { all: number; confirmed: number } | undefined; t: T }) {
-  if (!use) return <span className="text-xs text-slate-400">{t("notUsed")}</span>;
+  if (!use) return <span className="text-xs text-slate-500">{t("notUsed")}</span>;
   return (
     <span className="text-xs">
       {t("usedIn", { count: use.all })}

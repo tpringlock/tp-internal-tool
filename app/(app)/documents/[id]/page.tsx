@@ -169,7 +169,7 @@ export default async function DocumentDetailPage({
                       <span className="text-slate-800">
                         {labelForAction(ta, a.action)}
                       </span>
-                      <div className="text-xs text-slate-400">
+                      <div className="text-xs text-slate-500">
                         {a.actor?.full_name ?? t("aClient")} ·{" "}
                         {formatDateTime(a.created_at)}
                       </div>

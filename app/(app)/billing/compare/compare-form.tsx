@@ -82,8 +82,8 @@ export function CompareForm({
                         className={cn(
                           "block text-xs",
                           rangeValid && !overlapsPeriod(u, { from, to })
-                            ? "text-slate-400"
-                            : "text-slate-500",
+                            ? "text-slate-500"
+                            : "text-slate-600",
                         )}
                       >
                         {t("fileSpan", {
@@ -186,10 +186,10 @@ export function CompareForm({
                     className={cn(
                       "border-b border-slate-50 last:border-0",
                       r.error && "bg-red-50/50",
-                      r.total === 0 && "text-slate-400",
+                      r.total === 0 && "text-slate-500",
                     )}
                   >
-                    <td data-label="#" className="px-4 py-2 tabular-nums text-slate-400">
+                    <td data-label="#" className="px-4 py-2 tabular-nums text-slate-500">
                       {i + 1}
                     </td>
                     <td data-label={t("misaKho")} className="px-4 py-2 font-mono text-xs font-medium">

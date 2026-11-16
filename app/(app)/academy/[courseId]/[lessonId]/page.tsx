@@ -231,7 +231,7 @@ export default async function LessonPage({
                           aria-hidden
                         />
                         <span className="font-medium">{file.file_name}</span>
-                        <span className="text-xs text-slate-400">
+                        <span className="text-xs text-slate-500">
                           {formatBytes(file.file_size)}
                         </span>
                       </div>
@@ -328,7 +328,7 @@ export default async function LessonPage({
                         return (
                           <li
                             key={l.id}
-                            className="flex items-center gap-2 rounded-md px-2 py-2 text-sm text-slate-400"
+                            className="flex items-center gap-2 rounded-md px-2 py-2 text-sm text-slate-500"
                           >
                             <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden />
                             <span className="line-clamp-1">{l.title}</span>
@@ -388,7 +388,7 @@ export default async function LessonPage({
                           </Link>
                         </li>
                       ) : (
-                        <li className="flex items-center gap-2 rounded-md px-2 py-2 text-sm text-slate-400">
+                        <li className="flex items-center gap-2 rounded-md px-2 py-2 text-sm text-slate-500">
                           <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden />
                           <span className="line-clamp-1">{t("quizLabel")}</span>
                         </li>

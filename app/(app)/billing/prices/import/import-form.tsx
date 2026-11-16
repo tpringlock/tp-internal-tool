@@ -179,7 +179,7 @@ function countsArgs(c: ClientPricePreview["counts"]) {
 function Summary({ p, t }: { p: ClientPricePreview; t: T }) {
   const c = p.counts;
   const chip = (label: string, n: number, tone: string) => (
-    <span className={cn("rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset", n > 0 ? tone : "bg-slate-50 text-slate-400 ring-slate-200")}>
+    <span className={cn("rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset", n > 0 ? tone : "bg-slate-50 text-slate-500 ring-slate-200")}>
       {label}: {formatNumber(n)}
     </span>
   );

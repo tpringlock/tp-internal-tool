@@ -152,7 +152,7 @@ export default async function ProjectDetailPage({
                     >
                       {doc.canonical_name}
                     </Link>
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-slate-500">
                       {formatBytes(doc.file_size)} · {formatDateTime(doc.created_at)}
                     </span>
                   </div>

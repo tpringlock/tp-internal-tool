@@ -332,7 +332,7 @@ export default async function ClientWorkspacePage({
                 </li>
               ))}
               {projects.length === 0 && (
-                <li className="px-3 py-4 text-sm text-slate-400">
+                <li className="px-3 py-4 text-sm text-slate-500">
                   {t("noProjects")}
                 </li>
               )}
@@ -450,7 +450,7 @@ function ProjectLink({
         active
           ? "bg-primary/10 font-semibold text-primary"
           : "text-slate-700 hover:bg-slate-50",
-        archived && !active && "text-slate-400",
+        archived && !active && "text-slate-500",
       )}
     >
       <Icon className="h-[18px] w-[18px] shrink-0" aria-hidden />
@@ -463,7 +463,7 @@ function ProjectLink({
       <span
         className={cn(
           "shrink-0 text-xs tabular-nums",
-          active ? "text-primary" : "text-slate-400",
+          active ? "text-primary" : "text-slate-500",
         )}
       >
         {count}

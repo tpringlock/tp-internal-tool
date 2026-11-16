@@ -77,7 +77,7 @@ export default async function BillingContractsPage() {
                     <td data-label={t("periodLabel")} className="px-5 py-3 text-slate-600">
                       {t("periodRule", { start: c.period_start_day, end: c.period_start_day - 1 })}
                       {c.contract_start && (
-                        <span className="block text-xs text-slate-400">
+                        <span className="block text-xs text-slate-500">
                           {t("fromDate", { date: formatVnDate(c.contract_start) })}
                         </span>
                       )}

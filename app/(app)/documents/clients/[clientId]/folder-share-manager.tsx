@@ -100,14 +100,14 @@ export function FolderShareManager({
                     className={
                       status === "active"
                         ? "text-sm font-medium text-green-700"
-                        : "text-sm font-medium text-slate-400"
+                        : "text-sm font-medium text-slate-500"
                     }
                   >
                     {status === "active" && t("statusActive")}
                     {status === "expired" && t("statusExpired")}
                     {status === "revoked" && t("statusRevoked")}
                   </span>
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-slate-500">
                     {status === "revoked"
                       ? t("revokedAt", { date: formatDateTime(link.revoked_at!) })
                       : t("expiresAt", { date: formatDateTime(link.expires_at) })}

@@ -51,7 +51,7 @@ export function LessonNotes({
     <Card>
       <CardHeader className="flex items-center justify-between">
         <CardTitle>{t("notes")}</CardTitle>
-        <span className="text-xs text-slate-400">
+        <span className="text-xs text-slate-500">
           {status === "saving"
             ? t("noteSaving")
             : status === "saved"

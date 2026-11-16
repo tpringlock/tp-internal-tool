@@ -174,7 +174,7 @@ function ClientList({
         className="min-h-0 flex-1 space-y-2 overflow-y-auto px-3 pb-5"
       >
         {visible.length === 0 ? (
-          <p className="px-2 py-6 text-center text-sm text-slate-400">
+          <p className="px-2 py-6 text-center text-sm text-slate-500">
             {clients.length === 0 ? t("noCustomers") : t("noCustomerMatches")}
           </p>
         ) : (

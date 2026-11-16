@@ -24,7 +24,7 @@ export default function GlobalError({
             Ứng dụng không tải được. Vui lòng thử lại; nếu vẫn lỗi, hãy báo quản trị viên.
           </p>
           {error.digest && (
-            <p className="mt-3 break-all font-mono text-xs text-slate-400">
+            <p className="mt-3 break-all font-mono text-xs text-slate-500">
               Mã lỗi: {error.digest}
             </p>
           )}

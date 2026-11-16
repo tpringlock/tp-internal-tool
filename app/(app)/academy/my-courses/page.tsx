@@ -26,7 +26,7 @@ export default async function MyCoursesPage() {
     <section className="space-y-3">
       <h2 className="text-lg font-bold text-slate-900">
         {title}{" "}
-        <span className="text-sm font-medium text-slate-400">{items.length}</span>
+        <span className="text-sm font-medium text-slate-500">{items.length}</span>
       </h2>
       {items.length === 0 ? (
         <Card>

@@ -335,7 +335,7 @@ export default async function CalculationPage({
                   {sourceFiles.map((f) => (
                     <li key={f.upload_id} className="break-words">
                       {f.deleted ? (
-                        <span className="text-slate-400">{t("fileDeleted")}</span>
+                        <span className="text-slate-500">{t("fileDeleted")}</span>
                       ) : (
                         <>
                           <span className="font-medium text-slate-900">
@@ -367,7 +367,7 @@ export default async function CalculationPage({
               </Meta>
               <Meta label={t("excludedRangesApplied")}>
                 {calc.excluded_ranges.length === 0 ? (
-                  <span className="text-slate-400">{t("none")}</span>
+                  <span className="text-slate-500">{t("none")}</span>
                 ) : (
                   <ul className="space-y-0.5">
                     {calc.excluded_ranges.map((r) => (
@@ -394,7 +394,7 @@ export default async function CalculationPage({
 function Meta({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-xs font-medium uppercase tracking-wider text-slate-400">{label}</p>
+      <p className="text-xs font-medium uppercase tracking-wider text-slate-500">{label}</p>
       <div className="mt-0.5 text-slate-700">{children}</div>
     </div>
   );

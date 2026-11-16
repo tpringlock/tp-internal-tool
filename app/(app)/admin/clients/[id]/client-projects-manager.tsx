@@ -120,7 +120,7 @@ export function ClientProjectsManager({
                 {p.status === "active" ? (
                   <span className="text-green-700">{t("active")}</span>
                 ) : (
-                  <span className="text-slate-400">{t("archived")}</span>
+                  <span className="text-slate-500">{t("archived")}</span>
                 )}
               </td>
               <td className="px-5 py-3 text-right">

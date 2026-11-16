@@ -172,7 +172,7 @@ export function PriceLinesEditor({
                     priceOf(r.price) === 0 && "bg-slate-50",
                   )}
                 >
-                  <span className="col-span-2 pt-2 text-xs font-semibold text-slate-400 lg:col-span-1">{i + 1}</span>
+                  <span className="col-span-2 pt-2 text-xs font-semibold text-slate-500 lg:col-span-1">{i + 1}</span>
                   <Input
                     aria-label={t("colCode")}
                     placeholder={t("colCode")}
@@ -287,7 +287,7 @@ export function PriceLinesEditor({
           <ol className="mt-2 space-y-1 text-sm">
             {grouped.items.map((it, i) => (
               <li key={it.name} className="flex flex-wrap gap-x-2">
-                <span className="w-5 shrink-0 text-right text-slate-400">{i + 1}.</span>
+                <span className="w-5 shrink-0 text-right text-slate-500">{i + 1}.</span>
                 <span className="font-medium text-slate-900">{it.name}</span>
                 <span className="text-slate-500">
                   {it.unit || "—"} · {formatNumber(it.unitPrice)}đ/ngày · {it.maHang.join(", ")}
