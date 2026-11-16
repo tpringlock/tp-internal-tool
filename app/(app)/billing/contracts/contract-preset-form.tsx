@@ -1,6 +1,5 @@
 "use client";
 
-import { useActionState } from "react";
 import { useTranslations } from "next-intl";
 import { setContractPeriodPreset } from "@/app/actions/billing-periods";
 import type { FormState } from "@/app/actions/auth";
@@ -8,6 +7,7 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Select } from "@/components/ui/input";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 /** The contract's default period preset, preselected on the calculate form. */
 export function ContractPresetForm({
@@ -22,10 +22,10 @@ export function ContractPresetForm({
   readOnly: boolean;
 }) {
   const t = useTranslations("BillingPresets");
-  const [state, action, pending] = useActionState<FormState, FormData>(setContractPeriodPreset, {});
+  const [state, formProps, pending] = useFormAction<FormState>(setContractPeriodPreset, {});
 
   return (
-    <form action={action} className="space-y-3">
+    <form {...formProps} className="space-y-3">
       <input type="hidden" name="contract_id" value={contractId} />
       {state.success && <Alert tone="success">{state.success}</Alert>}
       {state.error && <Alert tone="error">{state.error}</Alert>}

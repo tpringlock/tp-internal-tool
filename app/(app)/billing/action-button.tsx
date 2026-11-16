@@ -1,11 +1,12 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import type { FormState } from "@/app/actions/auth";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 type Action = (prev: FormState, formData: FormData) => Promise<FormState>;
 
@@ -41,7 +42,7 @@ export function ActionButton({
   const t = useTranslations("Billing");
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
-  const [, formAction, pending] = useActionState<FormState, FormData>(
+  const [, formProps, pending] = useFormAction<FormState>(
     async (prev, formData) => {
       const result = await action(prev, formData);
       setOpen(false);
@@ -71,7 +72,7 @@ export function ActionButton({
           <Button variant="secondary" size="sm" onClick={() => setOpen(false)}>
             {t("cancel")}
           </Button>
-          <form action={formAction}>
+          <form {...formProps}>
             <input type="hidden" name="id" value={id} />
             {Object.entries(fields ?? {}).map(([k, v]) => (
               <input key={k} type="hidden" name={k} value={v} />

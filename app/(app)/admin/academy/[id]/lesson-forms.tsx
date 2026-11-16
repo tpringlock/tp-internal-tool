@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowUp, ArrowDown, FileText, Trash2, Video } from "lucide-react";
@@ -24,6 +24,7 @@ import { formatBytes } from "@/lib/format";
 import { VideoUploadForm, uploadLessonVideoFile } from "./video-upload-form";
 import { validateVideoFile } from "@/lib/academy/video-validation";
 import { MAX_VIDEO_SIZE_LABEL } from "@/lib/academy/constants";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 type LessonWithFiles = Lesson & { files: Pick<LessonFile, "id" | "file_name" | "file_size">[] };
 
@@ -299,14 +300,14 @@ function EditLessonForm({
   hideVideoUrl?: boolean;
 }) {
   const t = useTranslations("AcademyAdmin");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     updateLesson,
     {},
   );
   useFormStateToast(state);
 
   return (
-    <form action={action} className="space-y-4">
+    <form {...formProps} className="space-y-4">
       <input type="hidden" name="id" value={lesson.id} />
       <input type="hidden" name="course_id" value={courseId} />
       {state.success && <Alert tone="success">{state.success}</Alert>}
@@ -341,7 +342,7 @@ function UploadFileForm({
   lessonId: string;
 }) {
   const t = useTranslations("AcademyAdmin");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     uploadLessonFile,
     {},
   );
@@ -353,7 +354,7 @@ function UploadFileForm({
   }, [state.success]);
 
   return (
-    <form ref={formRef} action={action} className="flex flex-wrap items-end gap-3">
+    <form ref={formRef} {...formProps} className="flex flex-wrap items-end gap-3">
       <input type="hidden" name="course_id" value={courseId} />
       <input type="hidden" name="lesson_id" value={lessonId} />
       <div className="flex-1">

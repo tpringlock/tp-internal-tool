@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowUp, ArrowDown, Trash2, Plus, X } from "lucide-react";
@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 export type AdminQuizOption = {
   id: string;
@@ -46,7 +47,7 @@ function QuizQuestionForm({
   const t = useTranslations("AcademyAdmin");
   const router = useRouter();
   const isEdit = Boolean(question);
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     isEdit ? updateQuizQuestion : addQuizQuestion,
     {},
   );
@@ -87,7 +88,7 @@ function QuizQuestionForm({
     });
 
   return (
-    <form action={action} className="space-y-3">
+    <form {...formProps} className="space-y-3">
       {isEdit ? (
         <input type="hidden" name="id" value={question!.id} />
       ) : (

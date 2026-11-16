@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Plus, Trash2 } from "lucide-react";
 import { saveTransportPrices } from "@/app/actions/billing-hstt";
@@ -9,6 +9,7 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { MoneyInput } from "../../money-input";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 export interface TransportPriceRow {
   id: string | null;
@@ -37,7 +38,7 @@ export function TransportPricesEditor({
 }) {
   const t = useTranslations("Hstt");
   const [rows, setRows] = useState(() => initial.map(withKey));
-  const [state, action, pending] = useActionState<FormState, FormData>(saveTransportPrices, {});
+  const [state, formProps, pending] = useFormAction<FormState>(saveTransportPrices, {});
   const set = (key: string, patch: Partial<TransportPriceRow>) =>
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...patch } : r)));
   const invalid = rows.some((r) => r.unit_price === null || Number.isNaN(r.unit_price) || !r.name.trim());
@@ -50,7 +51,7 @@ export function TransportPricesEditor({
   }));
 
   return (
-    <form action={action} className="space-y-4">
+    <form {...formProps} className="space-y-4">
       <input type="hidden" name="contract_id" value={contractId} />
       <input type="hidden" name="lines" value={JSON.stringify(payload)} />
       {state.success && <Alert tone="success">{state.success}</Alert>}

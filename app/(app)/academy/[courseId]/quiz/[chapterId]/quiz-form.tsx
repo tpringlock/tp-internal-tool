@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -9,6 +9,7 @@ import type { FormState } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import type { QuizQuestionWithOptions } from "@/lib/academy/queries";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 /**
  * Renders a single-correct radio quiz and submits it for server-side grading.
@@ -30,7 +31,7 @@ export function QuizForm({
 }) {
   const t = useTranslations("Academy");
   const router = useRouter();
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     submitChapterQuiz,
     {},
   );
@@ -42,7 +43,7 @@ export function QuizForm({
   }, [state.success, router]);
 
   return (
-    <form action={action} className="space-y-6">
+    <form {...formProps} className="space-y-6">
       <input type="hidden" name="course_id" value={courseId} />
       <input type="hidden" name="chapter_id" value={chapterId} />
 

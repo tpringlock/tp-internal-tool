@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { createShareLink, revokeShareLink } from "@/app/actions/shares";
 import type { FormState } from "@/app/actions/auth";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/input";
 import { Alert } from "@/components/ui/alert";
 import { formatDateTime } from "@/lib/format";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 export interface ShareLinkView {
   id: string;
@@ -51,14 +52,14 @@ export function ShareManager({
   links: ShareLinkView[];
 }) {
   const t = useTranslations("Shares");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     createShareLink,
     {},
   );
 
   return (
     <div className="space-y-4">
-      <form action={action} className="space-y-3">
+      <form {...formProps} className="space-y-3">
         {state.success && <Alert tone="success">{state.success}</Alert>}
         {state.error && <Alert tone="error">{state.error}</Alert>}
 

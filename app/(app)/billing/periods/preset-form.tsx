@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { savePeriodPreset } from "@/app/actions/billing-periods";
 import type { FormState } from "@/app/actions/auth";
@@ -11,6 +11,7 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input, Select } from "@/components/ui/input";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 export interface PresetFormValue {
   id: string;
@@ -24,7 +25,7 @@ export interface PresetFormValue {
 /** Add (no `preset`) or edit a period preset (admin), with a live example period. */
 export function PresetForm({ preset, exampleMonth }: { preset?: PresetFormValue; exampleMonth: string }) {
   const t = useTranslations("BillingPresets");
-  const [state, action, pending] = useActionState<FormState, FormData>(savePeriodPreset, {});
+  const [state, formProps, pending] = useFormAction<FormState>(savePeriodPreset, {});
   const err = (f: string) => state.fieldErrors?.[f]?.[0];
   const [startDay, setStartDay] = useState(String(preset?.start_day ?? 26));
   const [months, setMonths] = useState(String(preset?.months ?? 1));
@@ -36,7 +37,7 @@ export function PresetForm({ preset, exampleMonth }: { preset?: PresetFormValue;
       : null;
 
   return (
-    <form action={action} className="space-y-4">
+    <form {...formProps} className="space-y-4">
       {preset && <input type="hidden" name="id" value={preset.id} />}
       {state.success && <Alert tone="success">{state.success}</Alert>}
       {state.error && <Alert tone="error">{state.error}</Alert>}

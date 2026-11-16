@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
 import {
@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Textarea } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 /** Shared title/category/description fields for create + edit. */
 function CourseFields({
@@ -77,13 +78,13 @@ function CourseFields({
 
 export function CreateCourseForm() {
   const t = useTranslations("AcademyAdmin");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     createCourse,
     {},
   );
 
   return (
-    <form action={action} className="space-y-4">
+    <form {...formProps} className="space-y-4">
       {state.error && <Alert tone="error">{state.error}</Alert>}
       <CourseFields t={t} state={state} />
       <Button type="submit" loading={pending}>
@@ -95,13 +96,13 @@ export function CreateCourseForm() {
 
 export function EditCourseForm({ course }: { course: Course }) {
   const t = useTranslations("AcademyAdmin");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     updateCourse,
     {},
   );
 
   return (
-    <form action={action} className="space-y-4">
+    <form {...formProps} className="space-y-4">
       <input type="hidden" name="id" value={course.id} />
       {state.success && <Alert tone="success">{state.success}</Alert>}
       {state.error && <Alert tone="error">{state.error}</Alert>}
@@ -115,7 +116,7 @@ export function EditCourseForm({ course }: { course: Course }) {
 
 export function ThumbnailManager({ course }: { course: Course }) {
   const t = useTranslations("AcademyAdmin");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     uploadCourseThumbnail,
     {},
   );
@@ -156,7 +157,7 @@ export function ThumbnailManager({ course }: { course: Course }) {
 
       <form
         ref={formRef}
-        action={action}
+        {...formProps}
         className="flex flex-wrap items-end gap-3"
       >
         <input type="hidden" name="course_id" value={course.id} />

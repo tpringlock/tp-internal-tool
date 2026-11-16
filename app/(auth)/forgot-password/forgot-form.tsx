@@ -1,17 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
 import { useTranslations } from "next-intl";
 import { requestPasswordReset, type FormState } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 export function ForgotPasswordForm() {
   const t = useTranslations("Auth");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     requestPasswordReset,
     {},
   );
@@ -33,7 +33,7 @@ export function ForgotPasswordForm() {
   }
 
   return (
-    <form action={action} className="space-y-4">
+    <form {...formProps} className="space-y-4">
       <p className="text-sm text-slate-600">{t("forgotIntro")}</p>
 
       <Field label={t("email")} htmlFor="email" error={state.fieldErrors?.email?.[0]}>

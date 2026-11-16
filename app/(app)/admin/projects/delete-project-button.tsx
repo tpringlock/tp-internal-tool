@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { X } from "lucide-react";
 import { deleteProject } from "@/app/actions/projects";
@@ -8,6 +8,7 @@ import type { FormState } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { useToast, useFormStateToast } from "@/components/ui/toast";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 /**
  * Delete control for a project row: danger button + confirmation dialog, shown
@@ -25,7 +26,7 @@ export function DeleteProjectButton({
   const t = useTranslations("Admin");
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     deleteProject,
     {},
   );
@@ -62,7 +63,7 @@ export function DeleteProjectButton({
           <Button variant="secondary" size="sm" onClick={() => setOpen(false)}>
             {t("cancel")}
           </Button>
-          <form action={action}>
+          <form {...formProps}>
             <input type="hidden" name="id" value={projectId} />
             <input type="hidden" name="name" value={projectName} />
             <Button variant="danger" size="sm" type="submit" loading={pending}>

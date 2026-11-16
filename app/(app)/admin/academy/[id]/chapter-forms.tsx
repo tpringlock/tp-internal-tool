@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowUp, ArrowDown, Trash2 } from "lucide-react";
 import {
@@ -15,16 +15,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 export function AddChapterForm({ courseId }: { courseId: string }) {
   const t = useTranslations("AcademyAdmin");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     addChapter,
     {},
   );
 
   return (
-    <form action={action} className="flex flex-wrap items-end gap-3">
+    <form {...formProps} className="flex flex-wrap items-end gap-3">
       <input type="hidden" name="course_id" value={courseId} />
       <div className="flex-1">
         <Field label={t("chapterTitle")} error={state.fieldErrors?.title?.[0]}>
@@ -52,14 +53,14 @@ export function ChapterHeader({
 }) {
   const t = useTranslations("AcademyAdmin");
   const [editing, setEditing] = useState(false);
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     updateChapter,
     {},
   );
 
   if (editing) {
     return (
-      <form action={action} className="space-y-3">
+      <form {...formProps} className="space-y-3">
         <input type="hidden" name="id" value={chapter.id} />
         <input type="hidden" name="course_id" value={courseId} />
         {state.error && <Alert tone="error">{state.error}</Alert>}

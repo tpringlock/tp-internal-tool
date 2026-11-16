@@ -1,17 +1,18 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { uploadCourseFile } from "@/app/actions/academy";
 import type { FormState } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 /** Upload a course-level PDF document (mirrors the lesson attachment form). */
 export function UploadCourseFileForm({ courseId }: { courseId: string }) {
   const t = useTranslations("AcademyAdmin");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     uploadCourseFile,
     {},
   );
@@ -22,7 +23,7 @@ export function UploadCourseFileForm({ courseId }: { courseId: string }) {
   }, [state.success]);
 
   return (
-    <form ref={formRef} action={action} className="flex flex-wrap items-end gap-3">
+    <form ref={formRef} {...formProps} className="flex flex-wrap items-end gap-3">
       <input type="hidden" name="course_id" value={courseId} />
       <div className="flex-1">
         <Field

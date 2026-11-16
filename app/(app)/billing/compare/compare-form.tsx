@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { compareDemoContracts, type CompareState } from "@/app/actions/billing";
 import { formatVnDate } from "@/lib/billing/dates";
@@ -11,6 +11,7 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 interface UploadOption {
   id: string;
@@ -37,7 +38,7 @@ export function CompareForm({
   const [from, setFrom] = useState(newest?.file_from ?? "");
   const [to, setTo] = useState(newest?.file_to ?? "");
   const [hideZero, setHideZero] = useState(true);
-  const [state, action, pending] = useActionState<CompareState, FormData>(
+  const [state, formProps, pending] = useFormAction<CompareState>(
     compareDemoContracts,
     {},
   );
@@ -52,7 +53,7 @@ export function CompareForm({
 
   return (
     <div className="space-y-6">
-      <form action={action} className="space-y-5">
+      <form {...formProps} className="space-y-5">
         {selected.map((id) => (
           <input key={id} type="hidden" name="upload_ids" value={id} />
         ))}

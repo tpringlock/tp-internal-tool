@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { X } from "lucide-react";
 import { addClient, editClient, deleteClient } from "@/app/actions/clients";
@@ -12,10 +12,11 @@ import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
 import { Dialog } from "@/components/ui/dialog";
 import { useToast, useFormStateToast } from "@/components/ui/toast";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 export function CreateClientForm() {
   const t = useTranslations("Admin");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     addClient,
     {},
   );
@@ -26,7 +27,7 @@ export function CreateClientForm() {
   }, [state.success]);
 
   return (
-    <form ref={formRef} action={action} className="space-y-4">
+    <form ref={formRef} {...formProps} className="space-y-4">
       {state.success && <Alert tone="success">{state.success}</Alert>}
       {state.error && <Alert tone="error">{state.error}</Alert>}
 
@@ -68,13 +69,13 @@ export function CreateClientForm() {
 /** Edit form for the client manage page. */
 export function EditClientForm({ client }: { client: Client }) {
   const t = useTranslations("Admin");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     editClient,
     {},
   );
 
   return (
-    <form action={action} className="space-y-4">
+    <form {...formProps} className="space-y-4">
       <input type="hidden" name="id" value={client.id} />
       {state.success && <Alert tone="success">{state.success}</Alert>}
       {state.error && <Alert tone="error">{state.error}</Alert>}
@@ -121,7 +122,7 @@ export function DeleteClientButton({
   const t = useTranslations("Admin");
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     deleteClient,
     {},
   );
@@ -153,7 +154,7 @@ export function DeleteClientButton({
           <Button variant="secondary" size="sm" onClick={() => setOpen(false)}>
             {t("cancel")}
           </Button>
-          <form action={action}>
+          <form {...formProps}>
             <input type="hidden" name="id" value={client.id} />
             <input type="hidden" name="name" value={client.name} />
             {redirectTo && (

@@ -21,7 +21,9 @@
     "retry": "Thử lại",
     "home": "Về trang chủ",
     "notFoundTitle": "Không tìm thấy trang",
-    "notFoundBody": "Trang bạn mở không tồn tại, đã bị xóa hoặc bạn không có quyền xem."
+    "notFoundBody": "Trang bạn mở không tồn tại, đã bị xóa hoặc bạn không có quyền xem.",
+    "offline": "Mất kết nối mạng nên chưa gửi được. Dữ liệu bạn nhập vẫn còn nguyên: kiểm tra mạng rồi bấm lại.",
+    "actionFailed": "Chưa gửi được yêu cầu. Dữ liệu bạn nhập vẫn còn nguyên: vui lòng thử lại, nếu vẫn lỗi hãy báo quản trị viên."
   },
   "BillingTour": {
     "help": "Hướng dẫn sử dụng",

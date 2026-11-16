@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Lock, Plus, Trash2 } from "lucide-react";
 import { savePeriodInputs } from "@/app/actions/billing-hstt";
@@ -15,6 +15,7 @@ import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field } from "@/components/ui/field";
 import { Input, Select, Textarea } from "@/components/ui/input";
 import { MoneyInput } from "../../money-input";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 const fmtMonth = (m: string) => `${m.slice(5, 7)}/${m.slice(0, 4)}`;
 const isNum = (v: number | null): v is number => v !== null && !Number.isNaN(v);
@@ -59,7 +60,7 @@ export function PeriodInputsForm({
 }) {
   const t = useTranslations("Hstt");
   const readOnly = block !== null;
-  const [state, action, pending] = useActionState<FormState, FormData>(savePeriodInputs, {});
+  const [state, formProps, pending] = useFormAction<FormState>(savePeriodInputs, {});
 
   const [transport, setTransport] = useState(() => initialTransport.map((r) => ({ ...r })));
   const [deductions, setDeductions] = useState(() =>
@@ -124,7 +125,7 @@ export function PeriodInputsForm({
         <p className="mt-1 text-sm text-slate-500">{t("periodSubtitle")}</p>
       </CardHeader>
       <CardBody>
-        <form action={action} className="space-y-6">
+        <form {...formProps} className="space-y-6">
           <input type="hidden" name="payload" value={JSON.stringify(payload)} />
           {block && block !== "viewer" && (
             <Alert tone="info" className="flex items-start gap-2">

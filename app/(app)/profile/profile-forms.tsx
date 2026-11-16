@@ -1,6 +1,5 @@
 "use client";
 
-import { useActionState } from "react";
 import { useTranslations } from "next-intl";
 import { updateProfile, changePassword } from "@/app/actions/profile";
 import type { FormState } from "@/app/actions/auth";
@@ -9,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
 import { Card, CardBody, CardHeader, CardTitle } from "@/components/ui/card";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 export function ProfileDetailsForm({
   email,
@@ -19,7 +19,7 @@ export function ProfileDetailsForm({
 }) {
   const t = useTranslations("Profile");
   const tc = useTranslations("Common");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     updateProfile,
     {},
   );
@@ -30,7 +30,7 @@ export function ProfileDetailsForm({
         <CardTitle>{t("yourDetails")}</CardTitle>
       </CardHeader>
       <CardBody>
-        <form action={action} className="space-y-4">
+        <form {...formProps} className="space-y-4">
           {state.success && <Alert tone="success">{state.success}</Alert>}
           {state.error && <Alert tone="error">{state.error}</Alert>}
 
@@ -63,7 +63,7 @@ export function ProfileDetailsForm({
 export function ChangePasswordForm() {
   const t = useTranslations("Profile");
   const tc = useTranslations("Common");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     changePassword,
     {},
   );
@@ -74,7 +74,7 @@ export function ChangePasswordForm() {
         <CardTitle>{t("changePassword")}</CardTitle>
       </CardHeader>
       <CardBody>
-        <form action={action} className="space-y-4">
+        <form {...formProps} className="space-y-4">
           {state.success && <Alert tone="success">{state.success}</Alert>}
           {state.error && <Alert tone="error">{state.error}</Alert>}
 

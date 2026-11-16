@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { uploadDocument } from "@/app/actions/documents";
 import type { FormState } from "@/app/actions/auth";
@@ -16,6 +16,7 @@ import { Input, Select } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
 import { useFormStateToast } from "@/components/ui/toast";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 export interface UploadProject {
   id: string;
@@ -40,7 +41,7 @@ export function UploadForm({
 }) {
   const t = useTranslations("Documents");
   const dt = useTranslations("DocTypes");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     uploadDocument,
     {},
   );
@@ -93,7 +94,7 @@ export function UploadForm({
       : null;
 
   return (
-    <form action={action} className="space-y-5">
+    <form {...formProps} className="space-y-5">
       {state.error && <Alert tone="error">{state.error}</Alert>}
 
       <Field

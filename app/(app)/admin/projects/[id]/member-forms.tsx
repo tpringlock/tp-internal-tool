@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { assignMember, unassignMember } from "@/app/actions/projects";
@@ -8,6 +8,7 @@ import type { FormState } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/input";
 import { Alert } from "@/components/ui/alert";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 export interface Candidate {
   id: string;
@@ -23,7 +24,7 @@ export function AssignMemberForm({
 }) {
   const t = useTranslations("Admin");
   const router = useRouter();
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     assignMember,
     {},
   );
@@ -43,7 +44,7 @@ export function AssignMemberForm({
   const noneToAdd = candidates.length === 0;
 
   return (
-    <form ref={formRef} action={action} className="space-y-3">
+    <form ref={formRef} {...formProps} className="space-y-3">
       {state.success && <Alert tone="success">{state.success}</Alert>}
       {state.error && <Alert tone="error">{state.error}</Alert>}
 

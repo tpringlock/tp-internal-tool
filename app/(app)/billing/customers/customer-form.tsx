@@ -1,6 +1,5 @@
 "use client";
 
-import { useActionState } from "react";
 import { useTranslations } from "next-intl";
 import { createBillingCustomer, updateBillingCustomer } from "@/app/actions/billing-hstt";
 import type { FormState } from "@/app/actions/auth";
@@ -8,6 +7,7 @@ import type { BillingCustomer } from "@/lib/db/types";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { PartyFields, type PartyField } from "../party-fields";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 const FIELDS: PartyField[] = [
   { name: "ten_in_hoa", required: true, wide: true },
@@ -37,12 +37,12 @@ export function CustomerForm({
   readOnly?: boolean;
 }) {
   const t = useTranslations("Hstt");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     customer ? updateBillingCustomer : createBillingCustomer,
     {},
   );
   return (
-    <form action={action} className="space-y-4">
+    <form {...formProps} className="space-y-4">
       {customer && <input type="hidden" name="id" value={customer.id} />}
       {returnTo && <input type="hidden" name="return_to" value={returnTo} />}
       {state.success && <Alert tone="success">{state.success}</Alert>}

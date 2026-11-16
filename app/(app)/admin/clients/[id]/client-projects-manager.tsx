@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { deleteProjects } from "@/app/actions/projects";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { useToast, useFormStateToast } from "@/components/ui/toast";
 import { DeleteProjectButton } from "../../projects/delete-project-button";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 export interface ClientProject {
   id: string;
@@ -34,7 +35,7 @@ export function ClientProjectsManager({
   const { toast } = useToast();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirming, setConfirming] = useState(false);
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     deleteProjects,
     {},
   );
@@ -166,7 +167,7 @@ export function ClientProjectsManager({
           <Button variant="secondary" size="sm" onClick={() => setConfirming(false)}>
             {t("cancel")}
           </Button>
-          <form action={action}>
+          <form {...formProps}>
             {[...selected].map((id) => (
               <input key={id} type="hidden" name="ids" value={id} />
             ))}

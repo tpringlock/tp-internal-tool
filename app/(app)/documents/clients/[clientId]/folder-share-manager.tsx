@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   createFolderShareLink,
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/input";
 import { Alert } from "@/components/ui/alert";
 import { formatDateTime } from "@/lib/format";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 export interface FolderShareLinkView {
   id: string;
@@ -54,7 +55,7 @@ export function FolderShareManager({
   links: FolderShareLinkView[];
 }) {
   const t = useTranslations("Shares");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     createFolderShareLink,
     {},
   );
@@ -63,7 +64,7 @@ export function FolderShareManager({
     <div className="space-y-4">
       <p className="text-sm text-slate-500">{t("folderShareHint")}</p>
 
-      <form action={action} className="space-y-3">
+      <form {...formProps} className="space-y-3">
         {state.success && <Alert tone="success">{state.success}</Alert>}
         {state.error && <Alert tone="error">{state.error}</Alert>}
 

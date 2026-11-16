@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Pencil } from "lucide-react";
 import { setUserRole, setUserActive, deleteUser } from "@/app/actions/users";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 type EditableUser = {
   id: string;
@@ -35,10 +36,8 @@ export function EditUserButton({
   const t = useTranslations("Admin");
   const [open, setOpen] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const [roleState, roleAction, rolePending] = useActionState<
-    FormState,
-    FormData
-  >(setUserRole, {});
+  const [roleState, roleActionProps, rolePending] = useFormAction<
+    FormState>(setUserRole, {});
 
   return (
     <>
@@ -66,7 +65,7 @@ export function EditUserButton({
             <p className="text-sm text-slate-700">{user.email}</p>
           </Field>
 
-          <form action={roleAction} className="space-y-1.5">
+          <form {...roleActionProps} className="space-y-1.5">
             <input type="hidden" name="user_id" value={user.id} />
             <Field label={t("role")}>
               <div className="flex items-center gap-2">

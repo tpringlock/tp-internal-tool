@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Trash2, X } from "lucide-react";
 import { deleteDocument } from "@/app/actions/documents";
@@ -8,6 +8,7 @@ import type { FormState } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { useToast, useFormStateToast } from "@/components/ui/toast";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 /**
  * Delete control for a document row on the project manage page: danger button
@@ -28,7 +29,7 @@ export function DeleteDocumentButton({
   const t = useTranslations("Admin");
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     deleteDocument,
     {},
   );
@@ -73,7 +74,7 @@ export function DeleteDocumentButton({
           <Button variant="secondary" size="sm" onClick={() => setOpen(false)}>
             {t("cancel")}
           </Button>
-          <form action={action}>
+          <form {...formProps}>
             <input type="hidden" name="id" value={documentId} />
             <Button variant="danger" size="sm" type="submit" loading={pending}>
               {t("confirmDelete")}

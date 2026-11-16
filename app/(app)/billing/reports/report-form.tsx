@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { AlertTriangle, Download, ExternalLink } from "lucide-react";
 import { runRentReport, type ReportState } from "@/app/actions/billing-reports";
@@ -18,6 +18,7 @@ import { Input, Select } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { useToast } from "@/components/ui/toast";
 import { fetchDownload } from "@/lib/fetch-download";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 export interface ReportContractOption {
   id: string;
@@ -72,7 +73,7 @@ export function ReportForm({
   const [hideZero, setHideZero] = useState(false);
   // The parameters of the report on screen, for the Excel export.
   const [ranWith, setRanWith] = useState<[string, string][]>([]);
-  const [state, action, pending] = useActionState<ReportState, FormData>(async (prev, fd) => {
+  const [state, formProps, pending] = useFormAction<ReportState>(async (prev, fd) => {
     setRanWith([...fd.entries()].map(([k, v]) => [k, String(v)]));
     return runRentReport(prev, fd);
   }, {});
@@ -107,7 +108,7 @@ export function ReportForm({
     <div className="space-y-6">
       <Card>
         <CardBody>
-          <form action={action} className="space-y-5">
+          <form {...formProps} className="space-y-5">
             {selected.map((id) => (
               <input key={id} type="hidden" name="contract_ids" value={id} />
             ))}
