@@ -92,9 +92,22 @@ export default async function AdminClientsPage({
         </CardHeader>
         <CardBody className="overflow-x-auto p-0">
           {clients.length === 0 ? (
-            <p className="px-5 py-6 text-sm text-slate-500">
-              {t("noClients")}
-            </p>
+            term ? (
+              // A search with no hits is not an empty customer list.
+              <p className="px-5 py-6 text-sm text-slate-500">
+                {t("noClientsMatch", { query: term })}{" "}
+                <Link
+                  href="/admin/clients"
+                  className="font-medium text-primary underline hover:text-primary-hover"
+                >
+                  {t("clearSearch")}
+                </Link>
+              </p>
+            ) : (
+              <p className="px-5 py-6 text-sm text-slate-500">
+                {t("noClients")}
+              </p>
+            )
           ) : (
             <table className="responsive-table w-full text-sm">
               <thead>

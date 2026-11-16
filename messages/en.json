@@ -413,6 +413,8 @@
     "addClientButton": "Add client",
     "allClients": "All clients ({count})",
     "noClients": "No clients yet. Add your first one above.",
+    "noClientsMatch": "No clients match “{query}”.",
+    "clearSearch": "Clear search",
     "clientCodeHint": "Short unique code, e.g. ACME.",
     "taxCode": "Tax code",
     "address": "Address",

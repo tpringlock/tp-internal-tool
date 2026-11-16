@@ -413,6 +413,8 @@
     "addClientButton": "Thêm khách hàng",
     "allClients": "Tất cả khách hàng ({count})",
     "noClients": "Chưa có khách hàng nào. Hãy thêm khách hàng đầu tiên ở trên.",
+    "noClientsMatch": "Không tìm thấy khách hàng nào khớp với “{query}”.",
+    "clearSearch": "Xóa bộ lọc",
     "clientCodeHint": "Mã ngắn, duy nhất, ví dụ ACME.",
     "taxCode": "Mã số thuế",
     "address": "Địa chỉ",
