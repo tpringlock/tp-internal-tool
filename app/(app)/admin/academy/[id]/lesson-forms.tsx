@@ -188,7 +188,7 @@ export function LessonEditor({
         <span className="flex-1 text-sm font-medium text-slate-900">
           {lesson.title}
           {lesson.video_provider && (
-            <span className="ml-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs font-normal text-slate-500">
+            <span className="ml-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs font-normal text-slate-600">
               {lesson.video_provider === "self_hosted"
                 ? t("providerSelfHosted")
                 : lesson.video_provider}

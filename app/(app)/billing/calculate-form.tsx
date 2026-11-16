@@ -199,7 +199,7 @@ export function CalculateForm({
             onClick={() => setMode(m)}
             className={cn(
               "flex-1 whitespace-nowrap rounded-lg px-3.5 py-2 text-sm font-medium transition-colors sm:flex-none",
-              mode === m ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900",
+              mode === m ? "bg-white text-slate-900 shadow-sm" : "text-slate-600 hover:text-slate-900",
             )}
           >
             {m === "preset" ? t("modePreset") : t("modeRange")}

@@ -5,7 +5,7 @@ import type { BillingCalcStatus } from "@/lib/db/types";
 const TONES: Record<BillingCalcStatus, string> = {
   draft: "bg-amber-50 text-amber-800 ring-amber-200",
   confirmed: "bg-green-50 text-green-800 ring-green-200",
-  voided: "bg-slate-100 text-slate-500 ring-slate-200 line-through",
+  voided: "bg-slate-100 text-slate-600 ring-slate-200 line-through",
 };
 
 /** Draft / confirmed / voided pill for a rent calculation. */
