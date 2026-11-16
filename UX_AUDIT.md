@@ -247,6 +247,10 @@ Hai chỗ vượt ngưỡng: LCP `/academy` trên mobile (3.75s, ngưỡng 2.5s)
 - V-04 toast sau khi xóa.
 - V-06 `Field` tự gắn nhãn / lỗi, focus field lỗi đầu tiên.
 - V-08 hàm chuyển lỗi thô thành thông báo thân thiện.
+- V-05 (bổ sung): đo tương phản trang chi tiết khóa học (`text-white/70`, `text-white/85` ở `app/(app)/academy/[courseId]/page.tsx:80,86`) và dòng tagline trang login (`text-white/80` trên ảnh nền, `app/(auth)/layout.tsx:44`); sửa nếu dưới 4.5:1. Hai chỗ này chưa nằm trong các trang đã đo ở Đợt 1.
+- Kiểm thử thật toast hiển thị trong dialog đang mở (thay đổi của V-03) trên DB dev.
+
+Điều kiện bắt đầu Đợt 2: đã có Supabase project dev (nhánh `chore/dev-env`); mọi test ghi chạy trên dev, không chạy trên production.
 
 **Đợt 3 — Hoàn thiện (M)**
 - V-10 tiêu đề từng trang.
