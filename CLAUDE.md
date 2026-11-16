@@ -95,7 +95,7 @@ Lint hiện có sẵn 6 lỗi cũ (`react-hooks/set-state-in-effect` ở admin/c
 
 ### Code style
 
-- File dùng line ending **CRLF**, giữ nguyên, đừng chuyển sang LF.
+- File dùng line ending **LF** (repo lưu LF trong index; `.gitattributes` ép `eol=lf` trên mọi hệ điều hành, kể cả Windows). Đừng chuyển sang CRLF.
 - Comment trong code viết tiếng Anh, text UI viết tiếng Việt.
 - Ưu tiên Server Components. Chỉ dùng `"use client"` khi cần state, event hoặc hook trình duyệt.
 - Thêm test vitest cho logic thuần mới (đặt `*.test.ts` cạnh file).
