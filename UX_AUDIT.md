@@ -210,7 +210,7 @@ Hai chỗ vượt ngưỡng: LCP `/academy` trên mobile (3.75s, ngưỡng 2.5s)
 | V-24 | Lỗi a11y nhỏ | không có skip link; trang login/share/404 thiếu `<main>` (axe `region`, `landmark-one-main`); 14 `<th>` rỗng cho cột hành động; logo `alt` trùng chữ bên cạnh; `aria-label` trên `<span>` (`app/(app)/admin/users/page.tsx:126`); `/academy` nhảy h1 → h3; login không autofocus ô email | sửa từng mục | S |
 | V-25 | Không có `robots.txt`/`noindex` | Lighthouse SEO 92 do `robots-txt`; trang share công khai không có meta robots | `app/robots.ts` chặn toàn bộ; `robots: { index: false }` ở root metadata | S |
 | V-26 | Vài trang còn gọi DB nối tiếp | `app/(app)/billing/calculations/[id]/page.tsx:45,52,82,83` (4 lượt), `billing/history/page.tsx:38,39,60` (3 lượt); TTFB `/billing/contracts/[id]` 348–447ms | gộp các lượt độc lập vào `Promise.all` | S |
-| V-27 | Sidebar Admin không dính khi cuộn trang dài | `pages/admin_clients-desktop.png` (menu hết ở giữa trang) | `sticky top-16` như `workspace-aside.tsx:68` | S |
+| ~~V-27~~ | ~~Sidebar Admin không dính khi cuộn trang dài~~ **Rút lại (17/11):** phát hiện sai. Sidebar đã `sticky`; ảnh chụp toàn trang `pages/admin_clients-desktop.png` vẽ nó một lần ở đầu trang nên trông như bị cụt. Kiểm tra lại bằng cách cuộn 1400px: menu vẫn ở `top: 64px` (`batch-1/before/V-27-admin-nav-scrolled.png`) | – | không cần sửa | – |
 | V-28 | Skeleton chung không khớp bố cục từng trang | cả 5 `loading.tsx` dùng `PageSkeleton` (tiêu đề + 6 thẻ) dù trang là bảng | skeleton dạng bảng cho trang danh sách. CLS đo được vẫn = 0 nên ưu tiên thấp | S |
 
 ---
@@ -240,7 +240,7 @@ Hai chỗ vượt ngưỡng: LCP `/academy` trên mobile (3.75s, ngưỡng 2.5s)
 - V-07 giữ query string khi đăng nhập.
 - V-09 404 cho uuid sai.
 - V-11 định dạng ngày giờ.
-- V-20, V-21, V-25, V-27 (text tiếng Anh, empty state, robots, sidebar sticky).
+- V-20, V-21, V-25 (text tiếng Anh, empty state, robots). V-27 đã rút lại.
 
 **Đợt 2 — Độ tin cậy của form (M, 2–3 ngày)**
 - V-01 + V-02 làm chung một hook gửi form (giữ dữ liệu khi lỗi, bắt lỗi mạng).
