@@ -51,7 +51,13 @@ export function AssignMemberForm({
       <input type="hidden" name="project_id" value={projectId} />
       <div className="flex flex-wrap items-end gap-3">
         <div className="w-full sm:min-w-56 sm:flex-1">
-          <Select name="user_id" defaultValue="" required disabled={noneToAdd}>
+          <Select
+            name="user_id"
+            aria-label={t("selectEmployee")}
+            defaultValue=""
+            required
+            disabled={noneToAdd}
+          >
             <option value="" disabled>
               {t("selectEmployee")}
             </option>

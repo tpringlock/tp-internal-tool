@@ -71,10 +71,10 @@ export function FolderShareManager({
         <input type="hidden" name="client_id" value={clientId} />
         <div className="flex flex-wrap items-end gap-3">
           <div className="min-w-40">
-            <label className="mb-1 block text-xs font-medium text-slate-500">
+            <label htmlFor="folder-share-manager-days" className="mb-1 block text-xs font-medium text-slate-500">
               {t("linkValidFor")}
             </label>
-            <Select name="days" defaultValue="3">
+            <Select id="folder-share-manager-days" name="days" defaultValue="3">
               <option value="1">{t("days", { count: 1 })}</option>
               <option value="3">{t("days", { count: 3 })}</option>
               <option value="7">{t("days", { count: 7 })}</option>

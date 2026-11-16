@@ -216,6 +216,8 @@ export function UploadForm({
         <input
           type="checkbox"
           name="signed"
+          aria-invalid={state.fieldErrors?.signed ? true : undefined}
+          aria-describedby={state.fieldErrors?.signed ? "signed-error" : undefined}
           className="mt-0.5 h-4 w-4 rounded border-slate-300"
         />
         <span>
@@ -225,7 +227,9 @@ export function UploadForm({
         </span>
       </label>
       {state.fieldErrors?.signed?.[0] && (
-        <p className="text-xs text-red-600">{state.fieldErrors.signed[0]}</p>
+        <p id="signed-error" className="text-xs text-red-600">
+          {state.fieldErrors.signed[0]}
+        </p>
       )}
 
       <Button type="submit" loading={pending} disabled={!!fileError}>
