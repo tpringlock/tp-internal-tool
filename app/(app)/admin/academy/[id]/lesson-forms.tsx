@@ -24,7 +24,7 @@ import { formatBytes } from "@/lib/format";
 import { VideoUploadForm, uploadLessonVideoFile } from "./video-upload-form";
 import { validateVideoFile } from "@/lib/academy/video-validation";
 import { MAX_VIDEO_SIZE_LABEL } from "@/lib/academy/constants";
-import { useFormAction } from "@/components/ui/use-form-action";
+import { useActionFailureMessage, useFormAction } from "@/components/ui/use-form-action";
 import { ActionForm } from "@/components/ui/action-form";
 
 type LessonWithFiles = Lesson & { files: Pick<LessonFile, "id" | "file_name" | "file_size">[] };
@@ -41,9 +41,11 @@ export function AddLessonForm({
   const { toast } = useToast();
   const [state, setState] = useState<FormState>({});
   const [pending, setPending] = useState(false);
+  const failureMessage = useActionFailureMessage();
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (pending) return;
     setState({});
     const form = e.currentTarget;
     const formData = new FormData(form);
@@ -82,6 +84,7 @@ export function AddLessonForm({
             sizeErrorMessage: t("errVideoSize", {
               size: MAX_VIDEO_SIZE_LABEL,
             }),
+            failedMessage: t("errUploadFailed"),
           },
         );
         if (uploadError) {
@@ -96,7 +99,8 @@ export function AddLessonForm({
       setState({ success: res.success });
       router.refresh();
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
+      // What was typed stays (the form is reset only on success).
+      const message = failureMessage(err);
       setState({ error: message });
       toast(message, { tone: "error" });
     } finally {

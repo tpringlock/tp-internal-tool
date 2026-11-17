@@ -178,3 +178,28 @@ export function useActionCall<S extends BaseFormState>(
   );
   return [state, call, pending];
 }
+
+/**
+ * For client flows that call server actions or Storage themselves, in
+ * several steps (video upload, add lesson with a video, note auto-save):
+ * the same failure wording as useFormAction.
+ *
+ *   const failureMessage = useActionFailureMessage();
+ *   try { … } catch (error) { setError(failureMessage(error)); }
+ *
+ * Next's redirect / notFound errors are rethrown; anything else is logged in
+ * the browser console and becomes the offline or generic message, never the
+ * raw text ("Failed to fetch", "An unexpected response was received…").
+ */
+export function useActionFailureMessage(): (error: unknown) => string {
+  const t = useTranslations("Errors");
+  return React.useCallback(
+    (error: unknown) => {
+      unstable_rethrow(error);
+      console.error(error);
+      const online = typeof navigator === "undefined" || navigator.onLine;
+      return online ? t("actionFailed") : t("offline");
+    },
+    [t],
+  );
+}
