@@ -24,6 +24,8 @@ export interface RunFormActionDeps {
   messages: { offline: string; failed: string };
   /** Called when the action redirected, i.e. succeeded and navigates away. */
   onRedirect?: () => void;
+  /** Called when a thrown failure was turned into an error state. */
+  onFailure?: (error: unknown) => void;
 }
 
 /** A Next.js redirect thrown by a server action that called redirect(). */
@@ -61,6 +63,7 @@ export async function runFormAction<S extends BaseFormState>(
   } catch (error) {
     if (isRedirectError(error)) deps.onRedirect?.();
     deps.rethrow(error);
+    deps.onFailure?.(error);
     return {
       ...prev,
       success: undefined,

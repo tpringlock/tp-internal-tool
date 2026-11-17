@@ -16,6 +16,7 @@ import { Input, Textarea } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
 import { useFormAction } from "@/components/ui/use-form-action";
+import { ActionForm } from "@/components/ui/action-form";
 
 /** Shared title/category/description fields for create + edit. */
 function CourseFields({
@@ -145,13 +146,13 @@ export function ThumbnailManager({ course }: { course: Course }) {
           )}
         </div>
         {course.thumbnail_path && (
-          <form action={removeCourseThumbnail}>
+          <ActionForm action={removeCourseThumbnail}>
             <input type="hidden" name="course_id" value={course.id} />
             <Button type="submit" variant="ghost" size="sm">
               <Trash2 className="h-4 w-4" aria-hidden />
               {t("removeThumbnail")}
             </Button>
-          </form>
+          </ActionForm>
         )}
       </div>
 

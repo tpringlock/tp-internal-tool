@@ -7,6 +7,7 @@ import { logout } from "@/app/actions/auth";
 import { cn } from "@/lib/utils";
 import type { UserRole } from "@/lib/db/types";
 import { DropdownMenu, menuItemClass } from "@/components/ui/dropdown-menu";
+import { ActionForm } from "@/components/ui/action-form";
 
 /**
  * Letter shown in the avatar. Vietnamese names put the given name last
@@ -113,7 +114,7 @@ export function UserMenu({
             {t("profile")}
           </Link>
 
-          <form action={logout}>
+          <ActionForm action={logout}>
             <button
               type="submit"
               role="menuitem"
@@ -125,7 +126,7 @@ export function UserMenu({
               <LogOut className="h-4 w-4" aria-hidden />
               {t("signOut")}
             </button>
-          </form>
+          </ActionForm>
         </>
       )}
     </DropdownMenu>

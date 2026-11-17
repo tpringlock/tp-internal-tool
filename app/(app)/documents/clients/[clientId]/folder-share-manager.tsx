@@ -12,6 +12,7 @@ import { Select } from "@/components/ui/input";
 import { Alert } from "@/components/ui/alert";
 import { formatDateTime } from "@/lib/format";
 import { useFormAction } from "@/components/ui/use-form-action";
+import { ActionForm } from "@/components/ui/action-form";
 
 export interface FolderShareLinkView {
   id: string;
@@ -121,13 +122,13 @@ export function FolderShareManager({
                       {link.url}
                     </code>
                     <CopyButton url={link.url} />
-                    <form action={revokeFolderShareLink}>
+                    <ActionForm action={revokeFolderShareLink}>
                       <input type="hidden" name="id" value={link.id} />
                       <input type="hidden" name="client_id" value={clientId} />
                       <Button type="submit" variant="danger" size="sm">
                         {t("revoke")}
                       </Button>
-                    </form>
+                    </ActionForm>
                   </div>
                 )}
               </li>

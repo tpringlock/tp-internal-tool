@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/input";
 import { Alert } from "@/components/ui/alert";
 import { useFormAction } from "@/components/ui/use-form-action";
+import { ActionForm } from "@/components/ui/action-form";
 
 export interface Candidate {
   id: string;
@@ -88,12 +89,12 @@ export function RemoveMemberButton({
 }) {
   const t = useTranslations("Admin");
   return (
-    <form action={unassignMember}>
+    <ActionForm action={unassignMember}>
       <input type="hidden" name="project_id" value={projectId} />
       <input type="hidden" name="user_id" value={userId} />
       <Button type="submit" variant="danger" size="sm">
         {t("remove")}
       </Button>
-    </form>
+    </ActionForm>
   );
 }

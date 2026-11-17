@@ -12,6 +12,7 @@ import { DeleteUserButton } from "./delete-user-button";
 import type { Profile } from "@/lib/db/types";
 import { ModuleEyebrow } from "@/components/page-title";
 import { DialogButton } from "@/components/dialog-button";
+import { ActionForm } from "@/components/ui/action-form";
 
 const PAGE_SIZE = 50;
 
@@ -141,7 +142,7 @@ export default async function AdminUsersPage({
                           }}
                           disabled={isSelf}
                         />
-                        <form action={setUserActive}>
+                        <ActionForm action={setUserActive}>
                           <input type="hidden" name="user_id" value={u.id} />
                           <input
                             type="hidden"
@@ -161,7 +162,7 @@ export default async function AdminUsersPage({
                           >
                             <KeyRound className="h-4 w-4" />
                           </button>
-                        </form>
+                        </ActionForm>
                         <DeleteUserButton
                           userId={u.id}
                           email={u.email}

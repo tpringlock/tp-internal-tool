@@ -9,6 +9,7 @@ import { Select } from "@/components/ui/input";
 import { Alert } from "@/components/ui/alert";
 import { formatDateTime } from "@/lib/format";
 import { useFormAction } from "@/components/ui/use-form-action";
+import { ActionForm } from "@/components/ui/action-form";
 
 export interface ShareLinkView {
   id: string;
@@ -120,7 +121,7 @@ export function ShareManager({
                       {link.url}
                     </code>
                     <CopyButton url={link.url} />
-                    <form action={revokeShareLink}>
+                    <ActionForm action={revokeShareLink}>
                       <input type="hidden" name="id" value={link.id} />
                       <input
                         type="hidden"
@@ -130,7 +131,7 @@ export function ShareManager({
                       <Button type="submit" variant="danger" size="sm">
                         {t("revoke")}
                       </Button>
-                    </form>
+                    </ActionForm>
                   </div>
                 )}
               </li>

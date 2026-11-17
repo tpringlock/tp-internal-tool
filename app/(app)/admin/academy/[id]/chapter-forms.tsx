@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
 import { useFormAction } from "@/components/ui/use-form-action";
+import { ActionForm } from "@/components/ui/action-form";
 
 export function AddChapterForm({ courseId }: { courseId: string }) {
   const t = useTranslations("AcademyAdmin");
@@ -87,7 +88,7 @@ export function ChapterHeader({
   return (
     <div className="flex items-center gap-2">
       <div className="flex flex-col">
-        <form action={reorderChapter}>
+        <ActionForm action={reorderChapter}>
           <input type="hidden" name="id" value={chapter.id} />
           <input type="hidden" name="course_id" value={courseId} />
           <input type="hidden" name="direction" value="up" />
@@ -99,8 +100,8 @@ export function ChapterHeader({
           >
             <ArrowUp className="h-4 w-4" />
           </button>
-        </form>
-        <form action={reorderChapter}>
+        </ActionForm>
+        <ActionForm action={reorderChapter}>
           <input type="hidden" name="id" value={chapter.id} />
           <input type="hidden" name="course_id" value={courseId} />
           <input type="hidden" name="direction" value="down" />
@@ -112,7 +113,7 @@ export function ChapterHeader({
           >
             <ArrowDown className="h-4 w-4" />
           </button>
-        </form>
+        </ActionForm>
       </div>
       <h3 className="flex-1 text-sm font-semibold text-slate-800">
         {chapter.title}
@@ -120,7 +121,7 @@ export function ChapterHeader({
       <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
         {t("rename")}
       </Button>
-      <form action={deleteChapter}>
+      <ActionForm action={deleteChapter}>
         <input type="hidden" name="id" value={chapter.id} />
         <input type="hidden" name="course_id" value={courseId} />
         <button
@@ -130,7 +131,7 @@ export function ChapterHeader({
         >
           <Trash2 className="h-4 w-4" />
         </button>
-      </form>
+      </ActionForm>
     </div>
   );
 }

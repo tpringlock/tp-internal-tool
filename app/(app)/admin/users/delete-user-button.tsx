@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import { deleteUser } from "@/app/actions/users";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
+import { ActionForm } from "@/components/ui/action-form";
 
 /**
  * Delete control for a user row: a danger button that opens a confirmation
@@ -50,13 +51,13 @@ export function DeleteUserButton({
           <Button variant="secondary" size="sm" onClick={() => setOpen(false)}>
             {t("cancel")}
           </Button>
-          <form action={deleteUser}>
+          <ActionForm action={deleteUser}>
             <input type="hidden" name="user_id" value={userId} />
             <input type="hidden" name="email" value={email} />
             <Button variant="danger" size="sm" type="submit">
               {t("confirmDelete")}
             </Button>
-          </form>
+          </ActionForm>
         </div>
       </Dialog>
     </>

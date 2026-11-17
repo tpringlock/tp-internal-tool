@@ -25,6 +25,11 @@ export interface UseFormActionOptions<S> {
   onResult?: (state: S) => void;
   /** Runs when the action redirected (it succeeded and navigates away). */
   onRedirect?: () => void;
+  /**
+   * Wording for a failed request, when the default ("what you typed is
+   * still here") does not fit, e.g. a form that is only a button.
+   */
+  failureMessages?: { offline: string; failed: string };
 }
 
 /**
@@ -67,7 +72,7 @@ export function useFormAction<S extends BaseFormState>(
     const next = await runFormAction(current.action, prev as S, formData, {
       rethrow: unstable_rethrow,
       isOnline: () => typeof navigator === "undefined" || navigator.onLine,
-      messages: { offline: current.offline, failed: current.failed },
+      messages: current.options.failureMessages ?? { offline: current.offline, failed: current.failed },
       onRedirect: current.options.onRedirect,
     });
     const form = formRef.current;
@@ -112,4 +117,64 @@ export function useFormAction<S extends BaseFormState>(
   );
 
   return [state, { action: dispatch, onSubmit }, pending];
+}
+
+export interface UseActionCallOptions {
+  /**
+   * A failed request normally keeps the previous state and adds `error`.
+   * With this, the state becomes just `{ error }`: for a preview / check
+   * step, whose previous result belongs to another file.
+   */
+  resetOnFailure?: boolean;
+  /** Runs when the request failed (offline, dropped connection, server error). */
+  onFailure?: (formData: FormData) => void;
+}
+
+/**
+ * `useActionState` for an action that is called from code instead of a form
+ * submit (multi-step uploads: choose a file -> the server checks it ->
+ * confirm):
+ *
+ *   const [state, call, pending] = useActionCall(inspectFiles, {});
+ *   call(formData);
+ *
+ * Same failure handling as useFormAction: a request that throws becomes
+ * `state.error` instead of the route error page, and a redirect still
+ * navigates. `call` starts its own transition.
+ */
+export function useActionCall<S extends BaseFormState>(
+  action: (prev: S, formData: FormData) => Promise<S>,
+  initialState: S,
+  options: UseActionCallOptions = {},
+): [state: S, call: (formData: FormData) => void, pending: boolean] {
+  const t = useTranslations("Errors");
+  const latest = React.useRef({ action, options, offline: t("offline"), failed: t("actionFailed") });
+  React.useEffect(() => {
+    latest.current = { action, options, offline: t("offline"), failed: t("actionFailed") };
+  });
+
+  const run = async (prev: Awaited<S>, formData: FormData): Promise<S> => {
+    const current = latest.current;
+    let failed = false;
+    const next = await runFormAction(current.action, prev as S, formData, {
+      rethrow: unstable_rethrow,
+      isOnline: () => typeof navigator === "undefined" || navigator.onLine,
+      messages: { offline: current.offline, failed: current.failed },
+      onFailure: () => {
+        failed = true;
+      },
+    });
+    if (!failed) return next;
+    current.options.onFailure?.(formData);
+    return current.options.resetOnFailure ? ({ error: next.error } as S) : next;
+  };
+  const [state, dispatch, pending] = React.useActionState<S, FormData>(
+    run,
+    initialState as Awaited<S>,
+  );
+  const call = React.useCallback(
+    (formData: FormData) => React.startTransition(() => dispatch(formData)),
+    [dispatch],
+  );
+  return [state, call, pending];
 }

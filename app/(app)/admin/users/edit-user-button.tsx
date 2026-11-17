@@ -12,6 +12,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
 import { useFormAction } from "@/components/ui/use-form-action";
+import { ActionForm } from "@/components/ui/action-form";
 
 type EditableUser = {
   id: string;
@@ -106,7 +107,7 @@ export function EditUserButton({
                 />
                 {user.is_active ? t("active") : t("locked")}
               </span>
-              <form action={setUserActive}>
+              <ActionForm action={setUserActive}>
                 <input type="hidden" name="user_id" value={user.id} />
                 <input
                   type="hidden"
@@ -121,7 +122,7 @@ export function EditUserButton({
                 >
                   {user.is_active ? t("lockAccount") : t("unlockAccount")}
                 </Button>
-              </form>
+              </ActionForm>
             </div>
           </Field>
 
@@ -150,13 +151,13 @@ export function EditUserButton({
                     >
                       {t("cancel")}
                     </Button>
-                    <form action={deleteUser}>
+                    <ActionForm action={deleteUser}>
                       <input type="hidden" name="user_id" value={user.id} />
                       <input type="hidden" name="email" value={user.email} />
                       <Button type="submit" variant="danger" size="sm">
                         {t("confirmDelete")}
                       </Button>
-                    </form>
+                    </ActionForm>
                   </div>
                 </div>
               )}

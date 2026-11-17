@@ -27,6 +27,7 @@ import { enrollAndStart } from "@/app/actions/academy";
 import { formatDateTime } from "@/lib/format";
 import { CourseThumb } from "../course-card";
 import { CourseContentPanel } from "./course-content-panel";
+import { ActionForm } from "@/components/ui/action-form";
 
 export default async function CoursePage({
   params,
@@ -223,7 +224,7 @@ export default async function CoursePage({
                 </div>
               )}
 
-              <form action={enrollAndStart}>
+              <ActionForm action={enrollAndStart}>
                 <input type="hidden" name="course_id" value={course.id} />
                 {firstLesson && (
                   <input
@@ -239,7 +240,7 @@ export default async function CoursePage({
                 >
                   {cta}
                 </Button>
-              </form>
+              </ActionForm>
 
               <div className="space-y-2 border-t border-slate-100 pt-4">
                 <p className="text-sm font-medium text-slate-800">

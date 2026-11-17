@@ -29,6 +29,7 @@ import { formatBytes } from "@/lib/format";
 import type { Lesson, LessonFile } from "@/lib/db/types";
 import { CourseContentPanel } from "../course-content-panel";
 import { LessonNotes } from "./notes";
+import { ActionForm } from "@/components/ui/action-form";
 
 /** A checkbox-styled submit button toggling lesson completion (no client JS). */
 function CompleteCheckbox({
@@ -43,7 +44,7 @@ function CompleteCheckbox({
   ariaLabel: string;
 }) {
   return (
-    <form action={toggleLessonComplete} className="flex">
+    <ActionForm action={toggleLessonComplete} className="flex">
       <input type="hidden" name="lesson_id" value={lessonId} />
       <input type="hidden" name="course_id" value={courseId} />
       <input type="hidden" name="complete" value={done ? "false" : "true"} />
@@ -59,7 +60,7 @@ function CompleteCheckbox({
       >
         {done && <Check className="h-3.5 w-3.5" aria-hidden />}
       </button>
-    </form>
+    </ActionForm>
   );
 }
 

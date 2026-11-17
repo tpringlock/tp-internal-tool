@@ -25,6 +25,7 @@ import { VideoUploadForm, uploadLessonVideoFile } from "./video-upload-form";
 import { validateVideoFile } from "@/lib/academy/video-validation";
 import { MAX_VIDEO_SIZE_LABEL } from "@/lib/academy/constants";
 import { useFormAction } from "@/components/ui/use-form-action";
+import { ActionForm } from "@/components/ui/action-form";
 
 type LessonWithFiles = Lesson & { files: Pick<LessonFile, "id" | "file_name" | "file_size">[] };
 
@@ -159,7 +160,7 @@ export function LessonEditor({
     <div className="border-b border-slate-100 last:border-0">
       <div className="flex items-center gap-2 px-5 py-3">
         <div className="flex flex-col">
-          <form action={reorderLesson}>
+          <ActionForm action={reorderLesson}>
             <input type="hidden" name="id" value={lesson.id} />
             <input type="hidden" name="course_id" value={courseId} />
             <input type="hidden" name="direction" value="up" />
@@ -171,8 +172,8 @@ export function LessonEditor({
             >
               <ArrowUp className="h-4 w-4" />
             </button>
-          </form>
-          <form action={reorderLesson}>
+          </ActionForm>
+          <ActionForm action={reorderLesson}>
             <input type="hidden" name="id" value={lesson.id} />
             <input type="hidden" name="course_id" value={courseId} />
             <input type="hidden" name="direction" value="down" />
@@ -184,7 +185,7 @@ export function LessonEditor({
             >
               <ArrowDown className="h-4 w-4" />
             </button>
-          </form>
+          </ActionForm>
         </div>
         <span className="flex-1 text-sm font-medium text-slate-900">
           {lesson.title}
@@ -224,7 +225,7 @@ export function LessonEditor({
                     </span>
                   )}
                 </span>
-                <form action={removeLessonVideo}>
+                <ActionForm action={removeLessonVideo}>
                   <input type="hidden" name="lesson_id" value={lesson.id} />
                   <input type="hidden" name="course_id" value={courseId} />
                   <button
@@ -234,7 +235,7 @@ export function LessonEditor({
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
-                </form>
+                </ActionForm>
               </div>
             ) : (
               <VideoUploadForm courseId={courseId} lessonId={lesson.id} />
@@ -259,7 +260,7 @@ export function LessonEditor({
                         {formatBytes(file.file_size)}
                       </span>
                     </span>
-                    <form action={deleteLessonFile}>
+                    <ActionForm action={deleteLessonFile}>
                       <input type="hidden" name="id" value={file.id} />
                       <input type="hidden" name="course_id" value={courseId} />
                       <button
@@ -269,7 +270,7 @@ export function LessonEditor({
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
-                    </form>
+                    </ActionForm>
                   </li>
                 ))}
               </ul>
@@ -277,13 +278,13 @@ export function LessonEditor({
             <UploadFileForm courseId={courseId} lessonId={lesson.id} />
           </div>
 
-          <form action={deleteLesson}>
+          <ActionForm action={deleteLesson}>
             <input type="hidden" name="id" value={lesson.id} />
             <input type="hidden" name="course_id" value={courseId} />
             <Button type="submit" variant="danger" size="sm">
               {t("deleteLesson")}
             </Button>
-          </form>
+          </ActionForm>
         </div>
       )}
     </div>

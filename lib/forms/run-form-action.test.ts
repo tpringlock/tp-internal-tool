@@ -79,6 +79,33 @@ describe("runFormAction", () => {
     expect(onRedirect).toHaveBeenCalledTimes(1);
   });
 
+  it("lets through the exact error Next rejects a redirecting server action with", async () => {
+    // server-action-reducer.js: getRedirectError(href, type) + handled = true.
+    const { getRedirectError } = await import("next/dist/client/components/redirect");
+    for (const type of ["push", "replace"] as const) {
+      const error = Object.assign(getRedirectError("/documents?client=1", type as never), { handled: true });
+      const onRedirect = vi.fn();
+      const onFailure = vi.fn();
+      const action = async (): Promise<BaseFormState> => {
+        throw error;
+      };
+      await expect(runFormAction(action, { error: "old" }, fd(), deps({ onRedirect, onFailure }))).rejects.toBe(error);
+      expect(onRedirect).toHaveBeenCalledTimes(1);
+      // Never reported as a failed request (no error message, no toast).
+      expect(onFailure).not.toHaveBeenCalled();
+    }
+  });
+
+  it("reports a thrown failure through onFailure", async () => {
+    const onFailure = vi.fn();
+    const failure = new TypeError("Failed to fetch");
+    const action = async (): Promise<BaseFormState> => {
+      throw failure;
+    };
+    await runFormAction(action, {}, fd(), deps({ onFailure }));
+    expect(onFailure).toHaveBeenCalledWith(failure);
+  });
+
   it("does not call onRedirect for other failures", async () => {
     const onRedirect = vi.fn();
     const action = async (): Promise<BaseFormState> => {
