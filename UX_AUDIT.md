@@ -337,9 +337,14 @@ Cần tự bấm thử:
 22. **Công tắc "dữ liệu giả định"** ở thanh bên billing: bật / tắt được.
 23. **Upload file quá lớn** (nếu tiện): báo "File quá lớn…" bằng tiếng Việt, không có câu tiếng Anh của Storage.
 
-Chưa chuyển (gọi action trực tiếp, đã tự bắt lỗi hoặc ít dùng): upload video bài học (`video-upload-form.tsx`), ghi chú bài học (`notes.tsx`), thêm bài học nhanh trong `lesson-forms.tsx`.
+24. **Upload video bài học** (trang sửa bài học) và **thêm bài học kèm video**: upload xong, bài học có video. Khi mất mạng: báo "Mất kết nối mạng…", file và chữ đã nhập còn nguyên.
+25. **Ghi chú bài học** (trang học): gõ ghi chú, hiện "Đã lưu". Khi mất mạng: hiện "Ghi chú chưa được lưu…", chữ còn trong ô, lưu lại ở lần gõ tiếp theo khi có mạng.
 
-Còn lại về thông báo lỗi: vài chỗ ở billing vẫn chuyển nguyên `Error.message` của lỗi ném ra từ lớp tải dữ liệu (`app/actions/billing.ts`, `billing-reports.ts`, route xuất Excel báo cáo / cảnh báo). Phần lớn là câu tiếng Việt của engine, nhưng lỗi database ném từ `lib/billing/queries.ts`, `month-files-server.ts`, `rent-report-server.ts` cũng đi theo đường này.
+Ba luồng ở mục 24–25 gọi action nhiều bước nên không dùng `useFormAction`; chúng dùng `useActionFailureMessage` (cùng file) để có cùng câu thông báo, không còn hiện "Failed to fetch" hay câu của Storage.
+
+Thông báo lỗi ở billing: tính tiền, báo cáo, so sánh và hai route xuất Excel (báo cáo, cảnh báo) chỉ giữ câu tiếng Việt do app viết (`thrownError` trong `lib/errors/user-error-server.ts`); lỗi database / Storage / runtime ghi log server `[thrown-error]` và hiện câu chung.
+
+Phụ thuộc: `uuid` của `exceljs` được ép lên 11.1.1 bằng `overrides` (GHSA-w5hq-g745-h8pq); `npm audit --omit=dev` còn 0 lỗ hổng.
 
 ## Để sau
 
