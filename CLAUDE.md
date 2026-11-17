@@ -31,7 +31,7 @@ npm run build        # build production
 ```
 
 Trước khi báo xong việc: chạy `npx tsc --noEmit`, `npm run lint`, `npm test`. Việc lớn thì chạy thêm `npm run build`.
-Lint hiện có sẵn 6 lỗi cũ (`react-hooks/set-state-in-effect` ở admin/clients, delete-\*-button; "Cannot create components during render" ở academy/my-courses). Đó là nợ cũ, chỉ được phép không thêm lỗi mới.
+Lint hiện có sẵn 2 lỗi cũ ("Cannot create components during render" ở academy/my-courses). Đó là nợ cũ, chỉ được phép không thêm lỗi mới.
 
 ## Cấu trúc
 
