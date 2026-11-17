@@ -293,3 +293,30 @@ Còn lại và không xóa được qua UI: các dòng nhật ký hoạt động
 
 - `npm ci` trên máy này (npm 12.2) từ chối gói `xlsx` vì nó lấy từ tarball `cdn.sheetjs.com`; phải chạy `npm ci --allow-remote=all`. Người mới clone repo sẽ gặp lỗi này, nên ghi vào README.
 - Playwright, axe-core, Lighthouse cài ở thư mục tạm ngoài repo; `package.json` và lock file không đổi. Thay đổi trong repo chỉ gồm `UX_AUDIT.md` và `audit-screenshots/` (35MB, chưa commit; cân nhắc thêm vào `.gitignore`).
+
+## Phụ lục D — Đợt 2: việc chủ dự án cần tự bấm thử
+
+Đợt 2 (nhánh `ux/batch-2`) chỉ được test bằng các luồng **không ghi dữ liệu** (lỗi validation, mất mạng, mở/đóng dialog). Các luồng dưới đây cần một thao tác ghi thành công nên chưa ai bấm thử; code và test tự động đã có.
+
+Ưu tiên cao (hook `useFormAction` thay cho `useActionState` ở 45 form):
+
+1. **Đăng nhập thành công**: vào được đúng trang, kể cả khi mở từ link sâu có `?next=`. Đây là form có redirect; phần cho redirect đi qua mới có unit test.
+2. **Lưu một form bất kỳ thành công** (ví dụ sửa tên khách hàng ở `/admin/clients/[id]`): có thông báo thành công, ô nhập hiện giá trị mới.
+3. **Tạo mới thành công trong dialog** ("Thêm khách hàng"): form trống lại sau khi tạo, danh sách có dòng mới.
+4. **Tính tiền thuê** ở `/billing`: bấm tính, được chuyển tới trang bản tính (action này redirect).
+5. **Upload tài liệu thành công** ở `/documents/upload`: được chuyển tới trang tài liệu.
+6. **Lưu bảng giá / dữ liệu kỳ** của một hợp đồng test (`thacons-01`): lưu được, số liệu giữ nguyên sau khi lưu.
+
+Toast sau khi xóa (V-04):
+
+7. Xóa một tài liệu test ở `/documents`: hiện toast "Đã xóa…".
+8. Xóa một dự án test ở `/admin/projects`: hiện toast.
+9. Xóa một khách hàng test ở `/admin/clients/[id]`: được chuyển về danh sách **và** hiện toast.
+10. Xóa nhiều dự án cùng lúc ở trang quản lý khách hàng: hiện toast, ô chọn được bỏ.
+
+Khác:
+
+11. **Toast trong dialog đang mở** (V-03): thao tác nào đó báo lỗi bằng toast trong lúc dialog còn mở; toast phải hiện phía trên lớp nền mờ và bấm đóng được.
+12. **Thông báo lỗi thân thiện** (V-08): tạo khách hàng trùng mã vẫn báo "Mã đó đã được sử dụng"; xóa khách hàng còn dự án báo câu tiếng Việt, không còn câu tiếng Anh của Postgres.
+
+Chưa chuyển sang hook mới (vẫn có thể văng trang lỗi khi mất mạng): ba luồng upload nhiều bước ở billing (`upload-dropzone.tsx`, `prices/import/import-form.tsx`, `templates/template-upload.tsx`) và các form chỉ có một nút dùng thẳng server action (đổi thứ tự/xóa chương, bài học, khóa/xóa tài khoản).
