@@ -84,3 +84,24 @@ export function classifyError(error: SupabaseErrorLike | null | undefined): User
   if (error?.status === 429) return { kind: "auth_rate_limit" };
   return { kind: "unknown", code };
 }
+
+/** What supabase-js Storage returns: `statusCode` is a string ("413"). */
+export interface StorageErrorLike {
+  message?: string | null;
+  status?: number | null;
+  statusCode?: string | number | null;
+}
+
+/**
+ * Storage error text ("The resource already exists", bucket and object
+ * names, "new row violates row-level security policy") is never shown. Only
+ * one case is worth telling the user about: the file is too large.
+ */
+export function classifyStorageError(error: StorageErrorLike | null | undefined): "too_large" | "unknown" {
+  const status = Number(error?.statusCode ?? error?.status ?? 0);
+  if (status === 413) return "too_large";
+  if (/exceeded the maximum allowed size|payload too large|entity too large/i.test(error?.message ?? "")) {
+    return "too_large";
+  }
+  return "unknown";
+}

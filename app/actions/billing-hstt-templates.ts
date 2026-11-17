@@ -10,7 +10,7 @@ import { validateTemplate, type TemplateReport } from "@/lib/billing/hstt-templa
 import { HSTT_TEMPLATE_BUCKET } from "@/lib/billing/hstt-templates-server";
 import { XLSX_MIME } from "@/lib/billing/server";
 import type { FormState } from "@/app/actions/auth";
-import { userError } from "@/lib/errors/user-error-server";
+import { storageError, userError } from "@/lib/errors/user-error-server";
 
 /** Postgres error codes. */
 const UNIQUE_VIOLATION = "23505";
@@ -75,7 +75,7 @@ export async function saveHsttTemplate(_prev: TemplateCheckState, formData: Form
   const { error: upErr } = await admin.storage
     .from(HSTT_TEMPLATE_BUCKET)
     .upload(storagePath, buffer, { contentType: XLSX_MIME, upsert: false });
-  if (upErr) return { report, fileName: file.name, error: t("errStorage", { message: upErr.message }) };
+  if (upErr) return { report, fileName: file.name, error: await storageError(upErr, t("errStorage")) };
 
   const { data, error } = await supabase.rpc("billing_add_hstt_template_version", {
     p_template_id: templateId,
@@ -117,7 +117,7 @@ export async function reuseHsttTemplateVersion(_prev: FormState, formData: FormD
   const admin = createAdminClient();
   const storagePath = `templates/${crypto.randomUUID()}.xlsx`;
   const { error: cpErr } = await admin.storage.from(HSTT_TEMPLATE_BUCKET).copy(v.storage_path, storagePath);
-  if (cpErr) return { error: t("errStorage", { message: cpErr.message }) };
+  if (cpErr) return { error: await storageError(cpErr, t("errStorage")) };
 
   const { data, error } = await supabase.rpc("billing_add_hstt_template_version", {
     p_template_id: v.template_id,

@@ -39,7 +39,7 @@ import {
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { VideoProvider, Database } from "@/lib/db/types";
 import type { FormState } from "@/app/actions/auth";
-import { userError } from "@/lib/errors/user-error-server";
+import { storageError, userError } from "@/lib/errors/user-error-server";
 
 /**
  * Recompute a course's completion for a user, honouring both lessons and chapter
@@ -449,7 +449,7 @@ export async function uploadLessonFile(
     .from(ACADEMY_BUCKET)
     .upload(storagePath, buffer, { contentType: ACCEPTED_MIME, upsert: false });
   if (uploadError) {
-    return { error: t("errUploadFailed", { message: uploadError.message }) };
+    return { error: await storageError(uploadError, t("errUploadFailed")) };
   }
 
   const supabase = await createClient();
@@ -534,7 +534,7 @@ export async function createLessonVideoUploadUrl(input: {
     .storage.from(ACADEMY_BUCKET)
     .createSignedUploadUrl(path);
   if (error || !data) {
-    return { error: t("errUploadFailed", { message: error?.message ?? "" }) };
+    return { error: await storageError(error, t("errUploadFailed")) };
   }
   return { path: data.path, token: data.token };
 }
@@ -670,7 +670,7 @@ export async function uploadCourseThumbnail(
     .from(ACADEMY_BUCKET)
     .upload(storagePath, buffer, { contentType: file.type, upsert: false });
   if (uploadError) {
-    return { error: t("errUploadFailed", { message: uploadError.message }) };
+    return { error: await storageError(uploadError, t("errUploadFailed")) };
   }
 
   const { error: updateError } = await supabase
@@ -1233,7 +1233,7 @@ export async function uploadCourseFile(
     .from(ACADEMY_BUCKET)
     .upload(storagePath, buffer, { contentType: ACCEPTED_MIME, upsert: false });
   if (uploadError) {
-    return { error: t("errUploadFailed", { message: uploadError.message }) };
+    return { error: await storageError(uploadError, t("errUploadFailed")) };
   }
 
   const supabase = await createClient();

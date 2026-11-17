@@ -25,7 +25,7 @@ import { getAllPriceLines } from "@/lib/billing/queries";
 import { BILLING_BUCKET, XLSX_MIME } from "@/lib/billing/server";
 import type { PriceColumnKey } from "@/lib/billing/price-sheet";
 import type { FormState } from "@/app/actions/auth";
-import { userError } from "@/lib/errors/user-error-server";
+import { storageError, userError } from "@/lib/errors/user-error-server";
 
 /** Import files: same limit as the MISA files (the bucket allows 10 MiB). */
 const MAX_IMPORT_SIZE = 10 * 1024 * 1024;
@@ -230,7 +230,7 @@ export async function confirmPriceImport(_prev: PriceImportState, formData: Form
   const { error: upErr } = await admin.storage
     .from(BILLING_BUCKET)
     .upload(storagePath, buffer, { contentType: XLSX_MIME, upsert: false });
-  if (upErr) return { error: t("errStorage", { message: upErr.message }), preview: client };
+  if (upErr) return { error: await storageError(upErr, t("errStorage")), preview: client };
 
   const payload = buildImportPayload(preview, { file_name: file.name, size_bytes: file.size, sha256, storage_path: storagePath });
   const { data, error } = await supabase.rpc("billing_import_price_lines", { p_import: payload });

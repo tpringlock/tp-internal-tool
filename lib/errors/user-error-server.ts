@@ -1,6 +1,11 @@
 import "server-only";
 import { getTranslations } from "next-intl/server";
-import { classifyError, type SupabaseErrorLike } from "./user-error";
+import {
+  classifyError,
+  classifyStorageError,
+  type StorageErrorLike,
+  type SupabaseErrorLike,
+} from "./user-error";
 
 /**
  * The text a server action may put in `FormState.error` for a Supabase error.
@@ -41,4 +46,27 @@ export async function userError(error: SupabaseErrorLike | null | undefined): Pr
     default:
       return decision.code ? t("dbUnknownCode", { code: decision.code }) : t("dbUnknown");
   }
+}
+
+/**
+ * The text for a failed Supabase Storage call (upload, copy, signed URL).
+ * The Storage message goes to the server log only; the user gets `fallback`
+ * (the caller's own "could not store the file" sentence), or the "file too
+ * large" message when that is the reason.
+ *
+ *   if (upErr) return { error: await storageError(upErr, t("errStorage")) };
+ */
+export async function storageError(
+  error: StorageErrorLike | null | undefined,
+  fallback: string,
+): Promise<string> {
+  console.error("[storage-error]", {
+    status: error?.statusCode ?? error?.status ?? null,
+    message: error?.message ?? null,
+  });
+  if (classifyStorageError(error) === "too_large") {
+    const t = await getTranslations("Errors");
+    return t("storageTooLarge");
+  }
+  return fallback;
 }

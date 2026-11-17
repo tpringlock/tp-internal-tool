@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { classifyError } from "./user-error";
+import { classifyError, classifyStorageError } from "./user-error";
 
 describe("classifyError", () => {
   it("hides native Postgres / PostgREST text", () => {
@@ -97,5 +97,21 @@ describe("classifyError", () => {
     expect(classifyError({})).toEqual({ kind: "unknown", code: undefined });
     expect(classifyError(null)).toEqual({ kind: "unknown", code: undefined });
     expect(classifyError(undefined)).toEqual({ kind: "unknown", code: undefined });
+  });
+});
+
+describe("classifyStorageError", () => {
+  it("recognises a file over the storage limit", () => {
+    expect(classifyStorageError({ statusCode: "413", message: "The object exceeded the maximum allowed size" })).toBe("too_large");
+    expect(classifyStorageError({ status: 413, message: "Payload too large" })).toBe("too_large");
+    expect(classifyStorageError({ message: "The object exceeded the maximum allowed size" })).toBe("too_large");
+  });
+
+  it("treats everything else as unknown, so its text is not shown", () => {
+    expect(classifyStorageError({ statusCode: "409", message: "The resource already exists" })).toBe("unknown");
+    expect(classifyStorageError({ statusCode: "403", message: "new row violates row-level security policy" })).toBe("unknown");
+    expect(classifyStorageError({ statusCode: "404", message: "Bucket not found" })).toBe("unknown");
+    expect(classifyStorageError(null)).toBe("unknown");
+    expect(classifyStorageError(undefined)).toBe("unknown");
   });
 });

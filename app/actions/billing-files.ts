@@ -11,7 +11,7 @@ import { planMonthUpload, type MonthVersion } from "@/lib/billing/month-files";
 import { fillMissingCatalogs, inspectMonthFile, type InspectedMonthFile } from "@/lib/billing/month-files-server";
 import { BILLING_BUCKET, XLSX_MIME } from "@/lib/billing/server";
 import type { FormState } from "@/app/actions/auth";
-import { userError } from "@/lib/errors/user-error-server";
+import { storageError, userError } from "@/lib/errors/user-error-server";
 
 /** Max files per upload (one year of months; ~250KB each, well under the body limit). */
 const MAX_FILES = 12;
@@ -170,7 +170,7 @@ export async function saveMonthFiles(_prev: MonthFilesState, formData: FormData)
       .from(BILLING_BUCKET)
       .upload(storagePath, f.buffer, { contentType: XLSX_MIME, upsert: false });
     if (upErr) {
-      rows[i] = { ...row, ok: false, error: t("errStorage", { message: upErr.message }) };
+      rows[i] = { ...row, ok: false, error: await storageError(upErr, t("errStorage")) };
       continue;
     }
     const { data, error } = await supabase.rpc("billing_add_month_file", {

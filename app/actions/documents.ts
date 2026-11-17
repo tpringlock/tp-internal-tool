@@ -13,7 +13,7 @@ import { generateProjectCode } from "@/lib/projects/code";
 import { DOC_TYPES, MAX_FILE_SIZE, ACCEPTED_MIME } from "@/lib/documents/constants";
 import type { DocType } from "@/lib/db/types";
 import type { FormState } from "@/app/actions/auth";
-import { userError } from "@/lib/errors/user-error-server";
+import { storageError, userError } from "@/lib/errors/user-error-server";
 
 const STORAGE_BUCKET = "documents";
 const DOC_TYPE_VALUES = new Set(DOC_TYPES.map((t) => t.value));
@@ -144,7 +144,7 @@ export async function uploadDocument(
       upsert: false,
     });
   if (uploadError) {
-    return { error: t("errUploadFailed", { message: uploadError.message }) };
+    return { error: await storageError(uploadError, t("errUploadFailed")) };
   }
 
   const { data: inserted, error: insertError } = await supabase
