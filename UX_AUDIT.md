@@ -294,7 +294,7 @@ Còn lại và không xóa được qua UI: các dòng nhật ký hoạt động
 - `npm ci` trên máy này (npm 12.2) từ chối gói `xlsx` vì nó lấy từ tarball `cdn.sheetjs.com`; phải chạy `npm ci --allow-remote=all`. Người mới clone repo sẽ gặp lỗi này, nên ghi vào README.
 - Playwright, axe-core, Lighthouse cài ở thư mục tạm ngoài repo; `package.json` và lock file không đổi. Thay đổi trong repo chỉ gồm `UX_AUDIT.md` và `audit-screenshots/` (35MB, chưa commit; cân nhắc thêm vào `.gitignore`).
 
-## Phụ lục D — Đợt 2: việc chủ dự án cần tự bấm thử
+## Phụ lục D — Đợt 2 và 3: việc chủ dự án cần tự bấm thử
 
 Đợt 2 (nhánh `ux/batch-2`) chỉ được test bằng các luồng **không ghi dữ liệu** (lỗi validation, mất mạng, mở/đóng dialog). Các luồng dưới đây cần một thao tác ghi thành công nên chưa ai bấm thử; code và test tự động đã có.
 
@@ -319,4 +319,34 @@ Khác:
 11. **Toast trong dialog đang mở** (V-03): thao tác nào đó báo lỗi bằng toast trong lúc dialog còn mở; toast phải hiện phía trên lớp nền mờ và bấm đóng được.
 12. **Thông báo lỗi thân thiện** (V-08): tạo khách hàng trùng mã vẫn báo "Mã đó đã được sử dụng"; xóa khách hàng còn dự án báo câu tiếng Việt, không còn câu tiếng Anh của Postgres.
 
-Chưa chuyển sang hook mới (vẫn có thể văng trang lỗi khi mất mạng): ba luồng upload nhiều bước ở billing (`upload-dropzone.tsx`, `prices/import/import-form.tsx`, `templates/template-upload.tsx`) và các form chỉ có một nút dùng thẳng server action (đổi thứ tự/xóa chương, bài học, khóa/xóa tài khoản).
+### Đợt 3 (nhánh `ux/batch-3`)
+
+Cùng quy tắc: chỉ test luồng không ghi dữ liệu (mất mạng, và một trang thử tạm chỉ redirect, đã xóa sau khi test). Đã chuyển sang hook: ba luồng upload nhiều bước ở billing (`useActionCall`), 26 form một nút (`ActionForm`) và ô đổi vai trò người dùng. Lỗi Storage không còn chèn vào thông báo, chỉ ghi log server (`[storage-error]`).
+
+Cần tự bấm thử:
+
+13. **Đăng xuất**: về trang đăng nhập (form này giờ đi qua `ActionForm`, action có redirect).
+14. **Tải file MISA theo tháng** ở `/billing/uploads`: chọn file → hiện bảng kiểm tra → "Lưu" → báo đã lưu, ô chọn file trống lại.
+15. **Nhập bảng giá từ Excel** ở `/billing/prices/import` (dùng `thacons-01`): chọn file → xem trước → xác nhận → báo số dòng đã nhập. Đổi chế độ "Thay toàn bộ" thì bản xem trước chạy lại.
+16. **Tải mẫu HSTT** ở `/billing/templates`: chọn file → báo cáo kiểm tra → "Lưu mẫu" → báo thành công.
+17. **Academy quản trị** ở `/admin/academy/[id]`: đổi thứ tự chương / bài học / câu hỏi, xuất bản / gỡ xuất bản khóa, xóa một chương test, xóa file đính kèm. Trang cập nhật ngay, không có toast lỗi.
+18. **Xóa khóa học test**: được chuyển về danh sách khóa học (action có redirect).
+19. **Bắt đầu học** ở `/academy/[courseId]` (redirect tới bài đầu) và nút **đánh dấu hoàn thành** bài học.
+20. **Người dùng** ở `/admin/users`: khóa / mở khóa một tài khoản test, đổi vai trò (xác nhận trong dialog), xóa tài khoản test.
+21. **Thu hồi link chia sẻ** (tài liệu và thư mục), **gỡ thành viên** khỏi dự án, **gỡ ảnh bìa / video** khóa học.
+22. **Công tắc "dữ liệu giả định"** ở thanh bên billing: bật / tắt được.
+23. **Upload file quá lớn** (nếu tiện): báo "File quá lớn…" bằng tiếng Việt, không có câu tiếng Anh của Storage.
+
+Chưa chuyển (gọi action trực tiếp, đã tự bắt lỗi hoặc ít dùng): upload video bài học (`video-upload-form.tsx`), ghi chú bài học (`notes.tsx`), thêm bài học nhanh trong `lesson-forms.tsx`.
+
+Còn lại về thông báo lỗi: vài chỗ ở billing vẫn chuyển nguyên `Error.message` của lỗi ném ra từ lớp tải dữ liệu (`app/actions/billing.ts`, `billing-reports.ts`, route xuất Excel báo cáo / cảnh báo). Phần lớn là câu tiếng Việt của engine, nhưng lỗi database ném từ `lib/billing/queries.ts`, `month-files-server.ts`, `rent-report-server.ts` cũng đi theo đường này.
+
+## Để sau
+
+Việc ngoại vi (môi trường, tooling, hạ tầng): ghi lại, **không làm** cho tới khi chủ dự án yêu cầu.
+
+| Việc | Vì sao nên có | Ghi chú |
+| --- | --- | --- |
+| Tách môi trường dev (Supabase project riêng) | `.env.local` đang trỏ production, mọi lần test ghi đều chạm dữ liệu thật; vì thế Đợt 2 và 3 chỉ test được luồng không ghi | Đã có bản nháp trên nhánh `chore/dev-env` (đã xóa, chưa push). Nguyên tắc đã chốt: không copy dữ liệu thật, không link CLI vào `surnokungqebqzzlyrsz` |
+| Chặn production cho `seed-gia-dinh` / `import-clients` | Hai script này ghi thẳng vào project được truyền qua `--project`; gõ nhầm là ghi lên production | Cách đã thử: từ chối chạy khi project là production trừ khi có cờ xác nhận riêng |
+| Snapshot test cho billing | Bắt thay đổi số tiền ngoài ý muốn mà không cần gọi database (hiện dựa vào `npm run billing:fingerprint -- --check`, cần kết nối production) | Dùng fixture đã có trong `lib/billing/__fixtures__/` |
