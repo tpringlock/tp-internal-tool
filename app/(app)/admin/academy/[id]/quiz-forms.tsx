@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowUp, ArrowDown, Trash2, Plus, X } from "lucide-react";
@@ -15,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
+import { useFormAction } from "@/components/ui/use-form-action";
+import { ActionForm } from "@/components/ui/action-form";
 
 export type AdminQuizOption = {
   id: string;
@@ -46,7 +48,7 @@ function QuizQuestionForm({
   const t = useTranslations("AcademyAdmin");
   const router = useRouter();
   const isEdit = Boolean(question);
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     isEdit ? updateQuizQuestion : addQuizQuestion,
     {},
   );
@@ -87,7 +89,7 @@ function QuizQuestionForm({
     });
 
   return (
-    <form action={action} className="space-y-3">
+    <form {...formProps} className="space-y-3">
       {isEdit ? (
         <input type="hidden" name="id" value={question!.id} />
       ) : (
@@ -188,7 +190,7 @@ function QuizQuestionRow({
     <div className="rounded-md border border-slate-200 bg-white p-3">
       <div className="flex items-start gap-2">
         <div className="flex flex-col">
-          <form action={reorderQuizQuestion}>
+          <ActionForm action={reorderQuizQuestion}>
             <input type="hidden" name="id" value={question.id} />
             <input type="hidden" name="chapter_id" value={chapterId} />
             <input type="hidden" name="course_id" value={courseId} />
@@ -201,8 +203,8 @@ function QuizQuestionRow({
             >
               <ArrowUp className="h-4 w-4" />
             </button>
-          </form>
-          <form action={reorderQuizQuestion}>
+          </ActionForm>
+          <ActionForm action={reorderQuizQuestion}>
             <input type="hidden" name="id" value={question.id} />
             <input type="hidden" name="chapter_id" value={chapterId} />
             <input type="hidden" name="course_id" value={courseId} />
@@ -215,7 +217,7 @@ function QuizQuestionRow({
             >
               <ArrowDown className="h-4 w-4" />
             </button>
-          </form>
+          </ActionForm>
         </div>
 
         <div className="flex-1">
@@ -247,7 +249,7 @@ function QuizQuestionRow({
           >
             {editing ? t("close") : t("edit")}
           </Button>
-          <form action={deleteQuizQuestion}>
+          <ActionForm action={deleteQuizQuestion}>
             <input type="hidden" name="id" value={question.id} />
             <input type="hidden" name="course_id" value={courseId} />
             <button
@@ -257,7 +259,7 @@ function QuizQuestionRow({
             >
               <Trash2 className="h-4 w-4" />
             </button>
-          </form>
+          </ActionForm>
         </div>
       </div>
 

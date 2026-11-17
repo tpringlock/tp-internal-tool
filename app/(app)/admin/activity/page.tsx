@@ -79,10 +79,10 @@ export default async function AdminActivityPage({
         <CardBody>
           <form className="flex flex-wrap items-end gap-3" method="get">
             <div className="w-full sm:min-w-56">
-              <label className="mb-1 block text-xs font-medium text-slate-500">
+              <label htmlFor="page-action" className="mb-1 block text-xs font-medium text-slate-500">
                 {t("action")}
               </label>
-              <Select name="action" defaultValue={action}>
+              <Select id="page-action" name="action" defaultValue={action}>
                 <option value="">{t("allActions")}</option>
                 {FILTERABLE_ACTIONS.map((a) => (
                   <option key={a} value={a}>

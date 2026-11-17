@@ -1,6 +1,5 @@
 "use client";
 
-import { useActionState } from "react";
 import { useTranslations } from "next-intl";
 import { createExcludedRange } from "@/app/actions/billing";
 import type { FormState } from "@/app/actions/auth";
@@ -9,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 /**
  * Add a non-billable date range (e.g. Tết). With `contractId` the range is
@@ -22,14 +22,14 @@ export function RangeForm({
   contracts?: { id: string; label: string; keywords?: (string | null)[] }[];
 }) {
   const t = useTranslations("Billing");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     createExcludedRange,
     {},
   );
   const err = (f: string) => state.fieldErrors?.[f]?.[0];
 
   return (
-    <form action={action} className="space-y-4">
+    <form {...formProps} className="space-y-4">
       {state.success && <Alert tone="success">{state.success}</Alert>}
       {state.error && <Alert tone="error">{state.error}</Alert>}
       {contractId && <input type="hidden" name="contract_id" value={contractId} />}

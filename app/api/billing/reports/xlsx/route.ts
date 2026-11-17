@@ -8,6 +8,7 @@ import { XLSX_MIME } from "@/lib/billing/server";
 import { formatBillingMonth } from "@/lib/billing/periods";
 import { reportFormValues, reportTitle, runReport } from "@/lib/billing/rent-report-server";
 import { exportRentReportXlsx } from "@/lib/billing/rent-report-export";
+import { thrownError } from "@/lib/errors/user-error-server";
 
 // exceljs needs Node APIs (Buffer, streams).
 export const runtime = "nodejs";
@@ -32,9 +33,9 @@ export async function POST(request: NextRequest) {
   try {
     run = await runReport(supabase, parsed.data, { includeDemo: await getShowDemo(), keepResults: true });
   } catch (e) {
-    return new NextResponse(e instanceof Error ? e.message : "Không tính được báo cáo.", { status: 422 });
+    return new NextResponse(await thrownError(e), { status: 422 });
   }
-  if (!run.ok) return new NextResponse(run.error, { status: 422 });
+  if (!run.ok) return new NextResponse(await thrownError(new Error(run.error)), { status: 422 });
 
   const buffer = await exportRentReportXlsx({
     report: run.report,

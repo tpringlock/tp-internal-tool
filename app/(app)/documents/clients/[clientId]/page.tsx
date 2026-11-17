@@ -13,7 +13,7 @@ import { getTranslations } from "next-intl/server";
 import { requireUser } from "@/lib/auth/dal";
 import { canManageContent } from "@/lib/auth/roles";
 import { createClient } from "@/lib/supabase/server";
-import { cn } from "@/lib/utils";
+import { cn, isUuid } from "@/lib/utils";
 import { Pagination } from "@/components/ui/pagination";
 import { formatBytes } from "@/lib/format";
 import { documentStatsByProject } from "@/lib/documents/counts";
@@ -71,6 +71,9 @@ export default async function ClientWorkspacePage({
   const highlight = sp.highlight ?? "";
   const wantsShare = sp.tab === "share";
   const user = await requireUser();
+  // A malformed id would make the stats RPC throw (uuid cast) and show the
+  // error page; it can never match a client, so answer 404 straight away.
+  if (!isUuid(clientId)) notFound();
   const canManage = canManageContent(user.profile.role);
   // Folder links expose every project of the client: managers/admins only.
   const tab: Tab = wantsShare && canManage ? "share" : "files";
@@ -329,7 +332,7 @@ export default async function ClientWorkspacePage({
                 </li>
               ))}
               {projects.length === 0 && (
-                <li className="px-3 py-4 text-sm text-slate-400">
+                <li className="px-3 py-4 text-sm text-slate-500">
                   {t("noProjects")}
                 </li>
               )}
@@ -447,7 +450,7 @@ function ProjectLink({
         active
           ? "bg-primary/10 font-semibold text-primary"
           : "text-slate-700 hover:bg-slate-50",
-        archived && !active && "text-slate-400",
+        archived && !active && "text-slate-500",
       )}
     >
       <Icon className="h-[18px] w-[18px] shrink-0" aria-hidden />
@@ -460,7 +463,7 @@ function ProjectLink({
       <span
         className={cn(
           "shrink-0 text-xs tabular-nums",
-          active ? "text-primary" : "text-slate-400",
+          active ? "text-primary" : "text-slate-500",
         )}
       >
         {count}

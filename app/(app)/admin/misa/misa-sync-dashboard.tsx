@@ -112,7 +112,7 @@ export function MisaSyncDashboard({ rows }: { rows: MisaSyncRow[] }) {
                         {row.error ? " ⚠" : ""}
                       </span>
                     ) : (
-                      <span className="text-slate-400">—</span>
+                      <span className="text-slate-500">—</span>
                     )}
                   </td>
                   <td className="py-3">

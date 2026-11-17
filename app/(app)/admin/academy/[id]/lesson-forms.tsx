@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowUp, ArrowDown, FileText, Trash2, Video } from "lucide-react";
@@ -24,6 +24,8 @@ import { formatBytes } from "@/lib/format";
 import { VideoUploadForm, uploadLessonVideoFile } from "./video-upload-form";
 import { validateVideoFile } from "@/lib/academy/video-validation";
 import { MAX_VIDEO_SIZE_LABEL } from "@/lib/academy/constants";
+import { useActionFailureMessage, useFormAction } from "@/components/ui/use-form-action";
+import { ActionForm } from "@/components/ui/action-form";
 
 type LessonWithFiles = Lesson & { files: Pick<LessonFile, "id" | "file_name" | "file_size">[] };
 
@@ -39,9 +41,11 @@ export function AddLessonForm({
   const { toast } = useToast();
   const [state, setState] = useState<FormState>({});
   const [pending, setPending] = useState(false);
+  const failureMessage = useActionFailureMessage();
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (pending) return;
     setState({});
     const form = e.currentTarget;
     const formData = new FormData(form);
@@ -80,6 +84,7 @@ export function AddLessonForm({
             sizeErrorMessage: t("errVideoSize", {
               size: MAX_VIDEO_SIZE_LABEL,
             }),
+            failedMessage: t("errUploadFailed"),
           },
         );
         if (uploadError) {
@@ -94,7 +99,8 @@ export function AddLessonForm({
       setState({ success: res.success });
       router.refresh();
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
+      // What was typed stays (the form is reset only on success).
+      const message = failureMessage(err);
       setState({ error: message });
       toast(message, { tone: "error" });
     } finally {
@@ -158,7 +164,7 @@ export function LessonEditor({
     <div className="border-b border-slate-100 last:border-0">
       <div className="flex items-center gap-2 px-5 py-3">
         <div className="flex flex-col">
-          <form action={reorderLesson}>
+          <ActionForm action={reorderLesson}>
             <input type="hidden" name="id" value={lesson.id} />
             <input type="hidden" name="course_id" value={courseId} />
             <input type="hidden" name="direction" value="up" />
@@ -170,8 +176,8 @@ export function LessonEditor({
             >
               <ArrowUp className="h-4 w-4" />
             </button>
-          </form>
-          <form action={reorderLesson}>
+          </ActionForm>
+          <ActionForm action={reorderLesson}>
             <input type="hidden" name="id" value={lesson.id} />
             <input type="hidden" name="course_id" value={courseId} />
             <input type="hidden" name="direction" value="down" />
@@ -183,12 +189,12 @@ export function LessonEditor({
             >
               <ArrowDown className="h-4 w-4" />
             </button>
-          </form>
+          </ActionForm>
         </div>
         <span className="flex-1 text-sm font-medium text-slate-900">
           {lesson.title}
           {lesson.video_provider && (
-            <span className="ml-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs font-normal text-slate-500">
+            <span className="ml-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs font-normal text-slate-600">
               {lesson.video_provider === "self_hosted"
                 ? t("providerSelfHosted")
                 : lesson.video_provider}
@@ -218,12 +224,12 @@ export function LessonEditor({
                   <Video className="h-4 w-4 shrink-0 text-primary" aria-hidden />
                   {lesson.video_file_name}
                   {lesson.video_file_size != null && (
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-slate-500">
                       {formatBytes(lesson.video_file_size)}
                     </span>
                   )}
                 </span>
-                <form action={removeLessonVideo}>
+                <ActionForm action={removeLessonVideo}>
                   <input type="hidden" name="lesson_id" value={lesson.id} />
                   <input type="hidden" name="course_id" value={courseId} />
                   <button
@@ -233,7 +239,7 @@ export function LessonEditor({
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
-                </form>
+                </ActionForm>
               </div>
             ) : (
               <VideoUploadForm courseId={courseId} lessonId={lesson.id} />
@@ -254,11 +260,11 @@ export function LessonEditor({
                     <span className="flex items-center gap-2 text-sm text-slate-700">
                       <FileText className="h-4 w-4 shrink-0 text-primary" aria-hidden />
                       {file.file_name}
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-slate-500">
                         {formatBytes(file.file_size)}
                       </span>
                     </span>
-                    <form action={deleteLessonFile}>
+                    <ActionForm action={deleteLessonFile}>
                       <input type="hidden" name="id" value={file.id} />
                       <input type="hidden" name="course_id" value={courseId} />
                       <button
@@ -268,7 +274,7 @@ export function LessonEditor({
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
-                    </form>
+                    </ActionForm>
                   </li>
                 ))}
               </ul>
@@ -276,13 +282,13 @@ export function LessonEditor({
             <UploadFileForm courseId={courseId} lessonId={lesson.id} />
           </div>
 
-          <form action={deleteLesson}>
+          <ActionForm action={deleteLesson}>
             <input type="hidden" name="id" value={lesson.id} />
             <input type="hidden" name="course_id" value={courseId} />
             <Button type="submit" variant="danger" size="sm">
               {t("deleteLesson")}
             </Button>
-          </form>
+          </ActionForm>
         </div>
       )}
     </div>
@@ -299,14 +305,14 @@ function EditLessonForm({
   hideVideoUrl?: boolean;
 }) {
   const t = useTranslations("AcademyAdmin");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     updateLesson,
     {},
   );
   useFormStateToast(state);
 
   return (
-    <form action={action} className="space-y-4">
+    <form {...formProps} className="space-y-4">
       <input type="hidden" name="id" value={lesson.id} />
       <input type="hidden" name="course_id" value={courseId} />
       {state.success && <Alert tone="success">{state.success}</Alert>}
@@ -341,7 +347,7 @@ function UploadFileForm({
   lessonId: string;
 }) {
   const t = useTranslations("AcademyAdmin");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     uploadLessonFile,
     {},
   );
@@ -353,7 +359,7 @@ function UploadFileForm({
   }, [state.success]);
 
   return (
-    <form ref={formRef} action={action} className="flex flex-wrap items-end gap-3">
+    <form ref={formRef} {...formProps} className="flex flex-wrap items-end gap-3">
       <input type="hidden" name="course_id" value={courseId} />
       <input type="hidden" name="lesson_id" value={lessonId} />
       <div className="flex-1">

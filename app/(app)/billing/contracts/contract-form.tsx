@@ -1,6 +1,5 @@
 "use client";
 
-import { useActionState } from "react";
 import { useTranslations } from "next-intl";
 import {
   createBillingContract,
@@ -12,6 +11,7 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input, Select } from "@/components/ui/input";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 /**
  * Contract header form: create (no `contract`) or edit. The price lines are
@@ -20,14 +20,14 @@ import { Input, Select } from "@/components/ui/input";
  */
 export function ContractForm({ contract, readOnly = false }: { contract?: BillingContract; readOnly?: boolean }) {
   const t = useTranslations("Billing");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     contract ? updateBillingContract : createBillingContract,
     {},
   );
   const err = (f: string) => state.fieldErrors?.[f]?.[0];
 
   return (
-    <form action={action} className="space-y-4">
+    <form {...formProps} className="space-y-4">
       {contract && <input type="hidden" name="id" value={contract.id} />}
       {state.success && <Alert tone="success">{state.success}</Alert>}
       {state.error && <Alert tone="error">{state.error}</Alert>}

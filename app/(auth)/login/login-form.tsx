@@ -1,23 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
 import { useTranslations } from "next-intl";
 import { login, type FormState } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 export function LoginForm({ next }: { next: string }) {
   const t = useTranslations("Auth");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     login,
     {},
   );
 
   return (
-    <form action={action} className="space-y-4">
+    <form {...formProps} className="space-y-4">
       <input type="hidden" name="next" value={next} />
 
       {state.error && <Alert tone="error">{state.error}</Alert>}

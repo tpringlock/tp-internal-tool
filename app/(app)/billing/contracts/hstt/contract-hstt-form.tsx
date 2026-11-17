@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Plus } from "lucide-react";
 import { saveContractHstt } from "@/app/actions/billing-hstt";
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input, Select, Textarea } from "@/components/ui/input";
 import { MoneyInput } from "../../money-input";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 export interface CustomerOption {
   id: string;
@@ -41,7 +42,7 @@ export function ContractHsttForm({
   readOnly: boolean;
 }) {
   const t = useTranslations("Hstt");
-  const [state, action, pending] = useActionState<FormState, FormData>(saveContractHstt, {});
+  const [state, formProps, pending] = useFormAction<FormState>(saveContractHstt, {});
   const err = (f: string) => state.fieldErrors?.[f]?.[0];
 
   const [customerId, setCustomerId] = useState(hstt?.customer_id ?? "");
@@ -56,7 +57,7 @@ export function ContractHsttForm({
   });
 
   return (
-    <form action={action} className="space-y-4">
+    <form {...formProps} className="space-y-4">
       <input type="hidden" name="contract_id" value={contractId} />
       {state.success && <Alert tone="success">{state.success}</Alert>}
       {state.error && <Alert tone="error">{state.error}</Alert>}

@@ -296,7 +296,7 @@ export function BillingTour({
             <span className="min-w-0">
               {labels.pageTour}
               {(!pageTour || pageSteps.length === 0) && (
-                <span className="block text-xs text-slate-400">{labels.noPageTour}</span>
+                <span className="block text-xs text-slate-500">{labels.noPageTour}</span>
               )}
             </span>
           </button>

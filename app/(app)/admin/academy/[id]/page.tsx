@@ -25,6 +25,7 @@ import type {
   CourseFile,
 } from "@/lib/db/types";
 import { ModuleEyebrow } from "@/components/page-title";
+import { ActionForm } from "@/components/ui/action-form";
 
 type FileRow = Pick<LessonFile, "id" | "lesson_id" | "file_name" | "file_size">;
 type CourseDocRow = Pick<CourseFile, "id" | "file_name" | "file_size">;
@@ -162,21 +163,21 @@ export default async function AdminCoursePage({
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <form action={publishCourse}>
+            <ActionForm action={publishCourse}>
               <input type="hidden" name="id" value={course.id} />
               <input type="hidden" name="publish" value={published ? "false" : "true"} />
               <Button type="submit" variant={published ? "secondary" : "primary"} size="sm">
                 {published ? t("unpublish") : t("publish")}
               </Button>
-            </form>
+            </ActionForm>
             {/* Deleting a whole course is admin-only (managers edit content). */}
             {isAdmin && (
-              <form action={deleteCourse}>
+              <ActionForm action={deleteCourse}>
                 <input type="hidden" name="id" value={course.id} />
                 <Button type="submit" variant="danger" size="sm">
                   {t("deleteCourse")}
                 </Button>
-              </form>
+              </ActionForm>
             )}
           </div>
         </div>
@@ -291,11 +292,11 @@ export default async function AdminCoursePage({
                   <span className="flex items-center gap-2 text-sm text-slate-700">
                     <FileText className="h-4 w-4 shrink-0 text-primary" aria-hidden />
                     {file.file_name}
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-slate-500">
                       {formatBytes(file.file_size)}
                     </span>
                   </span>
-                  <form action={deleteCourseFile}>
+                  <ActionForm action={deleteCourseFile}>
                     <input type="hidden" name="id" value={file.id} />
                     <input type="hidden" name="course_id" value={course.id} />
                     <button
@@ -305,7 +306,7 @@ export default async function AdminCoursePage({
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
-                  </form>
+                  </ActionForm>
                 </li>
               ))}
             </ul>

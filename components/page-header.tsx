@@ -71,7 +71,7 @@ export function PageHeader() {
         {t("back")}
       </button>
 
-      <nav aria-label="Breadcrumb" className="min-w-0">
+      <nav aria-label={t("navLabel")} className="min-w-0">
         <ol className="flex flex-wrap items-center gap-1 text-sm text-slate-500">
           <li>
             <Link href="/" className="hover:text-slate-900 hover:underline">

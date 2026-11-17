@@ -1,6 +1,6 @@
 "use client";
 
-import { startTransition, useActionState, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { CheckCircle2, FileSpreadsheet, UploadCloud, XCircle } from "lucide-react";
 import {
@@ -15,6 +15,7 @@ import { formatBytes } from "@/lib/format";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { useActionCall } from "@/components/ui/use-form-action";
 import { cn } from "@/lib/utils";
 
 /**
@@ -28,8 +29,12 @@ export function UploadDropzone({ compact = false }: { compact?: boolean }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
-  const [preview, inspect, inspecting] = useActionState<MonthFilesState, FormData>(inspectMonthFiles, {});
-  const [result, save, saving] = useActionState<MonthFilesState, FormData>(
+  // The request to save failed (offline, server error): the chosen files stay.
+  const [saveFailed, setSaveFailed] = useState(false);
+  const [preview, inspect, inspecting] = useActionCall<MonthFilesState>(inspectMonthFiles, {}, {
+    resetOnFailure: true,
+  });
+  const [result, save, saving] = useActionCall<MonthFilesState>(
     async (prev, fd) => {
       const r = await saveMonthFiles(prev, fd);
       setFiles([]);
@@ -37,6 +42,7 @@ export function UploadDropzone({ compact = false }: { compact?: boolean }) {
       return r;
     },
     {},
+    { onFailure: () => setSaveFailed(true) },
   );
 
   const formData = (list: File[]) => {
@@ -48,7 +54,8 @@ export function UploadDropzone({ compact = false }: { compact?: boolean }) {
     const chosen = Array.from(list ?? []);
     if (chosen.length === 0) return;
     setFiles(chosen);
-    startTransition(() => inspect(formData(chosen)));
+    setSaveFailed(false);
+    inspect(formData(chosen));
   };
 
   // The preview belongs to the files currently chosen; after saving, the result replaces it.
@@ -97,6 +104,7 @@ export function UploadDropzone({ compact = false }: { compact?: boolean }) {
       {files.length > 0 && preview.error && <Alert tone="error">{preview.error}</Alert>}
       {showingResult && result.success && <Alert tone="success">{result.success}</Alert>}
       {showingResult && result.error && <Alert tone="error">{result.error}</Alert>}
+      {files.length > 0 && saveFailed && result.error && <Alert tone="error">{result.error}</Alert>}
 
       {rows.length > 0 && !inspecting && (
         <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
@@ -144,7 +152,10 @@ export function UploadDropzone({ compact = false }: { compact?: boolean }) {
             type="button"
             loading={saving}
             disabled={valid === 0}
-            onClick={() => startTransition(() => save(formData(files)))}
+            onClick={() => {
+              setSaveFailed(false);
+              save(formData(files));
+            }}
           >
             {t("saveValid", { count: valid })}
           </Button>
@@ -154,6 +165,7 @@ export function UploadDropzone({ compact = false }: { compact?: boolean }) {
             disabled={saving}
             onClick={() => {
               setFiles([]);
+              setSaveFailed(false);
               if (inputRef.current) inputRef.current.value = "";
             }}
           >

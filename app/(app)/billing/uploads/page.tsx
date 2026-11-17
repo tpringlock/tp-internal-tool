@@ -199,7 +199,7 @@ export default async function BillingUploadsPage() {
                     </td>
                     <td data-label={t("colUploaded")} className="px-5 py-3 text-slate-600">
                       {names.get(u.uploaded_by) ?? "—"}
-                      <span className="block text-xs text-slate-400">{formatDateTime(u.created_at)}</span>
+                      <span className="block text-xs text-slate-500">{formatDateTime(u.created_at)}</span>
                     </td>
                     <td data-label={t("colUsed")} className="px-5 py-3 text-slate-600">
                       <UseCount use={uses.get(u.id)} t={t} />
@@ -255,13 +255,13 @@ function VersionRow({
           <span
             className={cn(
               "rounded-full px-2 py-0.5 font-medium ring-1 ring-inset",
-              active ? "bg-green-50 text-green-800 ring-green-200" : "bg-slate-100 text-slate-500 ring-slate-200",
+              active ? "bg-green-50 text-green-800 ring-green-200" : "bg-slate-100 text-slate-600 ring-slate-200",
             )}
           >
             {active ? t("active") : t("superseded")}
           </span>
         </span>
-        {first && count > 1 && <span className="block text-xs text-slate-400">{t("versionCount", { count })}</span>}
+        {first && count > 1 && <span className="block text-xs text-slate-500">{t("versionCount", { count })}</span>}
       </td>
       <td data-label={t("colFile")} className="px-5 py-3 md:max-w-xs">
         <span className={cn("block break-words", active && "font-medium text-slate-900")}>{upload?.file_name ?? "—"}</span>
@@ -294,9 +294,9 @@ function VersionRow({
       </td>
       <td data-label={t("colUploaded")} className="px-5 py-3">
         {uploader}
-        <span className="block text-xs text-slate-400">{formatDateTime(v.created_at)}</span>
+        <span className="block text-xs text-slate-500">{formatDateTime(v.created_at)}</span>
         {v.superseded_at && (
-          <span className="block text-xs text-slate-400">
+          <span className="block text-xs text-slate-500">
             {t("supersededAt", { date: formatDateTime(v.superseded_at) })}
           </span>
         )}
@@ -329,7 +329,7 @@ function VersionRow({
 }
 
 function UseCount({ use, t }: { use: { all: number; confirmed: number } | undefined; t: T }) {
-  if (!use) return <span className="text-xs text-slate-400">{t("notUsed")}</span>;
+  if (!use) return <span className="text-xs text-slate-500">{t("notUsed")}</span>;
   return (
     <span className="text-xs">
       {t("usedIn", { count: use.all })}

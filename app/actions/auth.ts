@@ -5,13 +5,14 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { logActivity } from "@/lib/activity";
 import { env } from "@/lib/env";
-import { safeInternalPath } from "@/lib/utils";
+import { safeNextPath } from "@/lib/utils";
 import {
   loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
   translateFieldErrors,
 } from "@/lib/validation";
+import { userError } from "@/lib/errors/user-error-server";
 
 export interface FormState {
   error?: string;
@@ -19,9 +20,12 @@ export interface FormState {
   fieldErrors?: Record<string, string[]>;
 }
 
-/** Only permit same-origin relative redirect targets. */
+/**
+ * Only permit same-origin app pages as the post-login target; the auth pages
+ * themselves (`/login?next=/login…`) fall back to home.
+ */
 function safeNext(next: FormDataEntryValue | null): string {
-  return safeInternalPath(next);
+  return safeNextPath(next);
 }
 
 export async function login(
@@ -103,7 +107,7 @@ export async function updatePassword(
     password: parsed.data.password,
   });
   if (error) {
-    return { error: error.message };
+    return { error: await userError(error) };
   }
 
   await logActivity(supabase, { action: "auth.password_reset" });

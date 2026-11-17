@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 /**
@@ -10,12 +11,13 @@ export function Spinner({
   className,
   ...props
 }: React.SVGProps<SVGSVGElement>) {
+  const t = useTranslations("Common");
   return (
     <svg
       viewBox="0 0 24 24"
       fill="none"
       role="status"
-      aria-label="Loading"
+      aria-label={t("loading")}
       className={cn("h-[1em] w-[1em] animate-spin", className)}
       {...props}
     >

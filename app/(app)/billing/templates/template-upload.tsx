@@ -1,6 +1,6 @@
 "use client";
 
-import { startTransition, useActionState, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Download, UploadCloud } from "lucide-react";
 import { checkHsttTemplate, saveHsttTemplate, type TemplateCheckState } from "@/app/actions/billing-hstt-templates";
@@ -11,6 +11,7 @@ import { Field } from "@/components/ui/field";
 import { Input, Select } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/components/ui/toast";
+import { useActionCall } from "@/components/ui/use-form-action";
 import { cn } from "@/lib/utils";
 import { TemplateReportView } from "./template-report";
 
@@ -32,12 +33,17 @@ export function TemplateUpload({ templates }: { templates: { id: string; name: s
   const [note, setNote] = useState("");
   const [previewing, setPreviewing] = useState(false);
 
-  const [checked, check, checking] = useActionState<TemplateCheckState, FormData>(async (prev, fd) => {
-    const r = await checkHsttTemplate(prev, fd);
-    setCheckedFor(fd.get("file") as File);
-    return r;
-  }, {});
-  const [saved, save, saving] = useActionState<TemplateCheckState, FormData>(async (prev, fd) => {
+  const [checked, check, checking] = useActionCall<TemplateCheckState>(
+    async (prev, fd) => {
+      const r = await checkHsttTemplate(prev, fd);
+      setCheckedFor(fd.get("file") as File);
+      return r;
+    },
+    {},
+    // The error belongs to this file too, so it is shown under it.
+    { resetOnFailure: true, onFailure: (fd) => setCheckedFor(fd.get("file") as File) },
+  );
+  const [saved, save, saving] = useActionCall<TemplateCheckState>(async (prev, fd) => {
     const r = await saveHsttTemplate(prev, fd);
     if (r.success) {
       setFile(null);
@@ -54,7 +60,7 @@ export function TemplateUpload({ templates }: { templates: { id: string; name: s
     setFile(f);
     const fd = new FormData();
     fd.append("file", f);
-    startTransition(() => check(fd));
+    check(fd);
   };
   const report = file && checkedFor === file && !checking ? checked.report : undefined;
   const busy = checking || saving;
@@ -75,7 +81,7 @@ export function TemplateUpload({ templates }: { templates: { id: string; name: s
     fd.append("note", note);
     if (mode === "version") fd.append("template_id", templateId);
     else fd.append("name", name);
-    startTransition(() => save(fd));
+    save(fd);
   };
 
   return (

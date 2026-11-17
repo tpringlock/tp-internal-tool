@@ -29,6 +29,7 @@ import { formatBytes } from "@/lib/format";
 import type { Lesson, LessonFile } from "@/lib/db/types";
 import { CourseContentPanel } from "../course-content-panel";
 import { LessonNotes } from "./notes";
+import { ActionForm } from "@/components/ui/action-form";
 
 /** A checkbox-styled submit button toggling lesson completion (no client JS). */
 function CompleteCheckbox({
@@ -43,7 +44,7 @@ function CompleteCheckbox({
   ariaLabel: string;
 }) {
   return (
-    <form action={toggleLessonComplete} className="flex">
+    <ActionForm action={toggleLessonComplete} className="flex">
       <input type="hidden" name="lesson_id" value={lessonId} />
       <input type="hidden" name="course_id" value={courseId} />
       <input type="hidden" name="complete" value={done ? "false" : "true"} />
@@ -59,7 +60,7 @@ function CompleteCheckbox({
       >
         {done && <Check className="h-3.5 w-3.5" aria-hidden />}
       </button>
-    </form>
+    </ActionForm>
   );
 }
 
@@ -231,7 +232,7 @@ export default async function LessonPage({
                           aria-hidden
                         />
                         <span className="font-medium">{file.file_name}</span>
-                        <span className="text-xs text-slate-400">
+                        <span className="text-xs text-slate-500">
                           {formatBytes(file.file_size)}
                         </span>
                       </div>
@@ -328,7 +329,7 @@ export default async function LessonPage({
                         return (
                           <li
                             key={l.id}
-                            className="flex items-center gap-2 rounded-md px-2 py-2 text-sm text-slate-400"
+                            className="flex items-center gap-2 rounded-md px-2 py-2 text-sm text-slate-500"
                           >
                             <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden />
                             <span className="line-clamp-1">{l.title}</span>
@@ -388,7 +389,7 @@ export default async function LessonPage({
                           </Link>
                         </li>
                       ) : (
-                        <li className="flex items-center gap-2 rounded-md px-2 py-2 text-sm text-slate-400">
+                        <li className="flex items-center gap-2 rounded-md px-2 py-2 text-sm text-slate-500">
                           <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden />
                           <span className="line-clamp-1">{t("quizLabel")}</span>
                         </li>

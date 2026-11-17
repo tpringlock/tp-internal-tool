@@ -21,6 +21,7 @@ import { setShowDemo } from "@/app/actions/billing";
 import { cn } from "@/lib/utils";
 import { AsideHeading, WorkspaceAside } from "@/components/workspace-aside";
 import { SidebarNav, type SidebarNavSection } from "@/components/sidebar-nav";
+import { ActionForm } from "@/components/ui/action-form";
 
 /** Billing app sidebar: calculate, history, and the data it runs on. */
 export function BillingNav({
@@ -161,7 +162,7 @@ export function BillingNav({
             sections={sections}
             onNavigate={close}
           />
-          <form action={setShowDemo} className="px-3 pb-3">
+          <ActionForm action={setShowDemo} className="px-3 pb-3">
             <input type="hidden" name="show" value={showDemo ? "0" : "1"} />
             <button
               type="submit"
@@ -193,7 +194,7 @@ export function BillingNav({
                 />
               </span>
             </button>
-          </form>
+          </ActionForm>
           <div className="p-3 pt-0">
             <div className="flex gap-2.5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900">
               <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />

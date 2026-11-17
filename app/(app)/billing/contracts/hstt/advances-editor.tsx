@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Plus, Trash2 } from "lucide-react";
 import { saveAdvances } from "@/app/actions/billing-hstt";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { MoneyInput } from "../../money-input";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 export interface AdvanceRow {
   id: string | null;
@@ -39,7 +40,7 @@ export function AdvancesEditor({
   const t = useTranslations("Hstt");
   const [rows, setRows] = useState(() => initial.map(withKey));
   const [note, setNote] = useState(initialNote);
-  const [state, action, pending] = useActionState<FormState, FormData>(saveAdvances, {});
+  const [state, formProps, pending] = useFormAction<FormState>(saveAdvances, {});
   const set = (key: string, patch: Partial<AdvanceRow>) =>
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...patch } : r)));
   const invalid = rows.some((r) => r.amount === null || Number.isNaN(r.amount) || r.amount === 0);
@@ -50,7 +51,7 @@ export function AdvancesEditor({
   };
 
   return (
-    <form action={action} className="space-y-4">
+    <form {...formProps} className="space-y-4">
       <input type="hidden" name="contract_id" value={contractId} />
       <input type="hidden" name="payload" value={JSON.stringify(payload)} />
       {state.success && <Alert tone="success">{state.success}</Alert>}

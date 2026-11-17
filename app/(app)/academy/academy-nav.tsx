@@ -131,15 +131,15 @@ export function AcademyNav({
                 {t("progressTitle")}
               </span>
               <span className="mt-3 grid grid-cols-2 gap-2">
-                <span className="rounded-xl bg-white/10 px-3 py-2">
+                <span className="rounded-xl bg-black/10 px-3 py-2">
                   <span className="block text-xl font-bold">{inProgress}</span>
-                  <span className="block text-xs text-white/80">
+                  <span className="block text-xs text-white">
                     {ta("inProgress")}
                   </span>
                 </span>
-                <span className="rounded-xl bg-white/10 px-3 py-2">
+                <span className="rounded-xl bg-black/10 px-3 py-2">
                   <span className="block text-xl font-bold">{completed}</span>
-                  <span className="block text-xs text-white/80">
+                  <span className="block text-xs text-white">
                     {ta("completed")}
                   </span>
                 </span>

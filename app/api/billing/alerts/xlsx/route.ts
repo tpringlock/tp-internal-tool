@@ -9,6 +9,7 @@ import { formatBillingMonth } from "@/lib/billing/periods";
 import { ALERT_CATEGORIES, filterAlerts, type AlertCategory } from "@/lib/billing/alerts";
 import { ALERT_CATEGORY_LABELS, exportAlertsXlsx } from "@/lib/billing/alerts-export";
 import { alertsInputFrom, runAlerts } from "@/lib/billing/alerts-server";
+import { thrownError } from "@/lib/errors/user-error-server";
 
 // exceljs needs Node APIs (Buffer, streams).
 export const runtime = "nodejs";
@@ -29,9 +30,9 @@ export async function GET(request: NextRequest) {
   try {
     run = await runAlerts(supabase, alertsInputFrom(parsed.data), await getShowDemo());
   } catch (e) {
-    return new NextResponse(e instanceof Error ? e.message : "Không đọc được dữ liệu.", { status: 422 });
+    return new NextResponse(await thrownError(e), { status: 422 });
   }
-  if (!run.ok) return new NextResponse(run.error, { status: 422 });
+  if (!run.ok) return new NextResponse(await thrownError(new Error(run.error)), { status: 422 });
 
   const categoryParam = sp.get("category") ?? "";
   const category = (ALERT_CATEGORIES as readonly string[]).includes(categoryParam) ? (categoryParam as AlertCategory) : "";

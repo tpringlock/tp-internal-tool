@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { uploadDocument } from "@/app/actions/documents";
 import type { FormState } from "@/app/actions/auth";
@@ -16,6 +16,7 @@ import { Input, Select } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
 import { useFormStateToast } from "@/components/ui/toast";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 export interface UploadProject {
   id: string;
@@ -40,7 +41,7 @@ export function UploadForm({
 }) {
   const t = useTranslations("Documents");
   const dt = useTranslations("DocTypes");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     uploadDocument,
     {},
   );
@@ -93,7 +94,7 @@ export function UploadForm({
       : null;
 
   return (
-    <form action={action} className="space-y-5">
+    <form {...formProps} className="space-y-5">
       {state.error && <Alert tone="error">{state.error}</Alert>}
 
       <Field
@@ -215,6 +216,8 @@ export function UploadForm({
         <input
           type="checkbox"
           name="signed"
+          aria-invalid={state.fieldErrors?.signed ? true : undefined}
+          aria-describedby={state.fieldErrors?.signed ? "signed-error" : undefined}
           className="mt-0.5 h-4 w-4 rounded border-slate-300"
         />
         <span>
@@ -224,7 +227,9 @@ export function UploadForm({
         </span>
       </label>
       {state.fieldErrors?.signed?.[0] && (
-        <p className="text-xs text-red-600">{state.fieldErrors.signed[0]}</p>
+        <p id="signed-error" className="text-xs text-red-600">
+          {state.fieldErrors.signed[0]}
+        </p>
       )}
 
       <Button type="submit" loading={pending} disabled={!!fileError}>

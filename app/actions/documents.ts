@@ -13,6 +13,7 @@ import { generateProjectCode } from "@/lib/projects/code";
 import { DOC_TYPES, MAX_FILE_SIZE, ACCEPTED_MIME } from "@/lib/documents/constants";
 import type { DocType } from "@/lib/db/types";
 import type { FormState } from "@/app/actions/auth";
+import { storageError, userError } from "@/lib/errors/user-error-server";
 
 const STORAGE_BUCKET = "documents";
 const DOC_TYPE_VALUES = new Set(DOC_TYPES.map((t) => t.value));
@@ -100,7 +101,7 @@ export async function uploadDocument(
           metadata: { code, via: "document_upload" },
         });
       } else if (createError?.code !== UNIQUE_VIOLATION) {
-        return { error: createError?.message ?? t("errSaveFailed") };
+        return { error: createError ? await userError(createError) : t("errSaveFailed") };
       }
     }
     if (!createdId) {
@@ -143,7 +144,7 @@ export async function uploadDocument(
       upsert: false,
     });
   if (uploadError) {
-    return { error: t("errUploadFailed", { message: uploadError.message }) };
+    return { error: await storageError(uploadError, t("errUploadFailed")) };
   }
 
   const { data: inserted, error: insertError } = await supabase
@@ -164,7 +165,7 @@ export async function uploadDocument(
     // Roll back the orphaned file so storage stays consistent with the table.
     await admin.storage.from(STORAGE_BUCKET).remove([storagePath]);
     return {
-      error: insertError?.message ?? t("errSaveFailed"),
+      error: insertError ? await userError(insertError) : t("errSaveFailed"),
     };
   }
 
@@ -200,7 +201,7 @@ export async function deleteDocument(
     .select("id, project_id, storage_path, canonical_name");
 
   const t = await getTranslations("Admin");
-  if (error) return { error: error.message };
+  if (error) return { error: await userError(error) };
   const doc = data?.[0];
   if (!doc) return { error: t("documentNotFound") };
 

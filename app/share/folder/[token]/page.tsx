@@ -57,7 +57,7 @@ export default async function FolderSharePage({
               {share.clientName}
             </h1>
           </div>
-          <span className="ml-auto text-xs text-slate-400">
+          <span className="ml-auto text-xs text-slate-500">
             {t("filesCount", { count: fileCount })}
           </span>
         </div>
@@ -93,7 +93,7 @@ export default async function FolderSharePage({
                       >
                         {doc.canonicalName}
                       </a>
-                      <div className="text-xs text-slate-400">
+                      <div className="text-xs text-slate-500">
                         {dt(doc.docType)} · {formatBytes(doc.fileSize)}
                       </div>
                     </div>

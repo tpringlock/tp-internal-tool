@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { addProject, editProject } from "@/app/actions/projects";
 import type { FormState } from "@/app/actions/auth";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 export interface ClientOption {
   id: string;
@@ -17,7 +18,7 @@ export interface ClientOption {
 
 export function CreateProjectForm({ clients }: { clients: ClientOption[] }) {
   const t = useTranslations("Admin");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     addProject,
     {},
   );
@@ -32,7 +33,7 @@ export function CreateProjectForm({ clients }: { clients: ClientOption[] }) {
   }
 
   return (
-    <form ref={formRef} action={action} className="space-y-4">
+    <form ref={formRef} {...formProps} className="space-y-4">
       {state.success && <Alert tone="success">{state.success}</Alert>}
       {state.error && <Alert tone="error">{state.error}</Alert>}
 
@@ -81,13 +82,13 @@ export function EditProjectForm({
   clients: ClientOption[];
 }) {
   const t = useTranslations("Admin");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     editProject,
     {},
   );
 
   return (
-    <form action={action} className="space-y-4">
+    <form {...formProps} className="space-y-4">
       <input type="hidden" name="id" value={project.id} />
       {state.success && <Alert tone="success">{state.success}</Alert>}
       {state.error && <Alert tone="error">{state.error}</Alert>}

@@ -1,12 +1,15 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { setUserRole } from "@/app/actions/users";
+import type { FormState } from "@/app/actions/auth";
 import type { UserRole } from "@/lib/db/types";
 import { Select } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/toast";
+import { useActionCall } from "@/components/ui/use-form-action";
 
 const ROLE_KEYS: Record<UserRole, string> = {
   employee: "employee",
@@ -34,7 +37,19 @@ export function RoleSelect({
 }) {
   const t = useTranslations("Admin");
   const [pending, setPending] = useState<UserRole | null>(null);
-  const [isSaving, startTransition] = useTransition();
+  const { toast } = useToast();
+  const [, save, isSaving] = useActionCall<FormState>(async (prev, fd) => {
+    const result = await setUserRole(prev, fd);
+    if (result.error) toast(result.error, { tone: "error" });
+    setPending(null);
+    return result;
+  }, {}, {
+    // Offline or a server error: say so, and put the dropdown back.
+    onFailure: () => {
+      toast(t("roleChangeFailed"), { tone: "error" });
+      setPending(null);
+    },
+  });
 
   const confirm = () => {
     if (!pending) return;
@@ -42,10 +57,7 @@ export function RoleSelect({
     fd.set("user_id", userId);
     fd.set("role", pending);
     // revalidatePath in the action refreshes the row with the new role.
-    startTransition(async () => {
-      await setUserRole({}, fd);
-      setPending(null);
-    });
+    save(fd);
   };
 
   return (

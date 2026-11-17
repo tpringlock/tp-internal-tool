@@ -20,6 +20,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t("title"),
     description: t("description"),
+    // Internal tool: keep every page (share links included) out of search
+    // engines. See also app/robots.ts.
+    robots: { index: false, follow: false },
   };
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { compareDemoContracts, type CompareState } from "@/app/actions/billing";
 import { formatVnDate } from "@/lib/billing/dates";
@@ -11,6 +11,7 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 interface UploadOption {
   id: string;
@@ -37,7 +38,7 @@ export function CompareForm({
   const [from, setFrom] = useState(newest?.file_from ?? "");
   const [to, setTo] = useState(newest?.file_to ?? "");
   const [hideZero, setHideZero] = useState(true);
-  const [state, action, pending] = useActionState<CompareState, FormData>(
+  const [state, formProps, pending] = useFormAction<CompareState>(
     compareDemoContracts,
     {},
   );
@@ -52,7 +53,7 @@ export function CompareForm({
 
   return (
     <div className="space-y-6">
-      <form action={action} className="space-y-5">
+      <form {...formProps} className="space-y-5">
         {selected.map((id) => (
           <input key={id} type="hidden" name="upload_ids" value={id} />
         ))}
@@ -82,8 +83,8 @@ export function CompareForm({
                         className={cn(
                           "block text-xs",
                           rangeValid && !overlapsPeriod(u, { from, to })
-                            ? "text-slate-400"
-                            : "text-slate-500",
+                            ? "text-slate-500"
+                            : "text-slate-600",
                         )}
                       >
                         {t("fileSpan", {
@@ -186,10 +187,10 @@ export function CompareForm({
                     className={cn(
                       "border-b border-slate-50 last:border-0",
                       r.error && "bg-red-50/50",
-                      r.total === 0 && "text-slate-400",
+                      r.total === 0 && "text-slate-500",
                     )}
                   >
-                    <td data-label="#" className="px-4 py-2 tabular-nums text-slate-400">
+                    <td data-label="#" className="px-4 py-2 tabular-nums text-slate-500">
                       {i + 1}
                     </td>
                     <td data-label={t("misaKho")} className="px-4 py-2 font-mono text-xs font-medium">

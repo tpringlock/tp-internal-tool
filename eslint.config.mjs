@@ -15,6 +15,11 @@ const eslintConfig = defineConfig([
     // Supabase-generated types (may be UTF-16 from PowerShell redirects).
     "**/*.generated.ts",
   ]),
+  // CommonJS scripts run directly with `node`; require() is how they import.
+  {
+    files: ["scripts/**/*.cjs"],
+    rules: { "@typescript-eslint/no-require-imports": "off" },
+  },
 ]);
 
 export default eslintConfig;

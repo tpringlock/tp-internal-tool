@@ -27,6 +27,7 @@ import { enrollAndStart } from "@/app/actions/academy";
 import { formatDateTime } from "@/lib/format";
 import { CourseThumb } from "../course-card";
 import { CourseContentPanel } from "./course-content-panel";
+import { ActionForm } from "@/components/ui/action-form";
 
 export default async function CoursePage({
   params,
@@ -117,7 +118,7 @@ export default async function CoursePage({
                   >
                     <summary className="flex cursor-pointer items-center justify-between px-5 py-3 text-sm font-medium text-slate-800 hover:bg-slate-50">
                       <span>{chapter.title}</span>
-                      <span className="text-xs font-normal text-slate-400">
+                      <span className="text-xs font-normal text-slate-500">
                         {t("lessonCount", { count: chapter.lessons.length })}
                       </span>
                     </summary>
@@ -173,7 +174,7 @@ export default async function CoursePage({
                               </span>
                             </Link>
                           ) : (
-                            <div className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-400">
+                            <div className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-500">
                               <Lock className="h-4 w-4 shrink-0" aria-hidden />
                               <span>{t("quizLabel")}</span>
                             </div>
@@ -223,7 +224,7 @@ export default async function CoursePage({
                 </div>
               )}
 
-              <form action={enrollAndStart}>
+              <ActionForm action={enrollAndStart}>
                 <input type="hidden" name="course_id" value={course.id} />
                 {firstLesson && (
                   <input
@@ -239,7 +240,7 @@ export default async function CoursePage({
                 >
                   {cta}
                 </Button>
-              </form>
+              </ActionForm>
 
               <div className="space-y-2 border-t border-slate-100 pt-4">
                 <p className="text-sm font-medium text-slate-800">

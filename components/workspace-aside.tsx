@@ -83,7 +83,7 @@ export function WorkspaceAside({
             {icon}
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+            <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               {label}
             </span>
             <span className="block truncate text-sm font-medium text-slate-900">
@@ -139,7 +139,7 @@ export function AsideHeading({
   return (
     <div className="flex items-start justify-between gap-3 px-5 pb-3 pt-5 pr-14 lg:pr-5">
       <div className="min-w-0">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
           {title}
         </p>
         {subtitle && (

@@ -1,6 +1,6 @@
 "use client";
 
-import { startTransition, useActionState, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { AlertTriangle, FileSpreadsheet, UploadCloud, XCircle } from "lucide-react";
@@ -16,6 +16,7 @@ import { formatNumber } from "@/lib/format";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { useActionCall } from "@/components/ui/use-form-action";
 import { cn } from "@/lib/utils";
 
 /**
@@ -31,8 +32,10 @@ export function PriceImportForm() {
   const [mode, setMode] = useState<PriceImportMode>("upsert");
   const [ack, setAck] = useState(false);
   const [last, setLast] = useState<"preview" | "confirm">("preview");
-  const [previewState, preview, previewing] = useActionState<PriceImportState, FormData>(previewPriceImport, {});
-  const [confirmState, confirm, confirming] = useActionState<PriceImportState, FormData>(
+  const [previewState, preview, previewing] = useActionCall<PriceImportState>(previewPriceImport, {}, {
+    resetOnFailure: true,
+  });
+  const [confirmState, confirm, confirming] = useActionCall<PriceImportState>(
     async (prev, fd) => {
       const r = await confirmPriceImport(prev, fd);
       if (r.imported) {
@@ -50,7 +53,7 @@ export function PriceImportForm() {
     fd.append("mode", m);
     setLast("preview");
     setAck(false);
-    startTransition(() => preview(fd));
+    preview(fd);
   };
 
   const state = last === "confirm" ? confirmState : previewState;
@@ -150,7 +153,7 @@ export function PriceImportForm() {
                 fd.append("expected", JSON.stringify(p.counts));
                 if (ack) fd.append("ack_delete", "1");
                 setLast("confirm");
-                startTransition(() => confirm(fd));
+                confirm(fd);
               }}
             >
               {t("confirmImport")}
@@ -179,7 +182,7 @@ function countsArgs(c: ClientPricePreview["counts"]) {
 function Summary({ p, t }: { p: ClientPricePreview; t: T }) {
   const c = p.counts;
   const chip = (label: string, n: number, tone: string) => (
-    <span className={cn("rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset", n > 0 ? tone : "bg-slate-50 text-slate-400 ring-slate-200")}>
+    <span className={cn("rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset", n > 0 ? tone : "bg-slate-50 text-slate-500 ring-slate-200")}>
       {label}: {formatNumber(n)}
     </span>
   );

@@ -1,0 +1,14 @@
+# Text files are stored and checked out with LF on every OS (the repo has
+# always been LF in the index). Git detects binary files by content.
+* text=auto eol=lf
+
+# Binary files, stated explicitly so they are never normalised or diffed as text.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.ico  binary
+*.xlsx binary
+*.pdf  binary
+
+# Old Supabase type dump saved as UTF-16 by PowerShell; not used, leave as is.
+lib/db/types.generated.ts -text

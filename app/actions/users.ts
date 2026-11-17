@@ -8,6 +8,7 @@ import { requireAdmin } from "@/lib/auth/dal";
 import { logActivity } from "@/lib/activity";
 import { createUserSchema, translateFieldErrors } from "@/lib/validation";
 import type { FormState } from "@/app/actions/auth";
+import { userError } from "@/lib/errors/user-error-server";
 
 // A long ban effectively disables sign-in until the account is reactivated.
 const DISABLE_BAN = "876000h";
@@ -44,7 +45,7 @@ export async function createUser(
     },
   });
   if (error) {
-    return { error: error.message };
+    return { error: await userError(error) };
   }
 
   const supabase = await createClient();

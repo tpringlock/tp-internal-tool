@@ -28,7 +28,7 @@ export function ErrorState({
         <h1 className="mt-4 text-lg font-semibold text-slate-900">{title}</h1>
         <p className="mt-2 text-sm text-slate-600">{body}</p>
         {detail && (
-          <p className="mt-3 break-all font-mono text-xs text-slate-400">
+          <p className="mt-3 break-all font-mono text-xs text-slate-500">
             {detail}
           </p>
         )}

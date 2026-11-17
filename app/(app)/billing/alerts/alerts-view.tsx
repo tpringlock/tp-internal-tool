@@ -82,7 +82,7 @@ export function AlertsView({ alerts, query }: { alerts: BillingAlert[]; query: s
             <span
               className={cn(
                 "mt-1 block text-2xl font-bold tabular-nums",
-                counts[c] === 0 ? "text-slate-400" : c === "negative_opening" ? "text-slate-600" : "text-amber-700",
+                counts[c] === 0 ? "text-slate-500" : c === "negative_opening" ? "text-slate-600" : "text-amber-700",
               )}
             >
               {counts[c]}
@@ -189,7 +189,7 @@ function AlertTable({ alerts }: { alerts: BillingAlert[] }) {
                     {a.tenVt && <span className="block text-xs text-slate-500">{a.tenVt}</span>}
                   </>
                 ) : (
-                  <span className="text-slate-400">—</span>
+                  <span className="text-slate-500">—</span>
                 )}
               </td>
               <td data-label={t("colDetail")} className="px-4 py-2.5 text-slate-700">

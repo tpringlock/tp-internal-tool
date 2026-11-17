@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   createFolderShareLink,
@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/input";
 import { Alert } from "@/components/ui/alert";
 import { formatDateTime } from "@/lib/format";
+import { useFormAction } from "@/components/ui/use-form-action";
+import { ActionForm } from "@/components/ui/action-form";
 
 export interface FolderShareLinkView {
   id: string;
@@ -54,7 +56,7 @@ export function FolderShareManager({
   links: FolderShareLinkView[];
 }) {
   const t = useTranslations("Shares");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     createFolderShareLink,
     {},
   );
@@ -63,17 +65,17 @@ export function FolderShareManager({
     <div className="space-y-4">
       <p className="text-sm text-slate-500">{t("folderShareHint")}</p>
 
-      <form action={action} className="space-y-3">
+      <form {...formProps} className="space-y-3">
         {state.success && <Alert tone="success">{state.success}</Alert>}
         {state.error && <Alert tone="error">{state.error}</Alert>}
 
         <input type="hidden" name="client_id" value={clientId} />
         <div className="flex flex-wrap items-end gap-3">
           <div className="min-w-40">
-            <label className="mb-1 block text-xs font-medium text-slate-500">
+            <label htmlFor="folder-share-manager-days" className="mb-1 block text-xs font-medium text-slate-500">
               {t("linkValidFor")}
             </label>
-            <Select name="days" defaultValue="3">
+            <Select id="folder-share-manager-days" name="days" defaultValue="3">
               <option value="1">{t("days", { count: 1 })}</option>
               <option value="3">{t("days", { count: 3 })}</option>
               <option value="7">{t("days", { count: 7 })}</option>
@@ -100,14 +102,14 @@ export function FolderShareManager({
                     className={
                       status === "active"
                         ? "text-sm font-medium text-green-700"
-                        : "text-sm font-medium text-slate-400"
+                        : "text-sm font-medium text-slate-500"
                     }
                   >
                     {status === "active" && t("statusActive")}
                     {status === "expired" && t("statusExpired")}
                     {status === "revoked" && t("statusRevoked")}
                   </span>
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-slate-500">
                     {status === "revoked"
                       ? t("revokedAt", { date: formatDateTime(link.revoked_at!) })
                       : t("expiresAt", { date: formatDateTime(link.expires_at) })}
@@ -120,13 +122,13 @@ export function FolderShareManager({
                       {link.url}
                     </code>
                     <CopyButton url={link.url} />
-                    <form action={revokeFolderShareLink}>
+                    <ActionForm action={revokeFolderShareLink}>
                       <input type="hidden" name="id" value={link.id} />
                       <input type="hidden" name="client_id" value={clientId} />
                       <Button type="submit" variant="danger" size="sm">
                         {t("revoke")}
                       </Button>
-                    </form>
+                    </ActionForm>
                   </div>
                 )}
               </li>

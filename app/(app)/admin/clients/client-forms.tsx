@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { X } from "lucide-react";
 import { addClient, editClient, deleteClient } from "@/app/actions/clients";
@@ -11,11 +11,12 @@ import { Input } from "@/components/ui/input";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
 import { Dialog } from "@/components/ui/dialog";
-import { useToast, useFormStateToast } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/toast";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 export function CreateClientForm() {
   const t = useTranslations("Admin");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     addClient,
     {},
   );
@@ -26,7 +27,7 @@ export function CreateClientForm() {
   }, [state.success]);
 
   return (
-    <form ref={formRef} action={action} className="space-y-4">
+    <form ref={formRef} {...formProps} className="space-y-4">
       {state.success && <Alert tone="success">{state.success}</Alert>}
       {state.error && <Alert tone="error">{state.error}</Alert>}
 
@@ -68,13 +69,13 @@ export function CreateClientForm() {
 /** Edit form for the client manage page. */
 export function EditClientForm({ client }: { client: Client }) {
   const t = useTranslations("Admin");
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     editClient,
     {},
   );
 
   return (
-    <form action={action} className="space-y-4">
+    <form {...formProps} className="space-y-4">
       <input type="hidden" name="id" value={client.id} />
       {state.success && <Alert tone="success">{state.success}</Alert>}
       {state.error && <Alert tone="error">{state.error}</Alert>}
@@ -121,18 +122,19 @@ export function DeleteClientButton({
   const t = useTranslations("Admin");
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
-  const [state, action, pending] = useActionState<FormState, FormData>(
-    deleteClient,
-    {},
-  );
-  useFormStateToast(state);
-
-  useEffect(() => {
-    // Close on any outcome; the toast carries the result. On success with a
-    // redirect the action navigates away and this state never arrives.
-    if (state.success || state.error) setOpen(false);
-    if (state.success) toast(state.success, { tone: "success" });
-  }, [state, toast]);
+  const [, formProps, pending] = useFormAction<FormState>(deleteClient, {}, {
+    // Both callbacks run inside the action, so the toast does not depend on
+    // this component surviving the revalidation or the redirect.
+    onResult: (result) => {
+      if (result.success || result.error) setOpen(false);
+      if (result.success) toast(result.success, { tone: "success" });
+      if (result.error) toast(result.error, { tone: "error" });
+    },
+    // With `redirectTo` the action redirects on success and never returns a
+    // state: say it here (the toast provider lives in the root layout and
+    // survives the navigation).
+    onRedirect: () => toast(t("clientDeleted", { name: client.name }), { tone: "success" }),
+  });
 
   return (
     <>
@@ -153,7 +155,7 @@ export function DeleteClientButton({
           <Button variant="secondary" size="sm" onClick={() => setOpen(false)}>
             {t("cancel")}
           </Button>
-          <form action={action}>
+          <form {...formProps}>
             <input type="hidden" name="id" value={client.id} />
             <input type="hidden" name="name" value={client.name} />
             {redirectTo && (

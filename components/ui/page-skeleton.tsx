@@ -1,12 +1,15 @@
+import { useTranslations } from "next-intl";
+
 /**
  * Neutral loading placeholder shown by route-level `loading.tsx` files while a
  * page's server component streams in. Mirrors the common layout (a title line
  * plus a grid of cards) so navigation feels instant instead of blank.
  */
 export function PageSkeleton() {
+  const t = useTranslations("Common");
   return (
     <div className="space-y-6" aria-busy="true" aria-live="polite">
-      <span className="sr-only">Loading…</span>
+      <span className="sr-only">{t("loading")}</span>
       <div className="space-y-2">
         <div className="h-6 w-56 animate-pulse rounded bg-slate-200" />
         <div className="h-4 w-80 max-w-full animate-pulse rounded bg-slate-200/70" />

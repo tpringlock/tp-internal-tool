@@ -1,0 +1,90 @@
+import "server-only";
+import { getTranslations } from "next-intl/server";
+import {
+  classifyError,
+  classifyStorageError,
+  ownErrorMessage,
+  type StorageErrorLike,
+  type SupabaseErrorLike,
+} from "./user-error";
+
+/**
+ * The text a server action may put in `FormState.error` for a Supabase error.
+ * The original error is written to the server log (Vercel logs), never sent
+ * to the browser, unless it is one of our own user-facing messages.
+ *
+ *   if (error) return { error: await userError(error) };
+ */
+export async function userError(error: SupabaseErrorLike | null | undefined): Promise<string> {
+  const decision = classifyError(error);
+  if (decision.kind === "passthrough" && decision.message) return decision.message;
+
+  console.error("[action-error]", {
+    kind: decision.kind,
+    code: error?.code ?? null,
+    status: error?.status ?? null,
+    message: error?.message ?? null,
+  });
+
+  const t = await getTranslations("Errors");
+  switch (decision.kind) {
+    case "unique":
+      return t("dbUnique");
+    case "in_use":
+      return t("dbInUse");
+    case "forbidden":
+      return t("dbForbidden");
+    case "invalid":
+      return t("dbInvalid");
+    case "auth_same_password":
+      return t("authSamePassword");
+    case "auth_weak_password":
+      return t("authWeakPassword");
+    case "auth_email_exists":
+      return t("authEmailExists");
+    case "auth_rate_limit":
+      return t("authRateLimit");
+    default:
+      return decision.code ? t("dbUnknownCode", { code: decision.code }) : t("dbUnknown");
+  }
+}
+
+/**
+ * The text for a failed Supabase Storage call (upload, copy, signed URL).
+ * The Storage message goes to the server log only; the user gets `fallback`
+ * (the caller's own "could not store the file" sentence), or the "file too
+ * large" message when that is the reason.
+ *
+ *   if (upErr) return { error: await storageError(upErr, t("errStorage")) };
+ */
+export async function storageError(
+  error: StorageErrorLike | null | undefined,
+  fallback: string,
+): Promise<string> {
+  console.error("[storage-error]", {
+    status: error?.statusCode ?? error?.status ?? null,
+    message: error?.message ?? null,
+  });
+  if (classifyStorageError(error) === "too_large") {
+    const t = await getTranslations("Errors");
+    return t("storageTooLarge");
+  }
+  return fallback;
+}
+
+/**
+ * The text for an error caught around app code (engine, parser, data
+ * loading): our own Vietnamese messages pass through; anything else (a
+ * database error rethrown by a loader, a runtime error) is logged and
+ * replaced by `fallback`.
+ *
+ *   catch (e) { return { error: await thrownError(e, t("errComputeFailed")) }; }
+ */
+export async function thrownError(error: unknown, fallback?: string): Promise<string> {
+  const own = ownErrorMessage(error);
+  if (own) return own;
+  console.error("[thrown-error]", error);
+  if (fallback) return fallback;
+  const t = await getTranslations("Errors");
+  return t("loadFailed");
+}

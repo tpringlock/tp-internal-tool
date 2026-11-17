@@ -72,7 +72,10 @@ export async function GET(
     exported_by: user.id,
   });
   // The file must be traceable to its template: no log, no file.
-  if (logError) return text(tt("errExportLog", { message: logError.message }), 500);
+  if (logError) {
+    console.error("[hstt-export-log]", { code: logError.code, message: logError.message });
+    return text(tt("errExportLog"), 500);
+  }
 
   await logActivity(supabase, {
     action: "billing.hstt_exported",

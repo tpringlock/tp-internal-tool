@@ -1,13 +1,14 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { X } from "lucide-react";
 import { deleteProject } from "@/app/actions/projects";
 import type { FormState } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
-import { useToast, useFormStateToast } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/toast";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 /**
  * Delete control for a project row: danger button + confirmation dialog, shown
@@ -25,18 +26,16 @@ export function DeleteProjectButton({
   const t = useTranslations("Admin");
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
-  const [state, action, pending] = useActionState<FormState, FormData>(
-    deleteProject,
-    {},
-  );
-  useFormStateToast(state);
-
-  useEffect(() => {
-    // Close on any outcome; the toast carries the result. On success the row
-    // itself disappears with the revalidated list.
-    if (state.success || state.error) setOpen(false);
-    if (state.success) toast(state.success, { tone: "success" });
-  }, [state, toast]);
+  const [, formProps, pending] = useFormAction<FormState>(deleteProject, {}, {
+    // Runs inside the action, before the revalidated page removes this
+    // component, so the toast is not lost with it (an effect on `state`
+    // never ran once the row or page was gone).
+    onResult: (result) => {
+      if (result.success || result.error) setOpen(false);
+      if (result.success) toast(result.success, { tone: "success" });
+      if (result.error) toast(result.error, { tone: "error" });
+    },
+  });
 
   return (
     <>
@@ -62,7 +61,7 @@ export function DeleteProjectButton({
           <Button variant="secondary" size="sm" onClick={() => setOpen(false)}>
             {t("cancel")}
           </Button>
-          <form action={action}>
+          <form {...formProps}>
             <input type="hidden" name="id" value={projectId} />
             <input type="hidden" name="name" value={projectName} />
             <Button variant="danger" size="sm" type="submit" loading={pending}>

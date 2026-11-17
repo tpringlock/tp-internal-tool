@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { AlertTriangle, CheckCircle2, FileSpreadsheet, Info, Plus } from "lucide-react";
 import { computeRent, type ComputeState } from "@/app/actions/billing";
@@ -16,6 +16,7 @@ import { Field } from "@/components/ui/field";
 import { Input, Select } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";
 import { cn } from "@/lib/utils";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 export interface CalcContractOption {
   id: string;
@@ -140,7 +141,7 @@ export function CalculateForm({
   const legacy = useLegacy && legacyUploads.length > 0;
   const canSubmit = !!period && (legacy ? submitted.length > 0 : !!pick && !pick.error);
 
-  const [state, action, pending] = useActionState<ComputeState, FormData>(computeRent, {});
+  const [state, formProps, pending] = useFormAction<ComputeState>(computeRent, {});
 
   if (contracts.length === 0) {
     return (
@@ -167,7 +168,7 @@ export function CalculateForm({
   };
 
   return (
-    <form action={action} className="space-y-5">
+    <form {...formProps} className="space-y-5">
       <input type="hidden" name="contract_id" value={contractId} />
       <input type="hidden" name="mode" value={mode} />
       <input type="hidden" name="source" value={legacy ? "files" : "months"} />
@@ -199,7 +200,7 @@ export function CalculateForm({
             onClick={() => setMode(m)}
             className={cn(
               "flex-1 whitespace-nowrap rounded-lg px-3.5 py-2 text-sm font-medium transition-colors sm:flex-none",
-              mode === m ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900",
+              mode === m ? "bg-white text-slate-900 shadow-sm" : "text-slate-600 hover:text-slate-900",
             )}
           >
             {m === "preset" ? t("modePreset") : t("modeRange")}

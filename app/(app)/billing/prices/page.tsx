@@ -159,11 +159,11 @@ export default async function BillingPricesPage({
                       {r.codeNotInMisa && <Flag text={t("codeNotInMisa")} />}
                     </td>
                     <td data-label={t("colName")} className="px-4 py-2.5 md:max-w-xs">
-                      <span className="break-words">{r.ten_vt || <span className="text-slate-400">—</span>}</span>
+                      <span className="break-words">{r.ten_vt || <span className="text-slate-500">—</span>}</span>
                       {r.misaName && <Flag text={t("misaIs", { value: r.misaName })} />}
                     </td>
                     <td data-label={t("colUnit")} className="px-4 py-2.5">
-                      {r.dvt || <span className="text-slate-400">—</span>}
+                      {r.dvt || <span className="text-slate-500">—</span>}
                       {r.misaDvt && <Flag text={t("misaIs", { value: r.misaDvt })} />}
                     </td>
                     <td data-label={t("colPrice")} className="px-4 py-2.5 tabular-nums md:text-right">
@@ -176,7 +176,7 @@ export default async function BillingPricesPage({
                           {r.print_dvt && ` · ${r.print_dvt}`}
                         </span>
                       ) : (
-                        <span className="text-slate-400">{t("sameAsMisa")}</span>
+                        <span className="text-slate-500">{t("sameAsMisa")}</span>
                       )}
                     </td>
                     <td data-label={t("colNote")} className="px-4 py-2.5 text-xs text-slate-600">

@@ -101,10 +101,10 @@ export default async function DocumentsListPage({
         <CardBody>
           <form className="flex flex-wrap items-end gap-3" method="get">
             <div className="w-full sm:min-w-48 sm:flex-1">
-              <label className="mb-1 block text-xs font-medium text-slate-500">
+              <label htmlFor="page-project" className="mb-1 block text-xs font-medium text-slate-500">
                 {t("project")}
               </label>
-              <Select name="project" defaultValue={project}>
+              <Select id="page-project" name="project" defaultValue={project}>
                 <option value="">{t("allProjects")}</option>
                 {(projectOptions ?? []).map((p) => (
                   <option key={p.id} value={p.id}>
@@ -114,10 +114,10 @@ export default async function DocumentsListPage({
               </Select>
             </div>
             <div className="w-full sm:min-w-48 sm:flex-1">
-              <label className="mb-1 block text-xs font-medium text-slate-500">
+              <label htmlFor="page-type" className="mb-1 block text-xs font-medium text-slate-500">
                 {t("type")}
               </label>
-              <Select name="type" defaultValue={type}>
+              <Select id="page-type" name="type" defaultValue={type}>
                 <option value="">{t("allTypes")}</option>
                 {DOC_TYPES.map((docType) => (
                   <option key={docType.value} value={docType.value}>
@@ -127,10 +127,10 @@ export default async function DocumentsListPage({
               </Select>
             </div>
             <div className="w-full sm:min-w-48 sm:flex-1">
-              <label className="mb-1 block text-xs font-medium text-slate-500">
+              <label htmlFor="page-q" className="mb-1 block text-xs font-medium text-slate-500">
                 {t("search")}
               </label>
-              <Input name="q" defaultValue={q} placeholder={t("fileNamePlaceholder")} />
+              <Input id="page-q" name="q" defaultValue={q} placeholder={t("fileNamePlaceholder")} />
             </div>
             <Button type="submit" variant="secondary" className="w-full sm:w-auto">
               {t("filter")}
@@ -170,7 +170,7 @@ export default async function DocumentsListPage({
                       >
                         {d.canonical_name}
                       </Link>
-                      <div className="text-xs text-slate-400">
+                      <div className="text-xs text-slate-500">
                         {formatBytes(d.file_size)}
                       </div>
                     </td>
@@ -183,7 +183,7 @@ export default async function DocumentsListPage({
                     >
                       {d.projects?.name ?? "—"}
                       {d.projects?.clients?.name && (
-                        <div className="text-xs text-slate-400">
+                        <div className="text-xs text-slate-500">
                           {d.projects.clients.name}
                         </div>
                       )}

@@ -17,6 +17,8 @@ import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Alert } from "@/components/ui/alert";
 import { useToast } from "@/components/ui/toast";
+import { useActionFailureMessage } from "@/components/ui/use-form-action";
+import { classifyStorageError } from "@/lib/errors/user-error";
 
 /**
  * Upload a video file straight from the browser to Supabase Storage (one-time
@@ -28,7 +30,7 @@ export async function uploadLessonVideoFile(
   courseId: string,
   lessonId: string,
   file: File,
-  opts?: { sizeErrorMessage?: string },
+  opts: { sizeErrorMessage: string; failedMessage: string },
 ): Promise<string | null> {
   const signed = await createLessonVideoUploadUrl({
     courseId,
@@ -46,16 +48,17 @@ export async function uploadLessonVideoFile(
       contentType: file.type,
     });
   if (uploadError) {
-    // Storage rejects oversized objects (bucket file_size_limit or the
-    // project-wide dashboard cap) with a message users can't act on — swap in
-    // the translated size error. Other failures (quota, network) keep theirs.
+    // Storage text ("The object exceeded…", bucket names) is not shown:
+    // oversized objects (bucket file_size_limit or the project-wide cap) get
+    // the translated size error, anything else the generic upload error.
+    console.error("[video-upload]", uploadError);
     if (
-      opts?.sizeErrorMessage &&
+      classifyStorageError(uploadError) === "too_large" ||
       /exceed|too large|413|payload/i.test(uploadError.message)
     ) {
       return opts.sizeErrorMessage;
     }
-    return uploadError.message;
+    return opts.failedMessage;
   }
 
   const result = await finalizeLessonVideo({
@@ -82,6 +85,7 @@ export function VideoUploadForm({
   const inputRef = useRef<HTMLInputElement>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const failureMessage = useActionFailureMessage();
 
   function fail(message: string) {
     setError(message);
@@ -105,7 +109,10 @@ export function VideoUploadForm({
         courseId,
         lessonId,
         file!,
-        { sizeErrorMessage: t("errVideoSize", { size: MAX_VIDEO_SIZE_LABEL }) },
+        {
+          sizeErrorMessage: t("errVideoSize", { size: MAX_VIDEO_SIZE_LABEL }),
+          failedMessage: t("errUploadFailed"),
+        },
       );
       if (uploadError) {
         fail(uploadError);
@@ -115,7 +122,8 @@ export function VideoUploadForm({
       toast(t("videoUploaded"), { tone: "success" });
       router.refresh();
     } catch (err) {
-      fail(err instanceof Error ? err.message : String(err));
+      // Offline / dropped connection: the chosen file stays in the input.
+      fail(failureMessage(err));
     } finally {
       setPending(false);
     }

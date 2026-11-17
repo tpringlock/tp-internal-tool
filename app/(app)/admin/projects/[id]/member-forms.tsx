@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { assignMember, unassignMember } from "@/app/actions/projects";
@@ -8,6 +8,8 @@ import type { FormState } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/input";
 import { Alert } from "@/components/ui/alert";
+import { useFormAction } from "@/components/ui/use-form-action";
+import { ActionForm } from "@/components/ui/action-form";
 
 export interface Candidate {
   id: string;
@@ -23,7 +25,7 @@ export function AssignMemberForm({
 }) {
   const t = useTranslations("Admin");
   const router = useRouter();
-  const [state, action, pending] = useActionState<FormState, FormData>(
+  const [state, formProps, pending] = useFormAction<FormState>(
     assignMember,
     {},
   );
@@ -43,14 +45,20 @@ export function AssignMemberForm({
   const noneToAdd = candidates.length === 0;
 
   return (
-    <form ref={formRef} action={action} className="space-y-3">
+    <form ref={formRef} {...formProps} className="space-y-3">
       {state.success && <Alert tone="success">{state.success}</Alert>}
       {state.error && <Alert tone="error">{state.error}</Alert>}
 
       <input type="hidden" name="project_id" value={projectId} />
       <div className="flex flex-wrap items-end gap-3">
         <div className="w-full sm:min-w-56 sm:flex-1">
-          <Select name="user_id" defaultValue="" required disabled={noneToAdd}>
+          <Select
+            name="user_id"
+            aria-label={t("selectEmployee")}
+            defaultValue=""
+            required
+            disabled={noneToAdd}
+          >
             <option value="" disabled>
               {t("selectEmployee")}
             </option>
@@ -81,12 +89,12 @@ export function RemoveMemberButton({
 }) {
   const t = useTranslations("Admin");
   return (
-    <form action={unassignMember}>
+    <ActionForm action={unassignMember}>
       <input type="hidden" name="project_id" value={projectId} />
       <input type="hidden" name="user_id" value={userId} />
       <Button type="submit" variant="danger" size="sm">
         {t("remove")}
       </Button>
-    </form>
+    </ActionForm>
   );
 }

@@ -9,6 +9,7 @@ import { logActivity } from "@/lib/activity";
 import { clientSchema, translateFieldErrors } from "@/lib/validation";
 import { safeInternalPath } from "@/lib/utils";
 import type { FormState } from "@/app/actions/auth";
+import { userError } from "@/lib/errors/user-error-server";
 
 /** Postgres unique-violation error code. */
 const UNIQUE_VIOLATION = "23505";
@@ -44,7 +45,7 @@ export async function addClient(
     if (error.code === UNIQUE_VIOLATION) {
       return { fieldErrors: { code: [t("codeInUse")] } };
     }
-    return { error: error.message };
+    return { error: await userError(error) };
   }
 
   await logActivity(supabase, {
@@ -88,7 +89,7 @@ export async function editClient(
     if (error.code === UNIQUE_VIOLATION) {
       return { fieldErrors: { code: [t("codeInUse")] } };
     }
-    return { error: error.message };
+    return { error: await userError(error) };
   }
 
   await logActivity(supabase, {
@@ -131,7 +132,7 @@ export async function deleteClient(
     if (error.code === FK_VIOLATION) {
       return { error: t("errClientHasProjects") };
     }
-    return { error: error.message };
+    return { error: await userError(error) };
   }
   if (!data || data.length === 0) {
     return { error: t("clientNotFound") };

@@ -1,13 +1,14 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Trash2, X } from "lucide-react";
 import { deleteDocument } from "@/app/actions/documents";
 import type { FormState } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
-import { useToast, useFormStateToast } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/toast";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 /**
  * Delete control for a document row on the project manage page: danger button
@@ -28,18 +29,16 @@ export function DeleteDocumentButton({
   const t = useTranslations("Admin");
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
-  const [state, action, pending] = useActionState<FormState, FormData>(
-    deleteDocument,
-    {},
-  );
-  useFormStateToast(state);
-
-  useEffect(() => {
-    // Close on any outcome; the toast carries the result. On success the row
-    // itself disappears with the revalidated list.
-    if (state.success || state.error) setOpen(false);
-    if (state.success) toast(state.success, { tone: "success" });
-  }, [state, toast]);
+  const [, formProps, pending] = useFormAction<FormState>(deleteDocument, {}, {
+    // Runs inside the action, before the revalidated page removes this
+    // component, so the toast is not lost with it (an effect on `state`
+    // never ran once the row or page was gone).
+    onResult: (result) => {
+      if (result.success || result.error) setOpen(false);
+      if (result.success) toast(result.success, { tone: "success" });
+      if (result.error) toast(result.error, { tone: "error" });
+    },
+  });
 
   return (
     <>
@@ -73,7 +72,7 @@ export function DeleteDocumentButton({
           <Button variant="secondary" size="sm" onClick={() => setOpen(false)}>
             {t("cancel")}
           </Button>
-          <form action={action}>
+          <form {...formProps}>
             <input type="hidden" name="id" value={documentId} />
             <Button variant="danger" size="sm" type="submit" loading={pending}>
               {t("confirmDelete")}

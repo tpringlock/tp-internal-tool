@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowDown, ArrowUp, Plus, Wand2, X } from "lucide-react";
 import { savePriceLines } from "@/app/actions/billing-prices";
@@ -12,6 +12,7 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useFormAction } from "@/components/ui/use-form-action";
 
 export interface EditorLine {
   ma_vt: string;
@@ -86,7 +87,7 @@ export function PriceLinesEditor({
       }),
     ),
   ]);
-  const [state, action, saving] = useActionState<FormState, FormData>(savePriceLines, {});
+  const [state, formProps, saving] = useFormAction<FormState>(savePriceLines, {});
 
   const update = (key: number, patch: Partial<Row>) =>
     setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...patch } : r)));
@@ -137,7 +138,7 @@ export function PriceLinesEditor({
     : 0;
 
   return (
-    <form action={action} className="space-y-5">
+    <form {...formProps} className="space-y-5">
       <input type="hidden" name="id" value={contractId} />
       <input type="hidden" name="lines" value={JSON.stringify(payload)} />
 
@@ -172,7 +173,7 @@ export function PriceLinesEditor({
                     priceOf(r.price) === 0 && "bg-slate-50",
                   )}
                 >
-                  <span className="col-span-2 pt-2 text-xs font-semibold text-slate-400 lg:col-span-1">{i + 1}</span>
+                  <span className="col-span-2 pt-2 text-xs font-semibold text-slate-500 lg:col-span-1">{i + 1}</span>
                   <Input
                     aria-label={t("colCode")}
                     placeholder={t("colCode")}
@@ -287,7 +288,7 @@ export function PriceLinesEditor({
           <ol className="mt-2 space-y-1 text-sm">
             {grouped.items.map((it, i) => (
               <li key={it.name} className="flex flex-wrap gap-x-2">
-                <span className="w-5 shrink-0 text-right text-slate-400">{i + 1}.</span>
+                <span className="w-5 shrink-0 text-right text-slate-500">{i + 1}.</span>
                 <span className="font-medium text-slate-900">{it.name}</span>
                 <span className="text-slate-500">
                   {it.unit || "—"} · {formatNumber(it.unitPrice)}đ/ngày · {it.maHang.join(", ")}

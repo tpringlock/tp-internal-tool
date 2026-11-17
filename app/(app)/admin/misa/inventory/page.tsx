@@ -119,7 +119,7 @@ export default async function MisaInventoryPage({
                     >
                       {row.product_name || row.product_code || "—"}
                       {row.product_code && row.product_name ? (
-                        <span className="block text-xs text-slate-400">
+                        <span className="block text-xs text-slate-500">
                           {row.product_code}
                         </span>
                       ) : null}

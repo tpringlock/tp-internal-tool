@@ -18,6 +18,7 @@ import {
 } from "@/lib/validation";
 import { periodEditBlock } from "@/lib/billing/hstt-data";
 import type { FormState } from "@/app/actions/auth";
+import { userError } from "@/lib/errors/user-error-server";
 
 /** Postgres foreign-key-violation error code. */
 const FK_VIOLATION = "23503";
@@ -68,7 +69,7 @@ export async function saveCompanyProfile(_prev: FormState, formData: FormData): 
     .update({ ...parsed.data, updated_by: user.id })
     .eq("id", 1)
     .select("id");
-  if (error) return { error: error.message };
+  if (error) return { error: await userError(error) };
   if (!data || data.length === 0) return { error: t("errCompanyMissing") };
 
   await logActivity(supabase, { action: "billing.company_updated", entityType: "company_profile", entityId: "1" });
@@ -102,7 +103,7 @@ export async function createBillingCustomer(_prev: FormState, formData: FormData
     .single();
   if (error || !data) {
     if (error?.code === UNIQUE_VIOLATION) return { fieldErrors: { mst: [t("errMstInUse")] } };
-    return { error: error?.message ?? t("errSaveFailed") };
+    return { error: error ? await userError(error) : t("errSaveFailed") };
   }
 
   await logActivity(supabase, {
@@ -135,7 +136,7 @@ export async function updateBillingCustomer(_prev: FormState, formData: FormData
     .select("id");
   if (error) {
     if (error.code === UNIQUE_VIOLATION) return { fieldErrors: { mst: [t("errMstInUse")] } };
-    return { error: error.message };
+    return { error: await userError(error) };
   }
   if (!data || data.length === 0) return { error: t("errNotFound") };
 
@@ -158,7 +159,7 @@ export async function deleteBillingCustomer(_prev: FormState, formData: FormData
 
   const supabase = await createClient();
   const { data, error } = await supabase.from("billing_customers").delete().eq("id", id).select("id, ten_in_hoa");
-  if (error) return { error: error.code === FK_VIOLATION ? t("errCustomerInUse") : error.message };
+  if (error) return { error: error.code === FK_VIOLATION ? t("errCustomerInUse") : await userError(error) };
   if (!data || data.length === 0) return { error: t("errNotFound") };
 
   await logActivity(supabase, {
@@ -189,7 +190,7 @@ export async function saveContractHstt(_prev: FormState, formData: FormData): Pr
   const { error } = await supabase
     .from("billing_contract_hstt")
     .upsert({ contract_id: contractId, ...fields, updated_by: user.id }, { onConflict: "contract_id" });
-  if (error) return { error: error.code === FK_VIOLATION ? t("errContractOrCustomer") : error.message };
+  if (error) return { error: error.code === FK_VIOLATION ? t("errContractOrCustomer") : await userError(error) };
 
   await logActivity(supabase, {
     action: "billing.contract_hstt_saved",
@@ -220,7 +221,7 @@ export async function saveTransportPrices(_prev: FormState, formData: FormData):
   let del = supabase.from("billing_transport_prices").delete().eq("contract_id", contractId);
   if (keep.length) del = del.not("id", "in", `(${keep.join(",")})`);
   const { error: delError } = await del;
-  if (delError) return { error: delError.code === FK_VIOLATION ? t("errVehicleInUse") : delError.message };
+  if (delError) return { error: delError.code === FK_VIOLATION ? t("errVehicleInUse") : await userError(delError) };
 
   for (const [i, l] of lines.entries()) {
     const row = {
@@ -235,7 +236,7 @@ export async function saveTransportPrices(_prev: FormState, formData: FormData):
     const { error } = l.id
       ? await supabase.from("billing_transport_prices").update(row).eq("id", l.id).eq("contract_id", contractId)
       : await supabase.from("billing_transport_prices").insert(row);
-    if (error) return { error: error.code === UNIQUE_VIOLATION ? t("errDuplicateVehicle") : error.message };
+    if (error) return { error: error.code === UNIQUE_VIOLATION ? t("errDuplicateVehicle") : await userError(error) };
   }
 
   await logActivity(supabase, {
@@ -272,20 +273,20 @@ export async function saveAdvances(_prev: FormState, formData: FormData): Promis
     : await supabase
         .from("billing_contract_hstt")
         .insert({ contract_id: contractId, advances_note: note, updated_by: user.id });
-  if (noteError) return { error: noteError.message };
+  if (noteError) return { error: await userError(noteError) };
 
   const keep = items.flatMap((a) => (a.id ? [a.id] : []));
   let del = supabase.from("billing_contract_advances").delete().eq("contract_id", contractId);
   if (keep.length) del = del.not("id", "in", `(${keep.join(",")})`);
   const { error: delError } = await del;
-  if (delError) return { error: delError.message };
+  if (delError) return { error: await userError(delError) };
 
   for (const [i, a] of items.entries()) {
     const row = { contract_id: contractId, amount: a.amount, paid_on: a.paid_on, sort_order: i + 1, updated_by: user.id };
     const { error } = a.id
       ? await supabase.from("billing_contract_advances").update(row).eq("id", a.id).eq("contract_id", contractId)
       : await supabase.from("billing_contract_advances").insert(row);
-    if (error) return { error: error.message };
+    if (error) return { error: await userError(error) };
   }
 
   await logActivity(supabase, {
@@ -361,7 +362,7 @@ export async function savePeriodInputs(_prev: FormState, formData: FormData): Pr
     )
     .select("id")
     .single();
-  if (error || !saved) return { error: error?.message ?? t("errSaveFailed") };
+  if (error || !saved) return { error: error ? await userError(error) : t("errSaveFailed") };
 
   // A row keeps the price it was first entered with; new rows take today's.
   const { data: oldRows } = await supabase
@@ -371,7 +372,7 @@ export async function savePeriodInputs(_prev: FormState, formData: FormData): Pr
   const oldPrice = new Map((oldRows ?? []).map((r) => [r.transport_price_id, Number(r.unit_price)]));
 
   const { error: delT } = await supabase.from("billing_period_transport").delete().eq("period_input_id", saved.id);
-  if (delT) return { error: delT.message };
+  if (delT) return { error: await userError(delT) };
   const transport = input.transport
     .filter((r) => r.trips !== null || r.cumulative_trips !== null || r.note || r.charge_mode !== "now")
     .map((r) => ({
@@ -385,16 +386,16 @@ export async function savePeriodInputs(_prev: FormState, formData: FormData): Pr
     }));
   if (transport.length) {
     const { error: insT } = await supabase.from("billing_period_transport").insert(transport);
-    if (insT) return { error: insT.message };
+    if (insT) return { error: await userError(insT) };
   }
 
   const { error: delD } = await supabase.from("billing_period_deductions").delete().eq("period_input_id", saved.id);
-  if (delD) return { error: delD.message };
+  if (delD) return { error: await userError(delD) };
   if (input.deductions.length) {
     const { error: insD } = await supabase
       .from("billing_period_deductions")
       .insert(input.deductions.map((d, i) => ({ period_input_id: saved.id, ...d, sort_order: i + 1 })));
-    if (insD) return { error: insD.message };
+    if (insD) return { error: await userError(insD) };
   }
 
   await logActivity(supabase, {

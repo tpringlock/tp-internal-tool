@@ -77,7 +77,7 @@ export default async function BillingContractsPage() {
                     <td data-label={t("periodLabel")} className="px-5 py-3 text-slate-600">
                       {t("periodRule", { start: c.period_start_day, end: c.period_start_day - 1 })}
                       {c.contract_start && (
-                        <span className="block text-xs text-slate-400">
+                        <span className="block text-xs text-slate-500">
                           {t("fromDate", { date: formatVnDate(c.contract_start) })}
                         </span>
                       )}
@@ -90,7 +90,7 @@ export default async function BillingContractsPage() {
                         className={
                           c.active
                             ? "inline-flex rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-800 ring-1 ring-inset ring-green-200"
-                            : "inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-500 ring-1 ring-inset ring-slate-200"
+                            : "inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-200"
                         }
                       >
                         {c.active ? t("contractActive") : t("contractInactive")}

@@ -31,7 +31,7 @@ npm run build        # build production
 ```
 
 Trước khi báo xong việc: chạy `npx tsc --noEmit`, `npm run lint`, `npm test`. Việc lớn thì chạy thêm `npm run build`.
-Lint hiện có sẵn 6 lỗi cũ (`react-hooks/set-state-in-effect` ở admin/clients, delete-\*-button; "Cannot create components during render" ở academy/my-courses). Đó là nợ cũ, chỉ được phép không thêm lỗi mới.
+Lint hiện có sẵn 2 lỗi cũ ("Cannot create components during render" ở academy/my-courses). Đó là nợ cũ, chỉ được phép không thêm lỗi mới.
 
 ## Cấu trúc
 
@@ -95,7 +95,7 @@ Lint hiện có sẵn 6 lỗi cũ (`react-hooks/set-state-in-effect` ở admin/c
 
 ### Code style
 
-- File dùng line ending **CRLF**, giữ nguyên, đừng chuyển sang LF.
+- File dùng line ending **LF** (repo lưu LF trong index; `.gitattributes` ép `eol=lf` trên mọi hệ điều hành, kể cả Windows). Đừng chuyển sang CRLF.
 - Comment trong code viết tiếng Anh, text UI viết tiếng Việt.
 - Ưu tiên Server Components. Chỉ dùng `"use client"` khi cần state, event hoặc hook trình duyệt.
 - Thêm test vitest cho logic thuần mới (đặt `*.test.ts` cạnh file).

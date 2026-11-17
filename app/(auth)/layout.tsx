@@ -41,7 +41,7 @@ export default function AuthLayout({
               />
             </div>
             <h1 className="text-lg font-semibold text-white">{t("title")}</h1>
-            <p className="text-sm text-white/80">{t("tagline")}</p>
+            <p className="text-sm text-white">{t("tagline")}</p>
           </div>
           {children}
         </div>
