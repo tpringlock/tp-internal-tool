@@ -39,6 +39,7 @@ import {
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { VideoProvider, Database } from "@/lib/db/types";
 import type { FormState } from "@/app/actions/auth";
+import { userError } from "@/lib/errors/user-error-server";
 
 /**
  * Recompute a course's completion for a user, honouring both lessons and chapter
@@ -112,7 +113,7 @@ export async function createCourse(
     .select("id")
     .single();
   if (error || !data) {
-    return { error: error?.message ?? "Could not create the course." };
+    return { error: error ? await userError(error) : "Could not create the course." };
   }
 
   await logActivity(supabase, {
@@ -144,7 +145,7 @@ export async function updateCourse(
   const supabase = await createClient();
   const { error } = await supabase.from("courses").update(parsed.data).eq("id", id);
   const t = await getTranslations("AcademyAdmin");
-  if (error) return { error: error.message };
+  if (error) return { error: await userError(error) };
 
   await logActivity(supabase, {
     action: "course.updated",
@@ -274,7 +275,7 @@ export async function addLesson(
     .select("id")
     .single();
   const t = await getTranslations("AcademyAdmin");
-  if (error || !data) return { error: error?.message ?? t("errSaveFailed") };
+  if (error || !data) return { error: error ? await userError(error) : t("errSaveFailed") };
 
   await logActivity(supabase, {
     action: "lesson.created",
@@ -334,7 +335,7 @@ export async function updateLesson(
     })
     .eq("id", id);
   const t = await getTranslations("AcademyAdmin");
-  if (error) return { error: error.message };
+  if (error) return { error: await userError(error) };
 
   await logActivity(supabase, {
     action: "lesson.updated",
@@ -465,7 +466,7 @@ export async function uploadLessonFile(
     .single();
   if (insertError || !inserted) {
     await adminClient.storage.from(ACADEMY_BUCKET).remove([storagePath]);
-    return { error: insertError?.message ?? t("errSaveFailed") };
+    return { error: insertError ? await userError(insertError) : t("errSaveFailed") };
   }
 
   await logActivity(supabase, {
@@ -575,7 +576,7 @@ export async function finalizeLessonVideo(input: {
     await createAdminClient()
       .storage.from(ACADEMY_BUCKET)
       .remove([input.storagePath]);
-    return { error: error.message };
+    return { error: await userError(error) };
   }
 
   if (
@@ -678,7 +679,7 @@ export async function uploadCourseThumbnail(
     .eq("id", courseId);
   if (updateError) {
     await adminClient.storage.from(ACADEMY_BUCKET).remove([storagePath]);
-    return { error: updateError.message };
+    return { error: await userError(updateError) };
   }
 
   // Best-effort cleanup of the previous image.
@@ -739,7 +740,7 @@ export async function addChapter(
     .from("chapters")
     .insert({ course_id: courseId, title: parsed.data.title, position });
   const t = await getTranslations("AcademyAdmin");
-  if (error) return { error: error.message };
+  if (error) return { error: await userError(error) };
   revalidatePath(`/admin/academy/${courseId}`);
   return { success: t("chapterAdded") };
 }
@@ -763,7 +764,7 @@ export async function updateChapter(
     .update({ title: parsed.data.title })
     .eq("id", id);
   const t = await getTranslations("AcademyAdmin");
-  if (error) return { error: error.message };
+  if (error) return { error: await userError(error) };
   revalidatePath(`/admin/academy/${courseId}`);
   return { success: t("chapterUpdated") };
 }
@@ -977,14 +978,14 @@ export async function addQuizQuestion(
     .insert({ chapter_id: chapterId, prompt, position })
     .select("id")
     .single();
-  if (error || !inserted) return { error: error?.message ?? t("errSaveFailed") };
+  if (error || !inserted) return { error: error ? await userError(error) : t("errSaveFailed") };
 
   const { error: optError } = await supabase
     .from("quiz_options")
     .insert(optionRows(inserted.id, options, correct_index));
   if (optError) {
     await supabase.from("quiz_questions").delete().eq("id", inserted.id);
-    return { error: optError.message };
+    return { error: await userError(optError) };
   }
 
   await logActivity(supabase, {
@@ -1020,14 +1021,14 @@ export async function updateQuizQuestion(
     .from("quiz_questions")
     .update({ prompt })
     .eq("id", id);
-  if (error) return { error: error.message };
+  if (error) return { error: await userError(error) };
 
   // Replace the option set wholesale — simplest correct approach for an edit.
   await supabase.from("quiz_options").delete().eq("question_id", id);
   const { error: optError } = await supabase
     .from("quiz_options")
     .insert(optionRows(id, options, correct_index));
-  if (optError) return { error: optError.message };
+  if (optError) return { error: await userError(optError) };
 
   await logActivity(supabase, {
     action: "quiz_question.updated",
@@ -1199,7 +1200,7 @@ export async function saveLessonNote(
     },
     { onConflict: "user_id,lesson_id" },
   );
-  if (error) return { error: error.message };
+  if (error) return { error: await userError(error) };
   return { success: "saved" };
 }
 
@@ -1249,7 +1250,7 @@ export async function uploadCourseFile(
     .single();
   if (insertError || !inserted) {
     await adminClient.storage.from(ACADEMY_BUCKET).remove([storagePath]);
-    return { error: insertError?.message ?? t("errSaveFailed") };
+    return { error: insertError ? await userError(insertError) : t("errSaveFailed") };
   }
 
   await logActivity(supabase, {

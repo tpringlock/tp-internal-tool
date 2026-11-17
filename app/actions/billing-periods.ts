@@ -8,6 +8,7 @@ import { logActivity } from "@/lib/activity";
 import { periodPresetSchema, translateFieldErrors } from "@/lib/validation";
 import { presetUsage } from "@/lib/billing/period-presets";
 import type { FormState } from "@/app/actions/auth";
+import { userError } from "@/lib/errors/user-error-server";
 
 // Period presets ("mẫu kỳ", 0040). Presets: admin only (RLS too). A
 // contract's default preset: any billing user (accountant + admin).
@@ -51,7 +52,7 @@ export async function savePeriodPreset(_prev: FormState, formData: FormData): Pr
         ? { fieldErrors: { name: [t("errNameInUse")] } }
         : { fieldErrors: { start_day: [t("errRuleInUse")] } };
     }
-    return { error: error.message };
+    return { error: await userError(error) };
   }
   if (!data || data.length === 0) return { error: t("errNotFound") };
 
@@ -94,7 +95,7 @@ export async function deletePeriodPreset(_prev: FormState, formData: FormData): 
   if (error) {
     // A contract picked this preset in the meantime.
     if (error.code === FK_VIOLATION) return { error: t("errInUse", { count: Math.max(1, await inUse()) }) };
-    return { error: error.message };
+    return { error: await userError(error) };
   }
   if (!data || data.length === 0) return { error: t("errNotFound") };
 
@@ -133,14 +134,14 @@ export async function setContractPeriodPreset(_prev: FormState, formData: FormDa
     const { error } = await supabase
       .from("billing_contract_period_presets")
       .upsert({ contract_id: contractId, preset_id: presetId, updated_by: user.id });
-    if (error) return { error: error.message };
+    if (error) return { error: await userError(error) };
   } else {
     const { error } = await supabase
       .from("billing_contract_period_presets")
       .delete()
       .eq("contract_id", contractId)
       .select("contract_id");
-    if (error) return { error: error.message };
+    if (error) return { error: await userError(error) };
   }
 
   await logActivity(supabase, {

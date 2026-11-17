@@ -38,6 +38,7 @@ import { formatVnDate } from "@/lib/billing/dates";
 import type { Period } from "@/lib/billing/types";
 import { SHOW_DEMO_COOKIE } from "@/lib/billing/queries";
 import type { FormState } from "@/app/actions/auth";
+import { userError } from "@/lib/errors/user-error-server";
 
 /** Postgres unique-violation error code. */
 const UNIQUE_VIOLATION = "23505";
@@ -73,13 +74,13 @@ export async function deleteMisaUpload(
   // confirmed calculation uses it, and re-activates the newest remaining
   // version when the active one is deleted (0035).
   const { error: monthError } = await supabase.from("billing_misa_month_files").delete().eq("upload_id", id);
-  if (monthError) return { error: monthError.message };
+  if (monthError) return { error: await userError(monthError) };
   const { data, error } = await supabase
     .from("billing_misa_uploads")
     .delete()
     .eq("id", id)
     .select("id, storage_path, file_name");
-  if (error) return { error: error.message };
+  if (error) return { error: await userError(error) };
   if (!data || data.length === 0) return { error: t("errNotFound") };
 
   await createAdminClient().storage.from(BILLING_BUCKET).remove([data[0].storage_path]);
@@ -234,7 +235,7 @@ export async function computeRent(
     })
     .select("id")
     .single();
-  if (error || !saved) return { error: error?.message ?? t("errSaveFailed") };
+  if (error || !saved) return { error: error ? await userError(error) : t("errSaveFailed") };
 
   await logActivity(supabase, {
     action: "billing.calculated",
@@ -290,7 +291,7 @@ export async function confirmCalculation(
     .not("period_month", "is", null)
     .select("id");
   if (error) {
-    return { error: error.code === UNIQUE_VIOLATION ? t("errAlreadyConfirmed") : error.message };
+    return { error: error.code === UNIQUE_VIOLATION ? t("errAlreadyConfirmed") : await userError(error) };
   }
   if (!data || data.length === 0) return { error: t("errNotConfirmable") };
 
@@ -320,7 +321,7 @@ export async function voidCalculation(
     .eq("id", id)
     .eq("status", "confirmed")
     .select("id");
-  if (error) return { error: error.message };
+  if (error) return { error: await userError(error) };
   if (!data || data.length === 0) return { error: t("errNotConfirmed") };
 
   await logActivity(supabase, {
@@ -348,7 +349,7 @@ export async function deleteDraftCalculation(
     .eq("id", id)
     .eq("status", "draft")
     .select("id");
-  if (error) return { error: error.message };
+  if (error) return { error: await userError(error) };
   if (!data || data.length === 0) return { error: t("errNotDraft") };
 
   await logActivity(supabase, {
@@ -404,7 +405,7 @@ export async function createBillingContract(
     .single();
   if (error || !data) {
     if (error?.code === UNIQUE_VIOLATION) return contractUniqueErrors(error.message);
-    return { error: error?.message ?? "" };
+    return { error: error ? await userError(error) : "" };
   }
 
   await logActivity(supabase, {
@@ -438,7 +439,7 @@ export async function updateBillingContract(
     .select("id");
   if (error) {
     if (error.code === UNIQUE_VIOLATION) return contractUniqueErrors(error.message);
-    return { error: error.message };
+    return { error: await userError(error) };
   }
   if (!data || data.length === 0) return { error: t("errContractNotFound") };
 
@@ -472,7 +473,7 @@ export async function deleteBillingContract(
     .eq("id", id)
     .select("id, code");
   if (error) {
-    return { error: error.code === FK_VIOLATION ? t("errContractInUse") : error.message };
+    return { error: error.code === FK_VIOLATION ? t("errContractInUse") : await userError(error) };
   }
   if (!data || data.length === 0) return { error: t("errContractNotFound") };
 
@@ -610,7 +611,7 @@ export async function createExcludedRange(
     .insert({ ...parsed.data, created_by: user.id })
     .select("id")
     .single();
-  if (error || !data) return { error: error?.message ?? t("errSaveFailed") };
+  if (error || !data) return { error: error ? await userError(error) : t("errSaveFailed") };
 
   await logActivity(supabase, {
     action: "billing.range_created",
@@ -636,7 +637,7 @@ export async function deleteExcludedRange(
     .delete()
     .eq("id", id)
     .select("id, reason");
-  if (error) return { error: error.message };
+  if (error) return { error: await userError(error) };
   if (!data || data.length === 0) return { error: t("errNotFound") };
 
   await logActivity(supabase, {

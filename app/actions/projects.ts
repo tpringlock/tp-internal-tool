@@ -11,6 +11,7 @@ import {
   translateFieldErrors,
 } from "@/lib/validation";
 import type { FormState } from "@/app/actions/auth";
+import { userError } from "@/lib/errors/user-error-server";
 
 const UNIQUE_VIOLATION = "23505";
 /** Postgres foreign-key-violation error code. */
@@ -45,7 +46,7 @@ export async function addProject(
     if (error.code === UNIQUE_VIOLATION) {
       return { fieldErrors: { code: [t("codeInUse")] } };
     }
-    return { error: error.message };
+    return { error: await userError(error) };
   }
 
   await logActivity(supabase, {
@@ -89,7 +90,7 @@ export async function editProject(
     if (error.code === UNIQUE_VIOLATION) {
       return { fieldErrors: { code: [t("codeInUse")] } };
     }
-    return { error: error.message };
+    return { error: await userError(error) };
   }
 
   await logActivity(supabase, {
@@ -132,7 +133,7 @@ export async function deleteProject(
     if (error.code === FK_VIOLATION) {
       return { error: t("errProjectHasDocuments") };
     }
-    return { error: error.message };
+    return { error: await userError(error) };
   }
   const deleted = data?.[0];
   if (!deleted) {
@@ -183,7 +184,7 @@ export async function deleteProjects(
         blockedCount++;
         continue;
       }
-      return { error: error.message };
+      return { error: await userError(error) };
     }
     const deleted = data?.[0];
     if (!deleted) continue; // already gone or filtered by RLS
@@ -238,7 +239,7 @@ export async function assignMember(
     if (error.code === UNIQUE_VIOLATION) {
       return { error: t("alreadyMember") };
     }
-    return { error: error.message };
+    return { error: await userError(error) };
   }
 
   await logActivity(supabase, {

@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/auth/dal";
 import { logActivity } from "@/lib/activity";
 import type { FormState } from "@/app/actions/auth";
+import { userError } from "@/lib/errors/user-error-server";
 
 const ALLOWED_DAYS = new Set([1, 3, 7, 14, 30]);
 
@@ -40,7 +41,7 @@ export async function createShareLink(
     .single();
 
   if (error || !data) {
-    return { error: error?.message ?? t("errCreateFailed") };
+    return { error: error ? await userError(error) : t("errCreateFailed") };
   }
 
   await logActivity(supabase, {

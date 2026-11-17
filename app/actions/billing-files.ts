@@ -11,6 +11,7 @@ import { planMonthUpload, type MonthVersion } from "@/lib/billing/month-files";
 import { fillMissingCatalogs, inspectMonthFile, type InspectedMonthFile } from "@/lib/billing/month-files-server";
 import { BILLING_BUCKET, XLSX_MIME } from "@/lib/billing/server";
 import type { FormState } from "@/app/actions/auth";
+import { userError } from "@/lib/errors/user-error-server";
 
 /** Max files per upload (one year of months; ~250KB each, well under the body limit). */
 const MAX_FILES = 12;
@@ -193,7 +194,7 @@ export async function saveMonthFiles(_prev: MonthFilesState, formData: FormData)
       rows[i] = {
         ...row,
         ok: false,
-        error: error?.code === UNIQUE_VIOLATION ? t("errDuplicate") : (error?.message ?? t("errSaveFailed")),
+        error: error?.code === UNIQUE_VIOLATION ? t("errDuplicate") : (error ? await userError(error) : t("errSaveFailed")),
       };
       continue;
     }
@@ -240,12 +241,12 @@ export async function restoreMonthFileVersion(_prev: FormState, formData: FormDa
 
   if (current) {
     const { error } = await supabase.from("billing_misa_month_files").update({ status: "superseded" }).eq("id", current.id);
-    if (error) return { error: error.message };
+    if (error) return { error: await userError(error) };
   }
   const { error } = await supabase.from("billing_misa_month_files").update({ status: "active" }).eq("id", target.id);
   if (error) {
     if (current) await supabase.from("billing_misa_month_files").update({ status: "active" }).eq("id", current.id);
-    return { error: error.message };
+    return { error: await userError(error) };
   }
 
   await logActivity(supabase, {

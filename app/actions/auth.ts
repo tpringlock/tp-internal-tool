@@ -12,6 +12,7 @@ import {
   resetPasswordSchema,
   translateFieldErrors,
 } from "@/lib/validation";
+import { userError } from "@/lib/errors/user-error-server";
 
 export interface FormState {
   error?: string;
@@ -106,7 +107,7 @@ export async function updatePassword(
     password: parsed.data.password,
   });
   if (error) {
-    return { error: error.message };
+    return { error: await userError(error) };
   }
 
   await logActivity(supabase, { action: "auth.password_reset" });

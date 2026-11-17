@@ -10,6 +10,7 @@ import {
   translateFieldErrors,
 } from "@/lib/validation";
 import type { FormState } from "@/app/actions/auth";
+import { userError } from "@/lib/errors/user-error-server";
 
 export async function updateProfile(
   _prev: FormState,
@@ -36,7 +37,7 @@ export async function updateProfile(
     .from("profiles")
     .update({ full_name: parsed.data.full_name })
     .eq("id", user.id);
-  if (error) return { error: error.message };
+  if (error) return { error: await userError(error) };
 
   await logActivity(supabase, {
     action: "profile.update",
@@ -65,7 +66,7 @@ export async function changePassword(
   const { error } = await supabase.auth.updateUser({
     password: parsed.data.password,
   });
-  if (error) return { error: error.message };
+  if (error) return { error: await userError(error) };
 
   await logActivity(supabase, { action: "profile.change_password" });
   const t = await getTranslations("Profile");

@@ -23,7 +23,17 @@
     "notFoundTitle": "Không tìm thấy trang",
     "notFoundBody": "Trang bạn mở không tồn tại, đã bị xóa hoặc bạn không có quyền xem.",
     "offline": "Mất kết nối mạng nên chưa gửi được. Dữ liệu bạn nhập vẫn còn nguyên: kiểm tra mạng rồi bấm lại.",
-    "actionFailed": "Chưa gửi được yêu cầu. Dữ liệu bạn nhập vẫn còn nguyên: vui lòng thử lại, nếu vẫn lỗi hãy báo quản trị viên."
+    "actionFailed": "Chưa gửi được yêu cầu. Dữ liệu bạn nhập vẫn còn nguyên: vui lòng thử lại, nếu vẫn lỗi hãy báo quản trị viên.",
+    "dbUnique": "Dữ liệu này đã tồn tại (trùng với một dòng đã có). Hãy kiểm tra lại mã hoặc tên.",
+    "dbInUse": "Không thực hiện được vì dữ liệu này đang được dùng ở nơi khác.",
+    "dbForbidden": "Bạn không có quyền thực hiện thao tác này.",
+    "dbInvalid": "Dữ liệu không hợp lệ. Hãy kiểm tra lại các ô đã nhập.",
+    "dbUnknown": "Không lưu được. Vui lòng thử lại; nếu vẫn lỗi, hãy báo quản trị viên.",
+    "dbUnknownCode": "Không lưu được. Vui lòng thử lại; nếu vẫn lỗi, hãy báo quản trị viên kèm mã lỗi {code}.",
+    "authSamePassword": "Mật khẩu mới phải khác mật khẩu hiện tại.",
+    "authWeakPassword": "Mật khẩu quá yếu. Hãy dùng ít nhất 8 ký tự, gồm cả chữ và số.",
+    "authEmailExists": "Email này đã có tài khoản.",
+    "authRateLimit": "Bạn thao tác quá nhanh. Vui lòng đợi một lát rồi thử lại."
   },
   "BillingTour": {
     "help": "Hướng dẫn sử dụng",

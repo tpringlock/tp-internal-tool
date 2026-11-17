@@ -10,6 +10,7 @@ import { validateTemplate, type TemplateReport } from "@/lib/billing/hstt-templa
 import { HSTT_TEMPLATE_BUCKET } from "@/lib/billing/hstt-templates-server";
 import { XLSX_MIME } from "@/lib/billing/server";
 import type { FormState } from "@/app/actions/auth";
+import { userError } from "@/lib/errors/user-error-server";
 
 /** Postgres error codes. */
 const UNIQUE_VIOLATION = "23505";
@@ -84,7 +85,7 @@ export async function saveHsttTemplate(_prev: TemplateCheckState, formData: Form
   });
   if (error || !data) {
     await admin.storage.from(HSTT_TEMPLATE_BUCKET).remove([storagePath]);
-    const message = error?.code === UNIQUE_VIOLATION ? t("errNameTaken") : (error?.message ?? t("errSaveFailed"));
+    const message = error?.code === UNIQUE_VIOLATION ? t("errNameTaken") : (error ? await userError(error) : t("errSaveFailed"));
     return { report, fileName: file.name, error: message };
   }
 
@@ -133,7 +134,7 @@ export async function reuseHsttTemplateVersion(_prev: FormState, formData: FormD
   });
   if (error || !data) {
     await admin.storage.from(HSTT_TEMPLATE_BUCKET).remove([storagePath]);
-    return { error: error?.message ?? t("errSaveFailed") };
+    return { error: error ? await userError(error) : t("errSaveFailed") };
   }
 
   await logActivity(supabase, {
@@ -161,7 +162,7 @@ export async function setHsttTemplateStatus(_prev: FormState, formData: FormData
     .eq("id", id)
     .select("id, name")
     .maybeSingle();
-  if (error) return { error: error.message };
+  if (error) return { error: await userError(error) };
   if (!data) return { error: t("errNotFound") };
 
   await logActivity(supabase, {
@@ -191,7 +192,7 @@ export async function deleteHsttTemplate(_prev: FormState, formData: FormData): 
     .select("storage_path")
     .eq("template_id", id);
   const { data, error } = await supabase.from("billing_hstt_templates").delete().eq("id", id).select("id, name");
-  if (error) return { error: error.code === FK_VIOLATION ? t("errDeleteInUse") : error.message };
+  if (error) return { error: error.code === FK_VIOLATION ? t("errDeleteInUse") : await userError(error) };
   if (!data || data.length === 0) return { error: t("errNotFound") };
 
   const paths = (versions ?? []).map((v) => v.storage_path);
@@ -222,14 +223,14 @@ export async function assignHsttTemplate(_prev: FormState, formData: FormData): 
     const { error } = await supabase
       .from("billing_contract_hstt_templates")
       .upsert({ contract_id: contractId, template_id: templateId, assigned_by: user.id });
-    if (error) return { error: error.message };
+    if (error) return { error: await userError(error) };
   } else {
     const { error } = await supabase
       .from("billing_contract_hstt_templates")
       .delete()
       .eq("contract_id", contractId)
       .select("contract_id");
-    if (error) return { error: error.message };
+    if (error) return { error: await userError(error) };
   }
 
   await logActivity(supabase, {

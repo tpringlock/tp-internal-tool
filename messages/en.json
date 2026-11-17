@@ -23,7 +23,17 @@
     "notFoundTitle": "Page not found",
     "notFoundBody": "The page you opened does not exist, was removed, or you do not have access to it.",
     "offline": "You are offline, so nothing was sent. What you typed is still here: check the connection and try again.",
-    "actionFailed": "The request could not be sent. What you typed is still here: please try again, and tell an administrator if it keeps failing."
+    "actionFailed": "The request could not be sent. What you typed is still here: please try again, and tell an administrator if it keeps failing.",
+    "dbUnique": "This already exists (it duplicates an existing row). Check the code or name.",
+    "dbInUse": "This cannot be done because the data is used elsewhere.",
+    "dbForbidden": "You do not have permission to do this.",
+    "dbInvalid": "The data is not valid. Please check the fields you entered.",
+    "dbUnknown": "Could not save. Please try again; if it keeps failing, tell an administrator.",
+    "dbUnknownCode": "Could not save. Please try again; if it keeps failing, tell an administrator and quote error code {code}.",
+    "authSamePassword": "The new password must be different from the current one.",
+    "authWeakPassword": "The password is too weak. Use at least 8 characters with letters and digits.",
+    "authEmailExists": "This email already has an account.",
+    "authRateLimit": "Too many attempts. Please wait a moment and try again."
   },
   "BillingTour": {
     "help": "User guide",
