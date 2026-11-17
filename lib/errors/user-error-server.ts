@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import {
   classifyError,
   classifyStorageError,
+  ownErrorMessage,
   type StorageErrorLike,
   type SupabaseErrorLike,
 } from "./user-error";
@@ -69,4 +70,21 @@ export async function storageError(
     return t("storageTooLarge");
   }
   return fallback;
+}
+
+/**
+ * The text for an error caught around app code (engine, parser, data
+ * loading): our own Vietnamese messages pass through; anything else (a
+ * database error rethrown by a loader, a runtime error) is logged and
+ * replaced by `fallback`.
+ *
+ *   catch (e) { return { error: await thrownError(e, t("errComputeFailed")) }; }
+ */
+export async function thrownError(error: unknown, fallback?: string): Promise<string> {
+  const own = ownErrorMessage(error);
+  if (own) return own;
+  console.error("[thrown-error]", error);
+  if (fallback) return fallback;
+  const t = await getTranslations("Errors");
+  return t("loadFailed");
 }

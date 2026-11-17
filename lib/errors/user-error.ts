@@ -105,3 +105,18 @@ export function classifyStorageError(error: StorageErrorLike | null | undefined)
   }
   return "unknown";
 }
+
+/**
+ * True for text we wrote for the user ourselves: the app's thrown errors
+ * (BillingError, MisaParseError, PriceLinesError, period checks…) are all in
+ * Vietnamese, while database, Storage, network and runtime errors are not.
+ */
+export function isUserFacingMessage(message: string | null | undefined): message is string {
+  return !!message && VIETNAMESE.test(message);
+}
+
+/** The message of a thrown error if it was written for the user, else null. */
+export function ownErrorMessage(error: unknown): string | null {
+  const message = error instanceof Error ? error.message.trim() : null;
+  return isUserFacingMessage(message) ? message : null;
+}

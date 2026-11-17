@@ -15,8 +15,7 @@ import {
   computeRentSchema,
   translateFieldErrors,
 } from "@/lib/validation";
-import { BillingError, computeRentFromLedger } from "@/lib/billing/engine";
-import { MisaParseError } from "@/lib/billing/misa-parser";
+import { computeRentFromLedger } from "@/lib/billing/engine";
 import {
   findUnknownCodes,
   warningsForWarehouse,
@@ -38,7 +37,7 @@ import { formatVnDate } from "@/lib/billing/dates";
 import type { Period } from "@/lib/billing/types";
 import { SHOW_DEMO_COOKIE } from "@/lib/billing/queries";
 import type { FormState } from "@/app/actions/auth";
-import { userError } from "@/lib/errors/user-error-server";
+import { thrownError, userError } from "@/lib/errors/user-error-server";
 
 /** Postgres unique-violation error code. */
 const UNIQUE_VIOLATION = "23505";
@@ -165,7 +164,7 @@ export async function computeRent(
       month = matchContractMonth(period, contract);
     }
   } catch (e) {
-    return { error: (e as Error).message };
+    return { error: await thrownError(e, t("errComputeFailed")) };
   }
 
   let uploads: { id: string; storage_path: string; file_name: string }[];
@@ -174,7 +173,8 @@ export async function computeRent(
     try {
       pick = pickMonthFiles(period, await loadActiveMonthUploads(supabase, monthsCovering(period)));
     } catch (e) {
-      return { error: (e as Error).message };
+      // loadActiveMonthUploads rethrows database errors: never shown as is.
+      return { error: await thrownError(e) };
     }
     if (pick.error) return { error: pick.error, contractId };
     uploads = pick.files.map((f) => ({ id: f.upload_id, storage_path: f.storage_path, file_name: f.file_name }));
@@ -214,9 +214,9 @@ export async function computeRent(
     result.warnings.unshift(...warningsForWarehouse(ledger.warnings, contract.misa_kho));
   } catch (e) {
     // BillingError / MisaParseError / merge errors carry a Vietnamese message
-    // meant for the user; anything else gets a generic one.
-    const known = e instanceof BillingError || e instanceof MisaParseError || e instanceof Error;
-    return { error: known ? (e as Error).message : t("errComputeFailed"), contractId };
+    // meant for the user; anything else (Storage download, runtime) is logged
+    // and gets a generic one.
+    return { error: await thrownError(e, t("errComputeFailed")), contractId };
   }
 
   const { data: saved, error } = await supabase
@@ -547,7 +547,7 @@ export async function compareDemoContracts(
     }
     summary = compareContracts(ledger, contracts, { from, to });
   } catch (e) {
-    return { error: e instanceof Error ? e.message : t("errComputeFailed") };
+    return { error: await thrownError(e, t("errComputeFailed")) };
   }
 
   await logActivity(supabase, {

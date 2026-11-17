@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { classifyError, classifyStorageError } from "./user-error";
+import { classifyError, classifyStorageError, ownErrorMessage } from "./user-error";
 
 describe("classifyError", () => {
   it("hides native Postgres / PostgREST text", () => {
@@ -113,5 +113,23 @@ describe("classifyStorageError", () => {
     expect(classifyStorageError({ statusCode: "404", message: "Bucket not found" })).toBe("unknown");
     expect(classifyStorageError(null)).toBe("unknown");
     expect(classifyStorageError(undefined)).toBe("unknown");
+  });
+});
+
+describe("ownErrorMessage", () => {
+  it("keeps the app's own Vietnamese messages", () => {
+    expect(ownErrorMessage(new Error("Thiếu cột \"Tên kho\" trong file MISA."))).toBe('Thiếu cột "Tên kho" trong file MISA.');
+    class BillingError extends Error {}
+    expect(ownErrorMessage(new BillingError("Kỳ tính không hợp lệ: 2026-09-01 → 2026-08-01"))).toBe(
+      "Kỳ tính không hợp lệ: 2026-09-01 → 2026-08-01",
+    );
+  });
+
+  it("drops database, Storage and runtime text", () => {
+    expect(ownErrorMessage(new Error('permission denied for table billing_misa_uploads'))).toBeNull();
+    expect(ownErrorMessage(new Error("Object not found"))).toBeNull();
+    expect(ownErrorMessage(new TypeError("Cannot read properties of undefined (reading 'qty')"))).toBeNull();
+    expect(ownErrorMessage("Lỗi dạng chuỗi")).toBeNull();
+    expect(ownErrorMessage(null)).toBeNull();
   });
 });

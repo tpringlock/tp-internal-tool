@@ -9,6 +9,7 @@ import { reportFormValues, reportPeriodQuery, runReport, type ReportSourceFile }
 import type { RentReport } from "@/lib/billing/rent-report";
 import type { Period } from "@/lib/billing/types";
 import type { FormState } from "@/app/actions/auth";
+import { thrownError } from "@/lib/errors/user-error-server";
 
 // Rent report over many projects (plan section 4). Read-only: nothing is
 // saved, so "Chỉ xem" accounts may run it (the read guard, like the pages).
@@ -43,8 +44,9 @@ export async function runRentReport(_prev: ReportState, formData: FormData): Pro
   try {
     run = await runReport(supabase, parsed.data, { includeDemo: await getShowDemo() });
   } catch (e) {
-    // Parser / merge errors carry a Vietnamese message meant for the user.
-    return { error: e instanceof Error ? e.message : String(e) };
+    // Parser / merge errors carry a Vietnamese message meant for the user;
+    // database errors rethrown by the loaders are logged, not shown.
+    return { error: await thrownError(e) };
   }
   if (!run.ok) return { error: run.error };
 
