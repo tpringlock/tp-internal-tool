@@ -162,8 +162,10 @@ export function QuizForm({
           return (
             <fieldset
               key={q.id}
+              // min-w-0: a fieldset is min-content wide by default, so a long
+              // unbroken option would push the page sideways on a phone.
               className={cn(
-                "space-y-3",
+                "min-w-0 space-y-3",
                 flagged && "rounded-lg border border-red-200 bg-red-50/50 p-3 sm:p-4",
               )}
             >
@@ -173,7 +175,7 @@ export function QuizForm({
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <p
                   aria-hidden
-                  className="whitespace-pre-wrap text-sm font-medium text-slate-800"
+                  className="min-w-0 whitespace-pre-wrap text-sm font-medium text-slate-800 wrap-anywhere"
                 >
                   {i + 1}. {q.prompt}
                 </p>
@@ -199,7 +201,7 @@ export function QuizForm({
                       onChange={() => setAnswers((a) => ({ ...a, [q.id]: opt.id }))}
                       className="h-4 w-4 shrink-0 accent-primary"
                     />
-                    <span className="whitespace-pre-wrap">{opt.label}</span>
+                    <span className="min-w-0 whitespace-pre-wrap wrap-anywhere">{opt.label}</span>
                   </label>
                 ))}
               </div>
@@ -304,7 +306,7 @@ function QuizResult({
                   <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" aria-hidden />
                 )}
                 <div className="min-w-0 space-y-1">
-                  <p className="whitespace-pre-wrap break-words text-sm font-medium text-slate-800">
+                  <p className="whitespace-pre-wrap text-sm font-medium text-slate-800 wrap-anywhere">
                     <span className="sr-only">
                       {r.correct ? t("quizCorrectBadge") : t("quizWrongBadge")}:{" "}
                     </span>
@@ -312,7 +314,7 @@ function QuizResult({
                   </p>
                   <p
                     className={cn(
-                      "whitespace-pre-wrap break-words text-xs",
+                      "whitespace-pre-wrap text-xs wrap-anywhere",
                       r.correct ? "text-green-800" : "text-red-800",
                     )}
                   >
