@@ -25,8 +25,8 @@ const MODULE_PREFIX: Record<AppModuleId, string> = {
   admin: "/admin",
 };
 
-/** Where the logo points: the document workspace. */
-export const HOME_HREF = "/documents";
+/** Where the logo points: the portal home page. */
+export const HOME_HREF = "/";
 
 /** Modules the given role may open, in switcher order. */
 export function getModulesForRole(role: UserRole): AppModuleLink[] {
