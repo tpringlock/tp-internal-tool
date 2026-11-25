@@ -46,7 +46,7 @@ export function TopNav({
             height={36}
             className="h-9 w-9 shrink-0 object-contain"
           />
-          <span className="hidden truncate text-[15px] font-bold tracking-tight text-slate-900 sm:inline">
+          <span className="hidden truncate text-[15px] font-bold tracking-tight text-primary sm:inline">
             {tc("title")}
           </span>
         </Link>

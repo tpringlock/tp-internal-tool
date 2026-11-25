@@ -77,7 +77,12 @@ export function useFormAction<S extends BaseFormState>(
     });
     const form = formRef.current;
     // Same as React's own reset after a form action, but only on success.
-    if (isSuccessState(next) && form?.isConnected) requestFormReset(form);
+    // After the `await` above React no longer sees an active transition, and
+    // requestFormReset must run inside one; this transition is entangled with
+    // the pending action, so the reset commits together with the new state.
+    if (isSuccessState(next) && form?.isConnected) {
+      React.startTransition(() => requestFormReset(form));
+    }
     current.options.onResult?.(next);
     return next;
   };
