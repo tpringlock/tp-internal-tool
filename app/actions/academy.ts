@@ -16,7 +16,11 @@ import {
   translateFieldErrors,
 } from "@/lib/validation";
 import { parseVideoUrl } from "@/lib/academy/video";
-import { isCourseCompleteWithQuizzes } from "@/lib/academy/progress";
+import {
+  chapterUnlockFlags,
+  isCourseCompleteWithQuizzes,
+} from "@/lib/academy/progress";
+import { gradeQuiz, type QuizGrade } from "@/lib/academy/quiz-grade";
 import {
   getCourseTree,
   getCompletedLessonIds,
@@ -1100,25 +1104,47 @@ export async function reorderQuizQuestion(formData: FormData): Promise<void> {
 
 // --- Quiz submission (employee) ----------------------------------------
 
+/** Result of a quiz submit: `grade` drives the result screen. */
+export type QuizSubmitState = FormState & { grade?: QuizGrade };
+
 /**
  * Grade a chapter quiz server-side. Records a pass only when every question is
  * answered correctly; unlimited retries. Selected option per question arrives as
- * `q_{questionId}` = optionId.
+ * `q_{questionId}` = optionId. Returns the per-question result (right / wrong
+ * only, never the correct option) so the learner sees a score either way.
  */
 export async function submitChapterQuiz(
-  _prev: FormState,
+  _prev: QuizSubmitState,
   formData: FormData,
-): Promise<FormState> {
+): Promise<QuizSubmitState> {
   const user = await requireUser();
   const chapterId = String(formData.get("chapter_id"));
   const courseId = String(formData.get("course_id"));
   const t = await getTranslations("Academy");
 
   const supabase = await createClient();
+
+  // Same gate as the quiz page: the chapter belongs to this course, is
+  // unlocked, and all its lessons are done. Otherwise a direct call could
+  // record a pass (and complete the course) for a chapter never reached.
+  const [tree, completedIds, passedIds] = await Promise.all([
+    getCourseTree(supabase, courseId),
+    getCompletedLessonIds(supabase, user.id, courseId),
+    getPassedChapterIds(supabase, user.id, courseId),
+  ]);
+  const chapterIndex = tree?.chapters.findIndex((c) => c.id === chapterId) ?? -1;
+  if (!tree || chapterIndex === -1) return { error: t("quizEmpty") };
+  const chapter = tree.chapters[chapterIndex];
+  const unlocked = chapterUnlockFlags(tree.chapters, completedIds, passedIds)[chapterIndex];
+  if (!unlocked || !chapter.lessons.every((l) => completedIds.has(l.id))) {
+    return { error: t("quizLocked") };
+  }
+
   const { data: questions } = await supabase
     .from("quiz_questions")
     .select("id")
-    .eq("chapter_id", chapterId);
+    .eq("chapter_id", chapterId)
+    .order("position", { ascending: true });
   const questionIds = (questions ?? []).map((q) => q.id);
   if (questionIds.length === 0) return { error: t("quizEmpty") };
 
@@ -1131,15 +1157,11 @@ export async function submitChapterQuiz(
     if (opt.is_correct) correctByQuestion.set(opt.question_id, opt.id);
   }
 
-  let wrong = 0;
-  for (const qid of questionIds) {
-    const selected = String(formData.get(`q_${qid}`) ?? "");
-    if (selected !== correctByQuestion.get(qid)) wrong += 1;
-  }
-
-  if (wrong > 0) {
-    return { error: t("quizFailed", { wrong }) };
-  }
+  const grade = gradeQuiz(questionIds, correctByQuestion, (qid) => {
+    const value = formData.get(`q_${qid}`);
+    return typeof value === "string" ? value : null;
+  });
+  if (!grade.passed) return { grade };
 
   // Ensure enrollment (passing a quiz implies participating in the course).
   const { data: enrollment } = await supabase
@@ -1171,7 +1193,7 @@ export async function submitChapterQuiz(
   revalidatePath(`/academy/${courseId}`);
   revalidatePath(`/academy/${courseId}/quiz/${chapterId}`);
   revalidatePath("/academy/my-courses");
-  return { success: t("quizPassed") };
+  return { success: t("quizPassed"), grade };
 }
 
 // --- Lesson notes (employee) -------------------------------------------

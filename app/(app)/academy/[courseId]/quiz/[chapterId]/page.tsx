@@ -80,6 +80,8 @@ export default async function ChapterQuizPage({
             questions={questions}
             alreadyPassed={alreadyPassed}
             continueHref={continueHref}
+            courseHref={`/academy/${courseId}`}
+            hasNextChapter={Boolean(nextFirstLesson)}
           />
         </CardBody>
       </Card>
